@@ -122,7 +122,7 @@ if __name__ == "__main__":
     kLa = 30
     tfinal = 80
 
-    exptdata = np.loadtxt("exptdata_bdo.csv")
+    exptdata = np.loadtxt("exptdata_ma.csv")
     p0 = np.array([17, 11.0, 0.0214, 0.009, 0.88, 0.0467])
 
     nrows = 2
