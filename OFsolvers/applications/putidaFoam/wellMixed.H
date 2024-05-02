@@ -7,9 +7,7 @@
     solnvec[microbemodel::X]=0.5;
     solnvec[microbemodel::O2]=0.214;
     solnvec[microbemodel::G]=500.0;
-    solnvec[microbemodel::Xy]=250.0;
-    solnvec[microbemodel::A]=0.0;
-    solnvec[microbemodel::B]=0.0;
+    solnvec[microbemodel::M]=0.0;
 
     std::ofstream outfile("wellmixed_soln.dat");
 

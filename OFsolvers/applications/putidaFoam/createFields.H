@@ -80,10 +80,6 @@ dimensionedScalar init_glucose
      dimMoles/dimVolume,
      microbe_props.lookup("initial_glucose"));
 
-dimensionedScalar init_xylose
-(   "initial_xylose",
-     dimMoles/dimVolume,
-     microbe_props.lookup("initial_xylose"));
 //=================================================================
 //
 //Create volume scalars for bioeractor fields======================
@@ -115,46 +111,18 @@ volScalarField glucose
  init_glucose
  );
 
-volScalarField xylose
+volScalarField muconate
 (
  IOobject
  (
-  "xylose",
+  "muconate",
   runTime.timeName(),
   mesh,
   IOobject::NO_READ,
   IOobject::AUTO_WRITE
  ),
  mesh,
- init_xylose
- );
-
-volScalarField acetoin
-(
- IOobject
- (
-  "acetoin",
-  runTime.timeName(),
-  mesh,
-  IOobject::NO_READ,
-  IOobject::AUTO_WRITE
- ),
- mesh,
- dimensionedScalar("acetoin", dimMoles/dimVolume, 0)
- );
-
-volScalarField bdiol
-(
- IOobject
- (
-  "bdiol",
-  runTime.timeName(),
-  mesh,
-  IOobject::NO_READ,
-  IOobject::AUTO_WRITE
- ),
- mesh,
- dimensionedScalar("bdiol", dimMoles/dimVolume, 0)
+ dimensionedScalar("muconate", dimMoles/dimVolume, 0)
  );
 
 volScalarField our
@@ -174,8 +142,6 @@ volScalarField our
 /*double liqvol = fvc::domainIntegrate(alpha2).value();
 microbemodel::X_avg  = fvc::domainIntegrate(alpha2*microbe_conc).value()/liqvol;
 microbemodel::G_avg  = fvc::domainIntegrate(alpha2*glucose).value()/liqvol;
-microbemodel::Xy_avg = fvc::domainIntegrate(alpha2*xylose).value()/liqvol;
-microbemodel::A_avg  = fvc::domainIntegrate(alpha2*acetoin).value()/liqvol;
-microbemodel::B_avg  = fvc::domainIntegrate(alpha2*bdiol).value()/liqvol;*/
+microbemodel::M_avg  = fvc::domainIntegrate(alpha2*muconate).value()/liqvol;*/
 
 //=================================================================
