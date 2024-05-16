@@ -1,0 +1,62 @@
+//****** Temperature ************
+Temp			308; // K
+//*****Gas transport*******************
+muMixGas        1.88e-05;
+PrMixGas        0.7;
+LeGas     	1.0;
+//dbubGas		0.001;
+//****Liquid transport*****************
+CpMixLiq        4181; // J/kg-K
+muMixLiq        #calc "2.414e-5 * pow(10,247.8/($Temp - 140.0))"; //viscosity (cP) of water as function of T (K)  
+kThermLiq	0.62; // W/m-K
+RMixLiq         3000;
+rho0MixLiq      1000; // kg/m^3
+sigmaLiq        0.07; //surface tension N/m
+ddropLiq        0.003;
+//Wilke-Chang params for diffusivity of aq. O2
+// not currently used, JJS 4/14/16
+WC_psi          2.6;
+WC_M            18; // kg/kmol
+WC_V_O2         25.6e-3; // m3/kmol molar volume at normal boiling temperature
+WC_V_CO2        34e-3;
+//*******diffusion coeff*************************************
+D_CO2 #calc "1.173e-16 * pow($WC_psi * $WC_M,0.5) * $Temp / $muMixLiq / pow($WC_V_CO2,0.6)";
+//*******Henry coeff*************************************
+H_O2_298 0.032;
+DH_O2	1700;
+H_CO2_298 0.83;
+DH_CO2	2400;
+
+He_CO2 #calc "$H_CO2_298 * exp($DH_CO2 *(1. / $T0 - 1./298.15))";
+//*********************************
+LeLiqCO2 #calc "$kThermLiq / $rho0MixLiq / $D_CO2 / $CpMixLiq"; // = 74
+LeLiqMix $LeLiqCO2;
+PrMixLiq #calc "$CpMixLiq * $muMixLiq / $kThermLiq";
+//*********************************
+kCO2 #calc "$D_CO2*$rho0MixLiq*$CpMixLiq*$LeLiqMix";
+PrCO2 #calc "$muMixLiq*$CpMixLiq / $kCO2";
+//*********************************
+HtBcol  10.0;
+DiaBcol 0.8;
+LiqHt    7;
+LiqHt_limit   #calc "0.9*$HtBcol";
+// ******* Inlet conditions *********
+P0 9.0E5;
+Pbot #calc "$P0+1000.0*$LiqHt*9.8";
+Pmid #calc "$P0+1000.0*0.5*$LiqHt*9.8";
+
+//bubble column cross-section divided by sparger area
+ArbyAs 2.0;
+uSupVel 0.02;
+uGas #calc "$Pmid / $Pbot * $ArbyAs * $uSupVel";
+A_Bcol #calc "3.14159 * $DiaBcol * $DiaBcol / 4.0";
+rho_gas #calc "$Pmid / 287.0 / $T0";
+mflowRate #calc "$uSupVel * $A_Bcol * $rho_gas";
+//*********************************
+intensity 0.01;
+k_inlet #calc "1.5 * pow($uSupVel * $intensity, 2)";
+eps_gas_inlet #calc "pow(0.09,0.75) * pow($k_inlet,1.5) / ($DiaBcol / $ArbyAs * 0.07)";
+eps_liq_inlet #calc "pow(0.09,0.75) * pow($k_inlet,1.5) / ($DiaBcol / $ArbyAs * 0.07)";
+omega_liq_inlet #calc "pow(0.09,-0.25) * pow($k_inlet,0.5) / ($DiaBcol / $ArbyAs * 0.07)";
+//*********************************
+O2liquid 4e-6;

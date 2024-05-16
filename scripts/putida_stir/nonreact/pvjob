@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=pvpost
+#SBATCH --partition=short
+#SBATCH --nodes=1
+#SBATCH --time=04:00:00
+#SBATCH --account=bpms
+#SBATCH --output=pv_post_log.out
+
+TMPDIR=/tmp/scratch/
+
+source ~/ofoamdev.sh
+#rm -rf 0.0/
+#rm -rf 0/
+reconstructPar -withZero -newTimes
+#mv 0/ 0.0/
+module purge
+source ~/loadpview7.sh
+pvpython pv_extract_analyze_script.py 
