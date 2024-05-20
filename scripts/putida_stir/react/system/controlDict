@@ -15,23 +15,21 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     putidaFoam;
+application     reactingTwoPhaseEulerFoam;
 
-startFrom       startTime; //startTime; //latestTime
+startFrom       latestTime; //startTime; //latestTime
 
-startTime       0;
-
-//latestTime      3060;
+latestTime      4500;
 
 stopAt          endTime;
 
-endTime         100.0;
+endTime         16500;
 
-deltaT          0.00005;
+deltaT          0.001;
 
 writeControl    adjustableRunTime;
 
-writeInterval   0.1;
+writeInterval   50.0;
 
 purgeWrite      0;
 
@@ -49,7 +47,7 @@ runTimeModifiable yes;
 
 adjustTimeStep  yes;
 
-maxCo           0.5;
+maxCo           0.9;
 
 maxDeltaT       1;
 

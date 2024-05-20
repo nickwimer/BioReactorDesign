@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  2.4.0                                 |
+|  \\    /   O peration     | Version:  3.0.0                                 |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -11,35 +11,33 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      decomposeParDict;
+    object      setFieldsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include "${FOAM_CASE}/constant/globalTransport"
 
-numberOfSubdomains 200; // 400;
+Db #calc "$DiaBcol";
+mDb #calc "-$Db";
 
-method          simple;
+defaultFieldValues
+(
+    volScalarFieldValue alpha.gas 1
+    volScalarFieldValue alpha.liquid 0
+);
 
-simpleCoeffs
-{
-    n              (1 200 1);
-    delta           0.001;
-}
-
-hierarchicalCoeffs
-{
-    n              (3 12 2);
-    delta           0.001;
-    order           xyz;
-}
-
-manualCoeffs
-{
-    dataFile        "";
-}
-
-distributed     no;
-
-roots           ( );
+regions
+(
+    boxToCell
+    {
+        box ($mDb 0.0 $mDb) ($Db $LiqHt $Db);
+        fieldValues
+        (
+            volScalarFieldValue alpha.gas 0.0
+            volScalarFieldValue alpha.liquid 1.0
+            //volScalarFieldValue O2.liquid 3.2e-6 // 8e-6 = 0.25 mol/m^3
+        );
+    }
+);
 
 
 // ************************************************************************* //

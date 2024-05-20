@@ -15,16 +15,12 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/constant/globalTransport"
-
-//type interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem;
-//type interfaceCompositionPhaseChangeTwoPhaseSystem;
-type populationBalanceMultiphaseSystem;
+type    interfaceCompositionPhaseChangeTwoPhaseSystem;
 
 phases (gas liquid);
 
-// Believe what is needed for putida is actually taken care of in globalTransport already
-/*
+#include "globalTransport"
+
 D_O2  #codeStream 
 { 
     code 
@@ -56,7 +52,6 @@ H_CO2 #codeStream
         os<<$H_CO2_298 * exp($DH_CO2*(1./$Temp-1./298.));
     #}; 
 };
-*/
 
 gas
 {
@@ -67,38 +62,12 @@ gas
     //     d0              3e-3;
     //     p0              1e5;
     // }
-    diameterModel velocityGroup;
-    velocityGroupCoeffs
+    diameterModel constant;
+    constantCoeffs
     {
-      populationBalance    bubbles;
-
-      shapeModel           spherical;
-
-      sizeGroups
-      (
-	    f1 {dSph  1e-3; value 0.0;}
-            f2 {dSph  1.5e-3; value 0.0;}
-            f3 {dSph  2e-3; value 1.0;}
-            f4 {dSph  2.5e-3; value 0.0;}
-            f5 {dSph  3e-3; value 0.0;}
-            f6 {dSph  3.5e-3; value 0.0;}
-            f7 {dSph  4e-3; value 0.0;}
-            f8 {dSph  4.5e-3; value 0.0;}
-            f9 {dSph  5e-3; value 0.0;}
-            f10 {dSph  5.5e-3; value 0.0;}
-            f11 {dSph  6e-3; value 0.0;}
-            f12 {dSph  6.5e-3; value 0.0;}
-            f13 {dSph  7e-3; value 0.0;}
-            f14 {dSph  7.5e-3; value 0.0;}
-            f15 {dSph  8e-3; value 0.0;}
-            f16 {dSph  8.5e-3; value 0.0;}
-            f17 {dSph  9e-3; value 0.0;}
-            f18 {dSph  9.5e-3; value 0.0;}
-            f19 {dSph  10e-3; value 0.0;}
-            f20 {dSph  10.5e-3; value 0.0;}
-            f21 {dSph  11e-3; value 0.0;}
-       );
+        d 0.006; // m
     }
+    Sc              0.7;
 
     residualAlpha   1e-6;
 }
@@ -111,51 +80,15 @@ liquid
     {
         d               1e-3; //1e-4; helps prevent liquid drops in head space, JJS 4/14/16
     }
-    /*    Sc   #codeStream 
+    Sc   #codeStream 
     { 
         code 
         #{ 
             os  << ($LeLiq * $CpMixLiq * $muMixLiq / $kThermLiq); 
         #}; 
-	};*/ 
+    }; 
 
     residualAlpha   1e-6;
-}
-
-populationBalanceCoeffs
-{
-    bubbles
-    {
-        continuousPhase liquid;
-
-	coalescenceModels
-	(
-	     LehrMilliesMewes{
-	        efficiency 2.0;
-	        uCrit 0.08;
-	        alphaMax 0.6;
-	     }
-	 );
-
-	binaryBreakupModels
-	  ();
-
-	breakupModels
-	(
-	    Laakkonen{
-	      efficiency 12.0;
-	      daughterSizeDistributionModel Laakkonen;
-	      height_lim $LiqHt_limit;
-	      height_dir 1;
-	    }
-        );
-
-	driftModels
-	();
-
-	nucleationModels
-	();    
-    }
 }
 
 blending
@@ -190,12 +123,9 @@ surfaceTension
     (gas and liquid)
     {
         type            constant;
-        sigma           $sigmaLiq;
+        sigma           0.07;
     }
 );
-
-interfaceCompression
-();
 
 aspectRatio
 (
@@ -219,8 +149,6 @@ drag
         //type            SchillerNaumann;
         type            Grace;
         residualRe      1e-3;
-	height_lim $LiqHt_limit;
-	height_dir 1;
         swarmCorrection
         {
             type        none;
@@ -259,9 +187,9 @@ at the interface with phase 2.
 DWH: I verified which Le goes where by determining the corresponding rho called by
 each model.
 */
-interfaceComposition.gas
+interfaceComposition
 (
-    (gas and liquid)
+    (gas in liquid)
     {
         type saturated;
         species ( water );
@@ -271,16 +199,12 @@ interfaceComposition.gas
             type ArdenBuck;
         }
     }
-);
-
-interfaceComposition.liquid
-(
-    (liquid and gas)
+    (liquid in gas)
     {
         type Henry;
         species (O2 CO2);
-        k ($He_O2 $He_CO2 ); 
-        Le $LeLiqMix;
+        k ($H_O2 $H_CO2 ); 
+        Le $LeLiq;
     }
 );
 
@@ -292,7 +216,7 @@ in the input dict.)
 When K/D is returned and multiplied by D to compute mass transfer, that D is 
 obtained from the InterfaceCompositionModel and not this Le.
 */
-diffusiveMassTransfer.gas
+massTransfer.gas
 (
     (gas in liquid)
     {
@@ -304,17 +228,17 @@ diffusiveMassTransfer.gas
     {
         type Higbie;
         //type Frossling;
-        Le $LeGas;
+        Le $LeLiq;
     }
 );
 
-diffusiveMassTransfer.liquid
+massTransfer.liquid
 (
     (gas in liquid)
     {
         type Higbie;
         //type Frossling;
-        Le $LeLiqMix;
+        Le $LeLiq;
     }
 
     (liquid in gas)
@@ -358,27 +282,6 @@ heatTransfer.liquid
 
 lift
 (
-    (gas in liquid)
-    {
-        type           wallDamped;
-
-        wallDamping
-        {
-            type       cosine;
-            Cd         3.0;
-        }
-
-        lift
-        {
-            type       Tomiyama;
-            height_lim $LiqHt_limit;
-            height_dir 1;
-            swarmCorrection
-	    {
-	        type   none;
-	    }
-        }
-    }
 );
 
 wallLubrication
@@ -387,9 +290,7 @@ wallLubrication
     {
         type            Antal;
         Cw1             -0.01;
-        Cw2              0.05;
-	height_lim $LiqHt_limit;
-	height_dir 1;
+        Cw2             -0.05;
     }
 
     (liquid in gas)
@@ -404,23 +305,22 @@ turbulentDispersion
 (
     (gas in liquid)
     {
-        type            Burns;
-        sigma           0.9;
-	height_lim $LiqHt_limit;
-	height_dir 1;
+        type            LopezDeBertodano;
+        Ctd             0.5;
     }
 
     (liquid in gas)
     {
-        type            Burns;
-        sigma           0.9;
+        type            LopezDeBertodano;
+        Ctd             0.5;
     }
 );
 
 phaseTransfer
-();
+(
+);
 
 // Minimum allowable pressure
-//pMin            10000;
+pMin            10000;
 
 // ************************************************************************* //

@@ -27,7 +27,8 @@ DH_O2	1700;
 H_CO2_298 0.83;
 DH_CO2	2400;
 
-He_CO2 #calc "$H_CO2_298 * exp($DH_CO2 *(1. / $T0 - 1./298.15))";
+He_CO2 #calc "$H_CO2_298 * exp($DH_CO2 *(1. / $Temp - 1./298.15))";
+He_O2  #calc "$H_O2_298 * exp($DH_O2 * (1. / $Temp - 1./298.15))";
 //*********************************
 LeLiqCO2 #calc "$kThermLiq / $rho0MixLiq / $D_CO2 / $CpMixLiq"; // = 74
 LeLiqMix $LeLiqCO2;
@@ -50,7 +51,7 @@ ArbyAs 2.0;
 uSupVel 0.02;
 uGas #calc "$Pmid / $Pbot * $ArbyAs * $uSupVel";
 A_Bcol #calc "3.14159 * $DiaBcol * $DiaBcol / 4.0";
-rho_gas #calc "$Pmid / 287.0 / $T0";
+rho_gas #calc "$Pmid / 287.0 / $Temp";
 mflowRate #calc "$uSupVel * $A_Bcol * $rho_gas";
 //*********************************
 intensity 0.01;
@@ -59,4 +60,4 @@ eps_gas_inlet #calc "pow(0.09,0.75) * pow($k_inlet,1.5) / ($DiaBcol / $ArbyAs * 
 eps_liq_inlet #calc "pow(0.09,0.75) * pow($k_inlet,1.5) / ($DiaBcol / $ArbyAs * 0.07)";
 omega_liq_inlet #calc "pow(0.09,-0.25) * pow($k_inlet,0.5) / ($DiaBcol / $ArbyAs * 0.07)";
 //*********************************
-O2liquid 4e-6;
+O2Liquid 4e-6;

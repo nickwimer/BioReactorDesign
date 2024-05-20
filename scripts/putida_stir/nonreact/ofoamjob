@@ -1,12 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=putidaFoamTest
-#SBATCH --partition=short
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-node=36
-#SBATCH --time=02:00:00
+#SBATCH --job-name=putida_stir_test
+#SBATCH --partition=standard
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=50
+#SBATCH --time=24:00:00
 #SBATCH --account=microenviro
 #SBATCH --output=stir.out
 #SBATCH --error=stir.err
 source /projects/microenviro/ofoam6_cray_mpich/OpenFOAM-dev/etc/bashrc
-. ./prestep.sh
-srun -n 72 putidaFoam -parallel -fileHandler collated
+srun -n 200 putidaFoam -parallel -fileHandler collated

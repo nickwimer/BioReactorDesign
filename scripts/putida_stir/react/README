@@ -1,0 +1,25 @@
+This case is assuming you have run the non-reacting case
+
+1) Take the final reconstructed solution at 600 seconds from non-reacting case and move it to
+this folder. This can be obtained by running reconstructPar -time 600 in the non-reacting case folder.
+
+2) Change the startTime in system/controldict to the current reconstructed file.
+Change final time based on how many fluid updates you will do in a 12 hour reaction 
+period. 
+
+3) Also move the constant/polymesh folder from non reacting case to constant folder here.
+This is to use the same mesh as the non-reacting case.
+
+4) Set fluid update time - this is the fluid solver is run between 2 reaction updates.
+set reaction update time - I am using 2 hours. But need to play with this to get an 
+optimal update time that is computational efficient and yields convergent results when 
+coupled with CFD.
+
+5) run the ofoamjob script.
+
+6) The code outputs a text file called timehist.dat. This gives a table with
+time, microbe_conc,  glucose, Xylose, Acetoin, BDO, OUR. There is also a file called wellmixed.dat that the 
+code generates. This is the well-mixed case without CFD which is done to verify Jim Lischeske's model.
+
+
+7) use pv_extract_analyse script to reconstruct plotfiles and average O2 and hold-up.run pvjob.
