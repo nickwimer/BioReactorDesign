@@ -21,6 +21,7 @@ WC_V_O2         25.6e-3; // m3/kmol molar volume at normal boiling temperature
 WC_V_CO2        34e-3;
 //*******diffusion coeff*************************************
 D_CO2 #calc "1.173e-16 * pow($WC_psi * $WC_M,0.5) * $Temp / $muMixLiq / pow($WC_V_CO2,0.6)";
+D_O2 #calc "1.173e-16 * pow($WC_psi * $WC_M,0.5) * $Temp / $muMixLiq / pow($WC_V_O2,0.6)";
 //*******Henry coeff*************************************
 H_O2_298 0.032;
 DH_O2	1700;
@@ -35,7 +36,9 @@ LeLiqMix $LeLiqCO2;
 PrMixLiq #calc "$CpMixLiq * $muMixLiq / $kThermLiq";
 //*********************************
 kCO2 #calc "$D_CO2*$rho0MixLiq*$CpMixLiq*$LeLiqMix";
+kO2 #calc "$D_O2*$rho0MixLiq*$CpMixLiq*$LeLiqMix";
 PrCO2 #calc "$muMixLiq*$CpMixLiq / $kCO2";
+PrO2 #calc "$muMixLiq*$CpMixLiq / $kO2";
 //*********************************
 HtBcol  10.0;
 DiaBcol 0.8;

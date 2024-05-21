@@ -17,11 +17,13 @@ FoamFile
 
 #include "$FOAM_CASE/constant/globalTransport"
 
-//type interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem;
+type interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem;
 //type interfaceCompositionPhaseChangeTwoPhaseSystem;
-type populationBalanceMultiphaseSystem;
+//type populationBalanceMultiphaseSystem;
 
 phases (gas liquid);
+
+populationBalances (bubbles);
 
 // Believe what is needed for putida is actually taken care of in globalTransport already
 /*
