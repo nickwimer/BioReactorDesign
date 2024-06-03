@@ -14,12 +14,12 @@ namespace microbemodel
     extern const double y_ms;
     extern const double y_os;
     extern const double x_max;
-    extern const double qs_max;
+    extern const double Fo_max;
+    extern const double Fs_max;
     extern const double o2_max;
-    extern const double K_e;
+    extern const double K_o;
     extern const double K_s;
     extern const double kLa;
-    extern const double chi_p;
 
     extern double X_avg;
     extern double G_avg;

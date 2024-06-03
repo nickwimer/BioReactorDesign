@@ -8,19 +8,21 @@ namespace microbemodel
     const int M=3;
     const int nvars=4;
 
-    const double y_xs = 0.009;
-    const double y_ms = 0.88;
-    const double y_os = 0.0467;
+    // Summary of parameters that need to be updated
+    // y_os, Fo_max, Fs_max, K_o, kLa
+    const double y_xs = 0.109;
+    const double y_ms = 0.3;
+    const double y_os = 0.0467; // NEED UPDATE
 
-    const double x_max = 11;
-    const double qs_max = 17;
+    const double x_max = 7.9;
+    const double Fo_max = 17; // NEED UPDATE
+    const double Fs_max = 17; // NEED UPDATE
     const double o2_max = 0.214;
 
-    const double K_e = 0.0214;
-    const double K_s = 31;
+    const double K_o = 0.0214; // NEED UPDATE 
+    const double K_s = 0.92;
 
-    const double kLa = 5;
-    const double chi_p = 0.3;
+    const double kLa = 50; // NEED UPDATE; approximated with current range provided 
 
     double X_avg=0.0;
     double G_avg=0.0;
@@ -30,9 +32,9 @@ namespace microbemodel
     {
  
         // calculate q_s
-        double F_s = solnvec[G]/(solnvec[G] + K_s);
-        double F_e = solnvec[O2]/(solnvec[O2] + K_e);
-        double q_s = qs_max*F_s*F_e;
+        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
+        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = F_s*F_e;
 
         // calculate final rates
         rhs[X] = y_xs*q_s*solnvec[X]*(1 - solnvec[X]/x_max);
@@ -80,9 +82,9 @@ namespace microbemodel
     double get_our(std::vector<double> solnvec,int nvars)
     {
         // calculate q_s
-        double F_s = solnvec[G]/(solnvec[G] + K_s);
-        double F_e = solnvec[O2]/(solnvec[O2] + K_e);
-        double q_s = qs_max*F_s*F_e;
+        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
+        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = F_s*F_e;
 
         double our = y_os*q_s*solnvec[X];
 
