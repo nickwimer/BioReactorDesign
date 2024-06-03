@@ -15,8 +15,8 @@ namespace microbemodel
     const double y_os = 0.0467; // NEED UPDATE
 
     const double x_max = 7.9;
-    const double Fo_max = 17; // NEED UPDATE
-    const double Fs_max = 17; // NEED UPDATE
+    const double Fo_max = 1.1; // NEED UPDATE
+    const double Fs_max = 1; // NEED UPDATE
     const double o2_max = 0.214;
 
     const double K_o = 0.0214; // NEED UPDATE 
