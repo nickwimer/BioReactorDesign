@@ -119,13 +119,15 @@ def integratesoln(p, f0, kLa, tfinal, exptdata, ax, nrows, ncols):
 
 if __name__ == "__main__":
 
-    f0 = np.array([0.214, 0.5, 441.458, 0])
+    # initial condition order: O2, bio, glu, muc
+    f0 = np.array([0.214, 0.5, 73.0, 0])
     kLa = 50
-    tfinal = 80
+    tfinal = 30
 
+    # parameter order: t, bio, t, glu, t, muc, t, our
     exptdata = np.loadtxt("exptdata_ma.csv")
     # parameter order: Fs_max, Fo_max, bio_max, K_o, Y_xs, Y_ms, Y_os
-    p0 = np.array([17, 17, 7.9, 0.0214, 0.109, 0.3, 0.0467])
+    p0 = np.array([2, 1, 7.9, 0.0214, 0.109, 0.3, 0.0467])
 
     nrows = 2
     ncols = 3
