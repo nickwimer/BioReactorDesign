@@ -127,7 +127,8 @@ if __name__ == "__main__":
     # parameter order: t, bio, t, glu, t, muc, t, our
     exptdata = np.loadtxt("exptdata_ma.csv")
     # parameter order: Fs_max, Fo_max, bio_max, K_o, Y_xs, Y_ms, Y_os
-    p0 = np.array([2, 1, 7.9, 0.0214, 0.109, 0.3, 0.0467])
+    # knobs that can be fiddled with: Y_os, Fo_max, Fs_max, K_o, kLa
+    p0 = np.array([1.1, 1, 7.9, 0.0214, 0.109, 0.3, 0.0467])
 
     nrows = 2
     ncols = 3
