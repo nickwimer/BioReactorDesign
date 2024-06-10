@@ -1,10 +1,10 @@
 #module purge
 #module load conda
-rm ./blockMeshDict_reactor
+#rm ./blockMeshDict_reactor
 rm -r dynamicCode
 rm -r 0
 cp -r 0.org 0
-python3 system/write_bmesh_file.py
+#python3 system/write_bmesh_file.py
 blockMesh -dict ./blockMeshDict_reactor
 stitchMesh -perfect -overwrite inside_to_hub inside_to_hub_copy
 stitchMesh -perfect -overwrite hub_to_rotor hub_to_rotor_copy
@@ -14,8 +14,8 @@ export newmeshdir=$(foamListTimes -latestTime)
 rm -rf constant/polyMesh/
 cp -r $newmeshdir/polyMesh ./constant
 rm -rf $newmeshdir
-sed -i 's/patch0/inlet/g' ./constant/polyMesh/boundary
-sed -i 's/zone0/inlet/g' ./constant/polyMesh/boundary
+# sed -i "" -e 's/patch0/inlet/g' ./constant/polyMesh/boundary
+# sed -i "" -e 's/zone0/inlet/g' ./constant/polyMesh/boundary
 rm -rf 0
 cp -r 0.org 0
-setFields
+#setFields

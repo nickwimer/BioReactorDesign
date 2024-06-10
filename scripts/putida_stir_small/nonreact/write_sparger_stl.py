@@ -2,8 +2,8 @@ import numpy as np
 from stl import mesh
 from sys import argv
 
-length=12*0.025 #12 inches
-width=1.0*0.025 #1 inch
+length=0.049
+width=0.006
 
 vertices=np.zeros((5,3));
 faces=np.zeros((4,3))
