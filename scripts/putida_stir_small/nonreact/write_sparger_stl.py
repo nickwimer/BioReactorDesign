@@ -2,7 +2,7 @@ import numpy as np
 from stl import mesh
 from sys import argv
 
-length=0.049
+length=0.030
 width=0.006
 
 vertices=np.zeros((5,3));
