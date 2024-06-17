@@ -64,3 +64,6 @@ eps_liq_inlet #calc "pow(0.09,0.75) * pow($k_inlet,1.5) / ($DiaBcol / $ArbyAs * 
 omega_liq_inlet #calc "pow(0.09,-0.25) * pow($k_inlet,0.5) / ($DiaBcol / $ArbyAs * 0.07)";
 //*********************************
 O2Liquid 4e-6;
+maLiquid 0.0;
+putidaLiquid 2e-1;
+glLiquid 50; 
