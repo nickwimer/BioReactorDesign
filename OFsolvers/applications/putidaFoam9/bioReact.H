@@ -14,6 +14,7 @@
     phaseModel& phase = fluid.multiComponentPhases()[1];
     UPtrList<volScalarField>& Y = phase.YActiveRef();
     const volScalarField& alpha2 = phase;
+    const volScalarField& rho = phase.rho();
     
     forAll(Y,i)
     {
@@ -43,7 +44,7 @@
         solnvec[microbemodel::X]  = microbemodel::X_avg;
         solnvec[microbemodel::G]  = microbemodel::G_avg;
         solnvec[microbemodel::M]  = microbemodel::M_avg;
-        solnvec[microbemodel::O2] = rho2[i]*Y2[O2id][i]*1000.0/mwt_O2; //mol/m3
+        solnvec[microbemodel::O2] = rho[i]*Y[O2id][i]*1000.0/mwt_O2; //mol/m3
         our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
     }
    
@@ -69,7 +70,7 @@
         solnvec[microbemodel::X]  = microbemodel::X_avg;
         solnvec[microbemodel::G]  = microbemodel::G_avg;
         solnvec[microbemodel::M]  = microbemodel::M_avg;
-        solnvec[microbemodel::O2] = rho2[i]*Y2[O2id][i]*1000.0/mwt_O2; //mol/m3
+        solnvec[microbemodel::O2] = rho[i]*Y[O2id][i]*1000.0/mwt_O2; //mol/m3
 
         /*Info<<"for cell "<<i<<"++++++++++++++++++++++++++++\n";
         Info<<"solnvec before:"<<solnvec[microbemodel::X]<<"\t"<<solnvec[microbemodel::G]<<"\t"<<
@@ -101,7 +102,7 @@
         solnvec[microbemodel::X]  = microbemodel::X_avg;
         solnvec[microbemodel::G]  = microbemodel::G_avg;
         solnvec[microbemodel::M]  = microbemodel::M_avg;
-        solnvec[microbemodel::O2] = rho2[i]*Y2[O2id][i]*1000.0/mwt_O2; //mol/m3
+        solnvec[microbemodel::O2] = rho[i]*Y[O2id][i]*1000.0/mwt_O2; //mol/m3
         our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars); 
     }
     our_avg=fvc::domainIntegrate(alpha2*our).value()/liqvol; 
