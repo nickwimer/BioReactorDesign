@@ -27,6 +27,7 @@ namespace microbemodel
     double X_avg=0.0;
     double G_avg=0.0;
     double M_avg=0.0;
+    double O2_avg=0.0;
 
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars)
     {
@@ -51,12 +52,16 @@ namespace microbemodel
         double current_time=t_now;
         double final_time=t_now+t_adv;
 
+
+	//std::cout << "current time as read in by advance():\t" << current_time << "\n";
+	
         std::vector<double> rhs(nvars);
         std::vector<double> solnvec_n(nvars);
 
         while(current_time < final_time)
         {
             current_time += dt;
+	    //std::cout << "current time is:\t" << current_time << "\n";
 
             //at current time level n
             solnvec_n=solnvec;
@@ -77,6 +82,7 @@ namespace microbemodel
                 solnvec[i] = solnvec_n[i] + rhs[i]*dt;
             }
         }
+
     }
 
     double get_our(std::vector<double> solnvec,int nvars)

@@ -1,4 +1,4 @@
 microbeModel.C
 putidaFoam.C
 
-EXE = $(FOAM_USER_APPBIN)/putidaFoam
+EXE = $(FOAM_USER_APPBIN)/avgPutidaFoam
