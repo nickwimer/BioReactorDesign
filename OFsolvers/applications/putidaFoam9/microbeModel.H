@@ -24,6 +24,7 @@ namespace microbemodel
     extern double X_avg;
     extern double G_avg;
     extern double M_avg;
+    extern double O2_avg;
 
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars);
     void advance(std::vector<double>& solnvec,int nvars,double t_now,double t_adv,double dt);

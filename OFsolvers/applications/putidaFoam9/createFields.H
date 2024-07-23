@@ -80,18 +80,6 @@ IOdictionary reaction_props
  )
 );
 
-IOdictionary microbe_props
-(
- IOobject
- (
-  "globalTransport",
-  runTime.constant(),
-  mesh,
-  IOobject::MUST_READ_IF_MODIFIED,
-  IOobject::NO_WRITE
- )
-);
-
 dimensionedScalar reaction_update_time
 (   "reaction_update_time",
      dimTime,
@@ -102,21 +90,15 @@ dimensionedScalar fluid_update_time
      dimTime,
      reaction_props.lookup("fluid_update_time"));
 
-
 dimensionedScalar init_microbe_conc
 (   "initial_microbe_conc",
      dimMoles/dimVolume,
-     microbe_props.lookup("putidaLiquid"));
+     reaction_props.lookup("initial_microbe_conc"));
 
 dimensionedScalar init_glucose
 (   "initial_glucose",
      dimMoles/dimVolume,
-     microbe_props.lookup("glLiquid"));
-
-dimensionedScalar init_muconate
-(   "initial_muconate",
-    dimMoles/dimVolume,
-    microbe_props.lookup("maLiquid"));
+     reaction_props.lookup("initial_glucose"));
 
 //=================================================================
 //
@@ -160,7 +142,7 @@ volScalarField muconate
   IOobject::AUTO_WRITE
  ),
  mesh,
- init_muconate
+ dimensionedScalar("muconate", dimMoles/dimVolume, 0)
  );
 
 volScalarField our

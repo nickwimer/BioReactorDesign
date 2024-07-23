@@ -11,15 +11,15 @@
     //in liquid phase
     //hardcoded under assumption that i=1 references liquid.
     //absolutely no clue if that's correct or how to pull that properly
-    phaseModel& phase = fluid.multiComponentPhases()[1];
+    //phaseModel& phase = fluid.multiComponentPhases()[1];
     UPtrList<volScalarField>& Y = phase.YActiveRef();
     const volScalarField& alpha2 = phase;
-    const volScalarField& rho = phase.rho();
+    //const volScalarField& rho = phase.rho();
     
     forAll(Y,i)
     {
         Info<<"species names:\t"<<Y[i].name()<<"\n";
-        if(Y[i].name()=="O2")
+        if(Y[i].name()=="O2.liquid")
         {
             O2id=i;
             break;
@@ -36,6 +36,7 @@
     microbemodel::X_avg  = fvc::domainIntegrate(alpha2*microbe_conc).value()/liqvol;
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*glucose).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*muconate).value()/liqvol;
+    microbemodel::O2_avg = fvc::domainIntegrate(alpha2*rho*Y[O2id]*1000/mwt_O2).value()/liqvol;    
     
     
     //find initial OUR
@@ -46,8 +47,11 @@
         solnvec[microbemodel::M]  = microbemodel::M_avg;
         solnvec[microbemodel::O2] = rho[i]*Y[O2id][i]*1000.0/mwt_O2; //mol/m3
         our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
+	Info << "At cell counter "<<i<<" in cell "<<C[i]<<"\n";
+	Info << "O2 mass frac is:\t"<<Y[O2id][i]<<"\n";
+	Info << "rho is:\t"<<rho[i]<<"\n\n";
     }
-   
+
     //average OUR
     our_avg=fvc::domainIntegrate(alpha2*our).value()/liqvol;
 
@@ -55,12 +59,13 @@
     {
         //this our is the old our that is printed
         os_timehist << reaction_time <<"\t" << microbemodel::X_avg <<
-        "\t" << microbemodel::G_avg <<
+	"\t" << microbemodel::O2_avg <<
+	"\t" << microbemodel::G_avg <<
         "\t" << microbemodel::M_avg << "\t" << our_avg << "\n";   
         os_timehist.flush(); 
     }
 
-    Info<<"Avg quantities before reaction:"<<microbemodel::X_avg<<"\t"<<microbemodel::G_avg<<"\t"<<
+    Info<<"Avg quantities before reaction:"<<microbemodel::X_avg<<"\t"<<microbemodel::O2_avg<<"\t"<<microbemodel::G_avg<<"\t"<<
          microbemodel::M_avg<<"\t"<<our_avg<<"\n";
 
     //loop over cells, populate solution vector with average quantities and local O2
