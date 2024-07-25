@@ -93,7 +93,7 @@ def residual(p, f0, kLa, tfinal, exptdata):
     # np.savetxt("soln.dat",np.transpose(np.vstack((t,np.transpose(f)))),delimiter=" ")
 
 
-def integratesoln(p, f0, kLa, tfinal, exptdata, ax, nrows, ncols):
+def integratesoln(p, f0, kLa, tfinal, exptdata, avg_comp, cell_comp, ax, nrows, ncols):
 
     t = np.linspace(0, tfinal, 1000)
     mc = setmodelconstants(p)
@@ -110,11 +110,17 @@ def integratesoln(p, f0, kLa, tfinal, exptdata, ax, nrows, ncols):
     np.savetxt("soln.dat", np.transpose(np.vstack((t, np.transpose(f)))), delimiter=" ")
     for i in range(1, NVAR):
         # plt.figure()
-        row = int((i - 1) / ncols)
+        row = int((i - 1) / (ncols-2))
         col = int((i - 1) % ncols)
-        ax[row][col].set_title(varnames[i])
-        ax[row][col].plot(t, f[:, i])
-        ax[row][col].plot(exptdata[:, 2 * i - 2], exptdata[:, 2 * i - 1], "ro")
+        
+        ax[0][i-1].set_ylabel("["+varnames[i]+"] mol/m^3")
+        ax[0][i-1].set_xlabel("time (h)")
+        ax[0][i-1].plot(exptdata[:, 2 * i - 2], exptdata[:, 2 * i - 1], "ro", label="expr")
+        ax[0][i-1].plot(t, f[:, i],"gv", fillstyle="none", label="0d")
+        ax[0][i-1].plot(avg_comp[:, 0], avg_comp[:, i+1], "k*", label="avged chem")
+        ax[0][i-1].plot(cell_comp[:, 0], cell_comp[:, i+1], color="tab:orange", label="cell-wise chem")
+        if(i == 1):
+            fig.legend(loc="upper right")
 
 
 if __name__ == "__main__":
@@ -126,12 +132,18 @@ if __name__ == "__main__":
 
     # parameter order: t, bio, t, glu, t, muc, t, our
     exptdata = np.loadtxt("exptdata_ma.csv")
+    avg_comp = np.loadtxt("timehist_avg.dat")
+    cell_comp = np.loadtxt("timehist_cell.dat")
     # parameter order: Fs_max, Fo_max, bio_max, K_o, Y_xs, Y_ms, Y_os
     # knobs that can be fiddled with: Y_os, Fo_max, Fs_max, K_o, kLa
     p0 = np.array([1.1, 1, 7.9, 0.0214, 0.109, 0.3, 0.0467])
 
-    nrows = 2
+    nrows = 1
     ncols = 3
-    (fig, ax) = plt.subplots(nrows, ncols)
-    integratesoln(p0, f0, kLa, tfinal, exptdata, ax, nrows, ncols)
+    fig = plt.figure(figsize=(15, 5))
+    ax = fig.subplots(1, 3, squeeze=False)
+    # (fig, ax) = plt.subplots(nrows, ncols)
+    integratesoln(p0, f0, kLa, tfinal, exptdata, avg_comp, cell_comp,  ax, nrows, ncols)
+    fig.suptitle('Well-mixed P. putida reaction advance for different chemistry implementations')
+    plt.savefig('chem_comp.pdf')
     plt.show()
