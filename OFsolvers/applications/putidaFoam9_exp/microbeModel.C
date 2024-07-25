@@ -22,8 +22,8 @@ namespace microbemodel
     const double y_os = 0.0467; // NEED UPDATE
 
     const double x_max = 7.9;
-    const double Fo_max = 1.1; // NEED UPDATE
-    const double Fs_max = 1; // NEED UPDATE
+    const double Fo_max = 1; // NEED UPDATE
+    const double Fs_max = 1.1; // NEED UPDATE
     const double o2_max = 0.214;
 
     const double K_o = 0.0214; // NEED UPDATE 
@@ -34,27 +34,7 @@ namespace microbemodel
     double X_avg=0.0;
     double G_avg=0.0;
     double M_avg=0.0;
-
-  /*    class sp_info{
-      string name;
-      int id;
-    };
-  
-  sp_info X;
-  X.name = "microbe_conc";
-  X.id = 0;
-
-  sp_info O2;
-  O2.name = "O2";
-  O2.id = 1;
-
-  sp_info G;
-  G.name = "glucose";
-  G.id = 2;
-
-  sp_info M;
-  M.name = "muconate";
-  M.id = 3; */
+    double O2_avg=0.0;
 
   int get_sp_id(std::string name)
   {

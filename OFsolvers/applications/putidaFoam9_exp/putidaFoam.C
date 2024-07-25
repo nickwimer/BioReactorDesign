@@ -41,7 +41,10 @@ Description
 #include "pressureReference.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
+#include "specie.H"
 #include "microbeModel.H"
+
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -84,6 +87,7 @@ int main(int argc, char *argv[])
 
     if(Pstream::master())
     {
+      Info << "Calling WellMixed.H\n";
         #include "wellMixed.H"
         os_timehist.open("timehist.dat");
     }

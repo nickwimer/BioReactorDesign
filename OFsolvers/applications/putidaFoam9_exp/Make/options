@@ -5,6 +5,7 @@ EXE_INC = \
     -I../interfacialCompositionModels/lnInclude \
     -I$(LIB_SRC)/transportModels/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
     -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
     -I$(LIB_SRC)/MomentumTransportModels/phaseCompressible/lnInclude \
@@ -21,6 +22,7 @@ EXE_LIBS = \
     -lmultiphaseReactions \
     -lphaseFluidThermophysicalTransportModels \
     -lphaseFluidReactionThermophysicalTransportModels \
+    -lspecie \
     -lfiniteVolume \
     -lfvModels \
     -lfvConstraints \

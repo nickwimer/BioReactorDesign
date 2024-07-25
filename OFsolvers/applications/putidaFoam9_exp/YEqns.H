@@ -17,6 +17,8 @@
 
         forAll(Y, i)
         {
+	  Info<< "Accessing species:\t" << Y[i].name() << "\n";
+	  Info<< "where mass fracs SHOULD be given by:\t" << Y[i] << "\n";
             fvScalarMatrix YiEqn
             (
                 phase.YiEqn(Y[i])
