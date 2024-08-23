@@ -1,0 +1,117 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  9                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions.liquid;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+reactions
+{
+    bicarbonate-1f
+    // Rate from Oliveira et al 2023 Table in Fig. 4
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "CO2 + H2O = H2CO3";
+
+        A           6.0e-2;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-1r
+    // Rate from Oliveira et al 2023 Table in Fig. 4
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H2CO3 = CO2 + H2O";
+
+        A           1.5e1;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-2f
+    // Rate from Oliveira et al 2023 Table in Fig. 4
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H2CO3 = H + HCO3";
+
+        A           1.0e11;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-2r
+    // Rate from Oliveira et al 2023 Table in Fig. 4
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H + HCO3 = H2CO3";
+
+        A           5.0e13;
+        beta        0.0;
+        Ta          0.0;
+    }
+    phosphate-buffer
+    {
+        type        reversibleArrhenius;
+
+        reaction    "H2PO4 = H + HPO4";
+
+        A           0.0; // NEEDS UPDATE
+        beta        0.0;
+        Ta          0.0;
+    }
+    MA-dissociation-1
+    // Muconic Acid Dissociation rates from Carraher et al. 2017 Supp. Material 
+    {
+        type        reversibleArrhenius;
+
+        reaction    "C6H6O4 = H + C6H5O4";
+
+        A           0.0e; // NEEDS UPDATE
+        beta        0.0;
+        Ta          0.0;
+    }
+    MA-dissociation-2
+    // Muconic Acid Dissociation rates from Carraher et al. 2017 Supp. Material
+    {
+        type        reversibleArrhenius;
+
+        reaction    "C6H5O4 = H + C6H4O4";
+
+        A           0.0; // NEEDS UPDATE
+        beta        0.0;
+        Ta          0.0;
+    }
+    AH-1
+    {
+        type        reversibleArrhenius;
+
+        reaction    "OH + NH4 = NH3 + H2O";
+
+        A           0.0; // NEEDS UPDATE
+        beta        0.0;
+        Ta          0.0;
+    }
+    AH-2
+    {
+        type        reversibleArrhenius;
+
+        reaction    "NH3 + H = NH4";
+
+        A           0.0; // NEEDS UPDATE
+        beta        0.0;
+        Ta          0.0;
+    }
+}
+
+// ************************************************************************* //

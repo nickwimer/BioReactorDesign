@@ -29,15 +29,25 @@ thermoType
 
 species
 (
-    water
-    CO2
+    H
+    OH
     O2
+    NH4
+    NH3
+    H20
+    CO2
+    H2CO3      // carbonic acid
+    HCO3       // bicarbonate
+    H2PO4
+    HPO4
     putida
-    muconate
-    glucose
+    C6H6O4     // muconic acid
+    C6H5O4
+    C6H4O4     // muconate
+    C6H12O6    // glucose
 );
 
-defaultSpecie water;
+defaultSpecie H2O;
 
 "(mixture|water)"
 {
@@ -127,7 +137,232 @@ putida
     }
 }
 
-muconate
+OH
+{
+    specie
+    {
+        molWeight   17.007;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+H
+{
+    specie
+    {
+        molWeight   1.008;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+// carbonic acid
+H2CO3
+{
+    specie
+    {
+        molWeight   62.025;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+// bicarbonate
+HCO3
+{
+    specie
+    {
+        molWeight   61.017;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+NH3
+{
+    specie
+    {
+        molWeight   17.031;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+NH4
+{
+    specie
+    {
+        molWeight   18.039;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+PHO4
+{
+    specie
+    {
+        molWeight   95.979;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+
+PH2O4
+{
+    specie
+    {
+        molWeight   96.987;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+// muconic acid
+C6H6O4
+{
+    specie
+    {
+        molWeight   142.1;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+C6H5O4
+{
+    specie
+    {
+        molWeight   141.10;
+    }
+    equationOfState
+    {
+        rho     $rho0MixLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpMixLiq;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
+    }
+    transport
+    {
+        mu          $muMixLiq;
+        Pr          $PrMixLiq;
+    }
+}
+
+// muconate
+C6H4O4 
 {
     specie
     {
@@ -140,7 +375,7 @@ muconate
     thermodynamics
     {
         Cp          $CpMixLiq;
-        Hf         -1.5879e+07;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
     }
     transport
     {
@@ -149,7 +384,8 @@ muconate
     }
 }
 
-glucose
+// glucose
+C6H12O6
 {
     specie
     {
@@ -162,7 +398,7 @@ glucose
     thermodynamics
     {
         Cp          $CpMixLiq;
-        Hf         -1.5879e+07;
+        Hf         -1.5879e+07; // NEEDS UPDATE...?
     }
     transport
     {
