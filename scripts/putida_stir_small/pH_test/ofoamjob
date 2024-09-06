@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=putida_chem_test
+#SBATCH --partition=debug
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=64
+#SBATCH --time=00:30:00
+#SBATCH --account=microenviro
+#SBATCH --output=log.out
+#SBATCH --error=log.err
+
+source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
+. ./presteps.sh
+
+decomposePar -latestTime -fileHandler collated
+srun -n 64 testingPutidaFoam -parallel -fileHandler collated
+
+# post-process
+reconstructPar -newTimes

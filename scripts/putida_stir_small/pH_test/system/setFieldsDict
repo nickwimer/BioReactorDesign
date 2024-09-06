@@ -1,0 +1,82 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  dev
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+//#include "../0.org/include"
+
+defaultFieldValues
+(
+    volScalarFieldValue alpha.gas 1
+    volScalarFieldValue alpha.liquid 0
+    //volScalarFieldValue O2.liquid 0
+    //volScalarFieldValue water.liquid 0
+    //volScalarFieldValue putida.liquid 0
+    //volScalarFieldValue glucose.liquid 0
+);
+
+regions
+(
+    boxToCell
+    {
+        box (-1.0 0.0 -1.0) (1.0 0.06749 1.0);
+        fieldValues
+        (
+            volScalarFieldValue alpha.gas 0.01
+            volScalarFieldValue alpha.liquid 0.99
+	    //volScalarFieldValue O2.liquid 4e-6
+	    //volScalarFieldValue putida.liquid 0.2
+	    //volScalarFieldValue glucose.liquid 0.5
+	    //volScalarFieldValue water.liquid 0.299996
+	    // volScalarFieldValue O2.liquid $!blob/O2Liquid
+	    // volScalarFieldValue putida.liquid $!blob/putidaLiquid
+	    // volScalarFieldValue glucose.liquid $!blob/glLiquid
+	    // volScalarFieldValue water.liquid $!blob/waterLiquid
+        );
+    }
+    /*    boxToCell
+    {
+        box (-1.0 0.03 -1.0) (1.0 0.06749 1.0);
+        fieldValues
+        (
+            volScalarFieldValue alpha.gas 0.01
+            volScalarFieldValue alpha.liquid 0.99
+	    volScalarFieldValue O2.liquid 4e-6
+	    volScalarFieldValue putida.liquid 0.2
+	    volScalarFieldValue glucose.liquid 0.2
+	    volScalarFieldValue water.liquid 0.499996
+	    // volScalarFieldValue O2.liquid $!background/O2Liquid
+	    // volScalarFieldValue putida.liquid $!background/putidaLiquid
+	    // volScalarFieldValue glucose.liquid $!background/glLiquid
+	    // volScalarFieldValue water.liquid $!background/waterLiquid
+        );
+	} */
+    /*    boxToCell
+    {
+        box (-0.005 0.03 -0.02625) (0.005 0.035 -0.01625);
+        fieldValues
+        (
+	    volScalarFieldValue alpha.gas 0.01
+            volScalarFieldValue alpha.liquid 0.99
+	    volScalarFieldValue O2.liquid $O2Liquid
+            volScalarFieldValue putida.liquid $putidaLiquid
+	    volScalarFieldValue glucose.liquid $glLiquid
+	    volScalarFieldValue water.liquid $waterLiquid
+        );
+	} */
+);
+    
+
+// ************************************************************************* //

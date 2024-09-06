@@ -1,0 +1,30 @@
+ELEMENTS
+O  H  C  P  N
+END
+SPECIES
+CO2      H2O      H2CO3    HCO3    H
+H2PO4    HPO4     OH       NH4     NH3
+C6H6O4   C6H5O4   C6H4O4
+END
+REACTIONS
+! Carbonic Acid rates from Oliveira et al 2023 Table in Fig. 4
+CO2+H2O<=>H2CO3     6.000E-2   0.000E+0    0.000E+0
+REV / 1.500E+1    0.000E+0    0.000E+0 /
+H2CO3<=>H+HCO3      5.000E+10   0.000E+0    0.000E+0
+REV / 1.000E+7    0.000E+0    0.000E+0 /
+! pKa from da Silva & Williams; calculated from assumptions + Eq 3 in Donten, VandeVondele & Hamm
+H2PO4<=>H+HPO4      4.930E+3    0.000E+0    0.000E+0
+REV / 8.000E+10    0.000E+0     0.000E+0
+! pKa from from Carraher et al. 2017 Supp. Material; calculated from assumptions + Eq 3 in Donten, VandeVondele & Hamm  
+C6H6O4<=>H+C6H5O4   1.280E+8     0.000E+0     0.000E+0
+REV / 8.000E+10    0.000E+0    0.000E+0
+C6H5O4<=>H+C6H4O4   5.050E+6    0.000E+0    0.000E+0
+REV / 8.000E+10    0.000E+0    0.000E+0
+! forward: Yang et al.
+! reverse: Keq from Appl; calculated from forward rate constant
+OH+NH4<=>NH3+H2O    1.800E+6    0.000E+0    0.000E+0
+REV / 3.150E+1    0.000E+0    0.000E+0
+! pKa from da Silva & Williams; calculated from assumptions + Eq 3 in Donten, VandeVondele & Hamm
+NH3+H<=>NH4     8.000E+10    0.000E+0    0.000E+0
+REV / 4.010E+1    0.000E+0    0.000E+0
+END
