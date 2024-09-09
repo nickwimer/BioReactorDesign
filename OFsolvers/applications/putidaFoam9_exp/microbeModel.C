@@ -11,8 +11,8 @@ namespace microbemodel
     const int nvars=5;
     std::map<std::string, int> sp_keys = {{"putida.liquid", 0},
 						  {"O2.liquid", 1},
-						  {"glucose.liquid", 2},
-						  {"muconate.liquid", 3},
+						  {"C6H12O6.liquid", 2},
+						  {"C6H6O4.liquid", 3},
 						  {"CO2.liquid", 4}};
 
     // Summary of parameters that need to be updated
@@ -36,10 +36,14 @@ namespace microbemodel
     double M_avg=0.0;
     double O2_avg=0.0;
 
-  int get_sp_id(std::string name)
-  {
-    return sp_keys[name];
-  }
+    void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id)
+    {
+      auto it = sp_keys.find(name);
+      if(it != sp_keys.end())
+	{
+	  id_map[it->second] = foam_id;
+	}
+    }
 
   
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars)

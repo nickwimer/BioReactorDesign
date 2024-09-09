@@ -1,5 +1,3 @@
-//typedef species::thermo<heRhoThermo<rhoConst<specie>>, sensibleInternalEnergy>
-//        ThermoType;
 
 {
     const vectorField& C = mesh.C();
@@ -17,15 +15,12 @@
     mwt[0] = 663.43; //putida
     mwt[1] = 31.9988; //O2
     mwt[2] = 180.156; //glucose
-    mwt[3] = 140.09; //muconate
+    mwt[3] = 142.11; //muconic acid
     mwt[4] = 44.00995; //CO2
 
     
-    //in liquid phase
-    //hardcoded i=1 references liquid.
-    //phaseModel& phase = fluid.multiComponentPhases()[1];    
+    // phase, thermo, and rho are set in createFieldRefs.H
     UPtrList<volScalarField>& Y = phase.YActiveRef();
-    //const volScalarField& rho = phase.rho();
     const volScalarField& alpha2 = phase;
 
     //dictionary dict(IFstream("thermophysicalProperties.liquid")());
@@ -33,26 +28,22 @@
     forAll(Y,i)
     {
         Info<<"species name:\t"<<Y[i].name()<<"\n";
-	id = microbemodel::get_sp_id(Y[i].name());
-	species_id[id] = i;
+	microbemodel::get_sp_id(Y[i].name(), species_id, i);
 	Info<<"OpenFOAM id is:\t"<<i<<"\n";
-	Info<<"bioReact id:\t"<<id<<"\n";
 
 	//ThermoType s_hold(dict.subDict(Y[i].name()));
 	//mwt[i] = s_hold.W();
-       	Info<<"molecular weight?\t"<< mwt[id] <<"\n";
-        if(Y[i].name()=="O2.liquid")
-        {
-            O2id=i;
-        }
-	if(Y[i].name()=="putida.liquid")
-        {
-	  Info<<"Y value for this species is:\t"<<Y[i]<<"\n";    
-        }
     }
 
+    for(i=0, i<microbemodel::nvars; i++)
+      {
+	Info << "species foam_id = " << species_id[i] << "\n";
+	Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
+	Info << "this foam species should reflect the microbe model species matching the call order of this loop \n";
+	Info << "Loop index: " << i << "\t microbe index: " << microbemodel::sp_keys[Y[species_id[i]].name()] << "\n\n";
+      }
+    
     Info << "Starting reaction update..\n";
-    Info << "O2 id is = "<<O2id<<"\tspecname:"<<Y[O2id].name()<<"\n";
 
 
     //get averaged values as mixing time scales are small compared to 
@@ -76,8 +67,8 @@
 	solnvec[microbemodel::M] = rho[i]*Y[species_id[microbemodel::M]][i]*1000.0/mwt[microbemodel::M]; //mol/m3
 	solnvec[microbemodel::CO2] = rho[i]*Y[species_id[microbemodel::CO2]][i]*1000.0/mwt[microbemodel::CO2]; //mol/m3
 
-	Info << "before putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
-	Info << "before putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
+	//Info << "before putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
+	//Info << "before putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
 	//Info << "O2 concentration for this cell is:\t" << solnvec[microbemodel::O2] << "\n";
 	/*if(Y[species_id[microbemodel::X]][i]>0.01){
 	    Info << "Location\t" << C[i] << "\n";
@@ -95,8 +86,8 @@
 	Y[species_id[microbemodel::M]][i] = solnvec[microbemodel::M]/rho[i]/1000.0*mwt[microbemodel::M];
 	Y[species_id[microbemodel::CO2]][i] = solnvec[microbemodel::CO2]/rho[i]/1000.0*mwt[microbemodel::CO2];
 
-	Info << "after putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
-	Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
+	//Info << "after putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
+	//Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
 	
 	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
     }

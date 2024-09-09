@@ -1,5 +1,6 @@
 surfaceScalarField& phi = fluid.phi();
 
+// phase set with i=1 calls liquid components
 phaseModel& phase = fluid.multiComponentPhases()[1];
 rhoThermo& thermo = phase.thermoRef();
 volScalarField& rho = thermo.rho();

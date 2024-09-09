@@ -33,7 +33,7 @@ namespace microbemodel
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars);
     void advance(std::vector<double>& solnvec,int nvars,double t_now,double t_adv,double dt);
     double get_our(std::vector<double> solnvec,int nvars);
-    int get_sp_id(std::string name);
+    void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id);
 
     class sp_info;
 }
