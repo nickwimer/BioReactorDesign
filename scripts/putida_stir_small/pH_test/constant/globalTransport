@@ -81,6 +81,7 @@ A_Bcol #calc "3.14159 * $DiaBcol * $DiaBcol / 4.0";
 rho_gas #calc "$Pmid / 287.0 / $Temp";
 //mflowRate #calc "$uSupVel * $A_Bcol * $rho_gas";
 mflowRate 5e-6;
+//mflowRate 5e-4;
 //*********************************
 intensity 0.01;
 k_inlet #calc "1.5 * pow($uSupVel * $intensity, 2)";
@@ -90,8 +91,10 @@ omega_liq_inlet #calc "pow(0.09,-0.25) * pow($k_inlet,0.5) / ($DiaBcol / $ArbyAs
 //*********************************
 O2Liquid 6.8477e-6;
 maLiquid 0.0;
+maTest 2.0e-3;
 putidaLiquid 3.31715e-4;
 glLiquid 1.3151e-2;
 hLiquid 1.007e-12;
 HPO4Liquid 1.310117e-3;
 H2PO4Liquid 5.867653e-4;
+waterTest #calc "1.0 - $O2Liquid - $maTest - $putidaLiquid - $glLiquid - $hLiquid - $HPO4Liquid - $H2PO4Liquid";

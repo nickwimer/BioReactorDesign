@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     testingPutidaFoam;
+application     pHPutidaFoam;
 
 startFrom       startTime; //startTime; //latestTime
 

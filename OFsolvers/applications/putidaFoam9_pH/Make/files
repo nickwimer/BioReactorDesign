@@ -1,0 +1,4 @@
+microbeModel.C
+putidaFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/pHPutidaFoam

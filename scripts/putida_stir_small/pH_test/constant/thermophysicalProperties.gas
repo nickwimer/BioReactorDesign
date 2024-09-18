@@ -29,7 +29,7 @@ species
 (
     CO2
     O2
-    water
+    H2O
     N2
 );
 
@@ -86,7 +86,7 @@ CO2
     }
 }
 
-water
+H2O
 {
     specie
     {

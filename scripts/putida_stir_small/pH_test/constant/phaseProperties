@@ -107,7 +107,7 @@ gas
 
 liquid
 {
-    type            multiComponentPhaseModel;
+    type          reactingPhaseModel;
     diameterModel constant;
     constantCoeffs
     {
@@ -250,7 +250,7 @@ interfaceComposition.gas
     (gas and liquid)
     {
         type saturated;
-        species ( water );
+        species ( H2O );
         Le $LeGas;
         saturationPressure
         {
