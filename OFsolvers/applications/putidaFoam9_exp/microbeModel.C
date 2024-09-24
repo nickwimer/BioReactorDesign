@@ -12,7 +12,7 @@ namespace microbemodel
     std::map<std::string, int> sp_keys = {{"putida.liquid", 0},
 						  {"O2.liquid", 1},
 						  {"C6H12O6.liquid", 2},
-						  {"C6H6O4.liquid", 3},
+						  {"C6H4O4.liquid", 3},
 						  {"CO2.liquid", 4}};
 
     // Summary of parameters that need to be updated

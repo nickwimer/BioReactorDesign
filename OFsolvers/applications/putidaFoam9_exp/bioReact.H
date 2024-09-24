@@ -15,7 +15,8 @@
     mwt[0] = 663.43; //putida
     mwt[1] = 31.9988; //O2
     mwt[2] = 180.156; //glucose
-    mwt[3] = 142.11; //muconic acid
+    // mwt[3] = 142.11; //muconic acid
+    mwt[3] = 140.09; //muconate
     mwt[4] = 44.00995; //CO2
 
     
