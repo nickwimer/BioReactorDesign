@@ -1,0 +1,35 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "0";
+    object      include;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+background
+{
+    glLiquid 0;
+    putidaLiquid  0;
+    O2Liquid  4e-6;
+    waterLiquid 0.999996;
+
+}
+
+blob
+{
+    glLiquid 0.5;
+    putidaLiquid  0.2;
+    O2Liquid  4e-6;
+    waterLiquid 0.29996;
+}
+
+
+// ************************************************************************* //

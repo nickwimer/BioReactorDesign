@@ -1,0 +1,6 @@
+# dynamicCode:
+# SHA1 = e6f73c18dfc16404a1d3aefee02b13312bfed60d
+
+SOURCE += codedFvModelTemplate.C
+
+LIB = $(PWD)/../platforms/$(WM_OPTIONS)/lib/libO2sink_e6f73c18dfc16404a1d3aefee02b13312bfed60d

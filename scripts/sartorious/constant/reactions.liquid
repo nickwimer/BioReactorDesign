@@ -1,0 +1,175 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  9                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions.liquid;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+reactions
+{
+    bicarbonate-1f
+    // Rate from Stumm & Morgan
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "CO2 + H2O = H2CO3";
+
+        A           2.50e-2;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-1r
+    // Rate from Stumm & Morgan
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H2CO3 = CO2 + H2O";
+
+        A           1.00e+1;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-2f
+    // Rate from Pocker & Bjorkquist
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H2CO3 = H + HCO3";
+
+        A           5.00e+10;
+        beta        0.0;
+        Ta          0.0;
+    }
+    bicarbonate-2r
+    // Rate from Pocker & Bjorkquist
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H + HCO3 = H2CO3";
+
+        A           1.00e+7;
+        beta        0.0;
+        Ta          0.0;
+    }
+    phosphate-buffer-1f
+    // pKa=7.21 from da Silva & Williams; Rate calculated with assumptions + Eq. 3 from Donten, VandeVondele, Hamm
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H2PO4 = H + HPO4";
+
+        A           4.93e+3;
+        beta        0.0;
+        Ta          0.0;
+    }
+    phosphate-buffer-1r
+    // Assumption from Donten, VandeVondele, Hamm
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H + HPO4 = H2PO4";
+
+        A           8.00e+10;
+        beta        0.0;
+        Ta          0.0;
+    }
+    MA-dissociation-1f
+    // pKa from Carraher et al. 2017 Supp. Material; Rate calculated with assumption + Eq. 3 from Donten, VandeVondele, Hamm 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "C6H6O4 = H + C6H5O4";
+
+        A           1.28e+8;
+        beta        0.0;
+        Ta          0.0;
+    }
+    MA-dissociation-1r
+    // Assumption from Donten, VandeVondele, Hamm 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H + C6H5O4 = C6H6O4";
+
+        A           8.00e+10;   
+        beta        0.0;
+        Ta          0.0;
+	} 
+    MA-dissociation-2f
+    // pKa from Carraher et al. 2017 Supp. Material; Rate calculated with assumption + Eq. 3 from Donten, VandeVondele, Hamm 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "C6H5O4 = H + C6H4O4";
+
+        A           5.05e+6;
+        beta        0.0;
+        Ta          0.0;
+    }
+    MA-dissociation-2r
+    // Assumption from Donten, VandeVondele, Hamm 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "H + C6H4O4 = C6H5O4";
+
+        A           8.00e+10;
+        beta        0.0;
+        Ta          0.0;
+	}
+    AH-1f
+    // Yang et al. 2021 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "OH + NH4 = NH3 + H2O";
+
+        A           1.80e+6;
+        beta        0.0;
+        Ta          0.0;
+    }
+    AH-1r
+    // K_eq from Appl (Ammonia) in Ullmann's Ency. Ind. Chem.; Rate calculated from K_eq and K_1f
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "NH3 + H2O = OH + NH4";
+
+        A           3.15e+1;
+        beta        0.0;
+        Ta          0.0;
+    }
+    AH-2f
+    // Assumption from Donten, VandeVondele, Hamm 
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "NH3 + H = NH4";
+
+        A           8.00e+10;
+        beta        0.0;
+        Ta          0.0;
+    }
+    AH-2r
+    // pKa=9.3 from da Silva & Williams; Rate calculated with assumption and Eq. 3 from Donten, VandeVondele, Hamm
+    {
+        type        irreversibleArrhenius;
+
+        reaction    "NH4 = NH3 + H";
+
+        A           4.01e+1;
+        beta        0.0;
+        Ta          0.0;
+    }
+}
+
+// ************************************************************************* //

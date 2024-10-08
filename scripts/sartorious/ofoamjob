@@ -1,0 +1,6 @@
+setFields
+decomposePar -latestTime -fileHandler collated
+mpirun -np 4 putidaFoam -parallel -fileHandler collated > log.out
+
+# post-process
+reconstructPar -newTimes
