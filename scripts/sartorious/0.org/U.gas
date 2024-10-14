@@ -27,7 +27,7 @@ boundaryField
     inlet
     {
         type            flowRateInletVelocity;
-        massFlowRate    $mflowRate;
+        massFlowRate    $mflowRate_gas;
         rho             thermo:rho.gas;
         value           $internalField;
         //type            fixedValue;

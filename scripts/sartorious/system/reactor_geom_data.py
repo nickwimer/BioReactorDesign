@@ -1,10 +1,10 @@
 import numpy as np
 
 #geometry ========
-T = 0.0425*2
+T = 0.085
 Dt = T               # Tank Diameter
 Da = 0.040              # impeller tip Diameter
-H = T*1.588             # height of reactor (includes D/4 with the air phase only)
+H = 0.135             # height of reactor (includes D/4 with the air phase only)
 nimpellers = 2 # NOT SURE
 #S_i = 0.381 # 15" impeller spacing 
 C = [0.025,0.046]
@@ -21,10 +21,10 @@ Z0 = 0.0               # bottom of reactor
 Dmrf = (Da+Dt-2*J)/2   # MRF region Diameter
 
 #mesh ========
-nr  = 90 #180 #120	      # mesh points per unit radial length
-nz  = 180 #360 #240             # mesh points per unit axial length
-Npoly = 4             # mesh points in the polygon at the axis
-Na = 6               # mesh points in the azimuthal direction
+nr  = 30 #180 #120	      # mesh points per unit radial length
+nz  = 60 #360 #240             # mesh points per unit axial length
+Npoly = 2             # mesh points in the polygon at the axis
+Na = 2               # mesh points in the azimuthal direction
 
 nbaffles = 6          # number of baffles and impeller fins
 

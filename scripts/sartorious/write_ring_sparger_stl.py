@@ -4,27 +4,28 @@ from sys import argv
 
 length=0.0049
 width=0.006
+rad=0.02
 
 vertices=np.zeros((5,3));
 faces=np.zeros((4,3))
 
-vertices[0,0]=-0.5*length
+vertices[0,0]=-0.5*length+rad
 vertices[0,1]=0.0
 vertices[0,2]=-0.5*width
 
-vertices[1,0]=0.5*length
+vertices[1,0]=0.5*length+rad
 vertices[1,1]=0.0
 vertices[1,2]=-0.5*width
 
-vertices[2,0]=0.5*length
+vertices[2,0]=0.5*length+rad
 vertices[2,1]=0.0
 vertices[2,2]=0.5*width
 
-vertices[3,0]=-0.5*length
+vertices[3,0]=-0.5*length+rad
 vertices[3,1]=0.0
 vertices[3,2]=0.5*width
 
-vertices[4,0]=0.0
+vertices[4,0]=0.0+rad
 vertices[4,1]=0.0
 vertices[4,2]=0.0
 

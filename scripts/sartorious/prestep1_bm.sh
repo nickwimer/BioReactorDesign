@@ -1,12 +1,12 @@
 #!/bin/bash
 # source activate base
-conda activate bird
+# conda activate bird
 rm ./blockMeshDict_reactor
 rm -r dynamicCode
 rm -r 0
 cp -r 0.org 0
-python3 system/write_bmesh_file.py
-conda deactivate
+# python3 system/write_bmesh_file.py
+# conda deactivate
 # source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
 # of9
 # cd run/putida_stir_small/pH_test

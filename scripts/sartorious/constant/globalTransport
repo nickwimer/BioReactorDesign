@@ -38,9 +38,11 @@ DH_CO2	2400;
 
 He_CO2 #calc "$H_CO2_298 * exp($DH_CO2 *(1. / $Temp - 1./298.15))";
 He_O2  #calc "$H_O2_298 * exp($DH_O2 * (1. / $Temp - 1./298.15))";
-//******* inlet gas species mass fractions (air) *************************
-f_CO2 0.000412;
+//******* inlet gas species mass (mole?) fractions (air) *************************
+f_N2 0.78084;
 f_O2 0.20946;
+f_AR 0.00934;
+f_CO2 0.000412;
 //*********************************
 LeLiqCO2 #calc "$kThermLiq / $rho0MixLiq / $D_CO2 / $CpMixLiq"; // = 74
 LeLiqO2  #calc "$kThermLiq / $rho0MixLiq / $D_O2 / $CpMixLiq";
@@ -64,23 +66,26 @@ Prputida #calc "$muMixLiq*$CpMixLiq / $kputida";
 //*********************************
 HtBcol  0.13498;
 DiaBcol 0.085;
-LiqHt    0.06749;
-LiqHt_limit 0.09; // Mess with this later
+//LiqHt    0.06749;
+LiqHt   0.055;
+//LiqHt_limit 0.09;
+LiqHt_limit 0.079;
 //LiqHt_limit   #calc "0.9*$HtBcol";
-// ******* Inlet conditions *********
-P0   #calc "101325.0*0.85";
-Pbot #calc "$P0+1000.0*$LiqHt*9.8";
-Pmid #calc "$P0+1000.0*0.5*$LiqHt*9.8";
+// ******* Inlet conditions (Denver alt.) *********
+P0   #calc "101325.0*0.85";             // 86126.25 
+Pbot #calc "$P0+1000.0*$LiqHt*9.8";     // 86665.25
+Pmid #calc "$P0+1000.0*0.5*$LiqHt*9.8"; // 86395.75
 
-//bubble column cross-section divided by sparger area
+// ArbyAs -> bubble column cross-section divided by sparger area
+// mass flow rate from Will: 300 cc/min -> 5e-6 m^3/s
 ArbyAs 2.0;
-uSupVel 0.00148163;
-//uSupVel 0.00740815;
-uGas #calc "$Pmid / $Pbot * $ArbyAs * $uSupVel";
-A_Bcol #calc "3.14159 * $DiaBcol * $DiaBcol / 4.0";
-rho_gas #calc "$Pmid / 287.0 / $Temp";
+uSupVel 8.811349e-4;
+//uGas #calc "$Pmid / $Pbot * $ArbyAs * $uSupVel";
+A_Bcol #calc "3.14159 * $DiaBcol * $DiaBcol / 4.0"; // 0.0056745 m^2
+rho_gas #calc "$Pmid / 287.0 / $Temp"; // 0.99300837
 //mflowRate #calc "$uSupVel * $A_Bcol * $rho_gas";
-mflowRate 5e-6;
+mflowRate_gas #calc "5e-6 * $rho_gas";
+mflowRate_liquid #calc "1.36239e-9 * $rho0MixLiq";
 //mflowRate 5e-4;
 //*********************************
 intensity 0.01;

@@ -16,6 +16,8 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
+#include "${FOAM_CASE}/constant/globalTransport";
+
 internalField   uniform (0 0 0);
 
 boundaryField
@@ -25,8 +27,10 @@ boundaryField
   
     inlet
     {
-        type               fixedValue;
-        value              $internalField;
+        type               flowRateInletVelocity;
+	massFlowRate       $mflowRate_liquid;
+	rho                thermo:rho.liquid;
+	value              $internalField;
     }
     outlet
     {
