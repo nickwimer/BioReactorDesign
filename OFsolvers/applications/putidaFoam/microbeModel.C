@@ -1,5 +1,5 @@
 #include"microbeModel.H"
-#include"bdoMathFuncs.H"
+#include<map>
 
 namespace microbemodel
 {
@@ -7,33 +7,52 @@ namespace microbemodel
     const int O2=1;
     const int G=2;
     const int M=3;
-    const int nvars=4;
+    const int CO2=4;
+    const int nvars=5;
+    std::map<std::string, int> sp_keys = {{"putida.liquid", 0},
+						  {"O2.liquid", 1},
+						  {"C6H12O6.liquid", 2},
+						  {"C6H6O4.liquid", 3},
+						  {"CO2.liquid", 4}};
 
-    const double y_xs = 0.009;
-    const double y_ms = 0.88;
-    const double y_os = 0.0467;
+    // Summary of parameters that need to be updated
+    // y_os, Fo_max, Fs_max, K_o, kLa
+    const double y_xs = 0.109;
+    const double y_ms = 0.3;
+    const double y_os = 0.0467; // NEED UPDATE
 
-    const double x_max = 11;
-    const double qs_max = 17;
+    const double x_max = 7.9;
+    const double Fo_max = 1; // NEED UPDATE
+    const double Fs_max = 1.1; // NEED UPDATE
     const double o2_max = 0.214;
 
-    const double K_e = 0.0214;
-    const double K_s = 31;
+    const double K_o = 0.0214; // NEED UPDATE 
+    const double K_s = 0.92;
 
-    const double kLa = 5;
-    const double chi_p = 0.3;
+    const double kLa = 50; // NEED UPDATE; approximated with current range provided 
 
     double X_avg=0.0;
     double G_avg=0.0;
     double M_avg=0.0;
+    double O2_avg=0.0;
 
+    void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id)
+    {
+      auto it = sp_keys.find(name);
+      if(it != sp_keys.end())
+	{
+	  id_map[it->second] = foam_id;
+	}
+    }
+
+  
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars)
     {
  
         // calculate q_s
-        double F_s = solnvec[G]/(solnvec[G] + K_s);
-        double F_e = solnvec[O2]/(solnvec[O2] + K_e);
-        double q_s = qs_max*F_s*F_e;
+        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
+        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = F_s*F_e;
 
         // calculate final rates
         rhs[X] = y_xs*q_s*solnvec[X]*(1 - solnvec[X]/x_max);
@@ -42,6 +61,7 @@ namespace microbemodel
         rhs[O2] = 0.0;
         rhs[G] = -q_s*solnvec[X];
         rhs[M] = y_ms*q_s*solnvec[X];
+	rhs[CO2] = 0.0;
 
     }
 
@@ -81,9 +101,9 @@ namespace microbemodel
     double get_our(std::vector<double> solnvec,int nvars)
     {
         // calculate q_s
-        double F_s = solnvec[G]/(solnvec[G] + K_s);
-        double F_e = solnvec[O2]/(solnvec[O2] + K_e);
-        double q_s = qs_max*F_s*F_e;
+        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
+        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = F_s*F_e;
 
         double our = y_os*q_s*solnvec[X];
 

@@ -1,8 +1,8 @@
 EXE_INC = \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/include \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/phaseSystems/lnInclude \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialModels/lnInclude \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialCompositionModels/lnInclude \
+    -I../include \
+    -I../phaseSystems/lnInclude \
+    -I../interfacialModels/lnInclude \
+    -I../interfacialCompositionModels/lnInclude \
     -I$(LIB_SRC)/transportModels/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \

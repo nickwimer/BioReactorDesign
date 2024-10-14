@@ -1,0 +1,4 @@
+SOURCE += microbeModel.C
+SOURCE += putidaFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/putidaFoam

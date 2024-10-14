@@ -4,22 +4,16 @@
 
 Info<< "Creating phaseSystem\n" << endl;
 
-autoPtr<twoPhaseSystem> fluidPtr
+autoPtr<phaseSystem> fluidPtr
 (
-    twoPhaseSystem::New(mesh)
+    phaseSystem::New(mesh)
 );
-twoPhaseSystem& fluid = fluidPtr();
-
-dimensionedScalar pMin
-(
-    "pMin",
-    dimPressure,
-    fluid
-);
+phaseSystem& fluid = fluidPtr();
+phaseSystem::phaseModelList& phases = fluid.phases();
 
 #include "gh.H"
 
-volScalarField& p = fluid.phase1().thermoRef().p();
+volScalarField& p = phases[0].thermoRef().p();
 
 Info<< "Reading field p_rgh\n" << endl;
 volScalarField p_rgh
@@ -35,20 +29,46 @@ volScalarField p_rgh
     mesh
 );
 
-label pRefCell = 0;
-scalar pRefValue = 0.0;
-setRefCell
+if (fluid.found("pMin"))
+  {
+    IOWarningInFunction(fluid)
+      << "Pressure limits, pMin and pMax, are now read from "
+      << pimple.dict().name() << endl;
+  }
+
+pressureReference pressureReference
 (
     p,
     p_rgh,
     pimple.dict(),
-    pRefCell,
-    pRefValue
+    fluid.incompressible()
 );
+
+if (fluid.incompressible())
+  {
+    p = p_rgh + fluid.rho()*gh;
+  }
+
+if (p_rgh.needReference() && fluid.incompressible())
+{
+    p += dimensionedScalar
+    (
+        "p",
+	p.dimensions(),
+        pressureReference.refValue()
+      - getRefCellValue(p, pressureReference.refCell())
+    );
+}
+
+p_rgh = p - fluid.rho()*gh;
+
 mesh.setFluxRequired(p_rgh.name());
 
+PtrList<volScalarField> rAUs;
+PtrList<surfaceScalarField> rAUfs;
+
 //Read microbe update properties============================
-IOdictionary microbe_props
+IOdictionary reaction_props
 (
  IOobject
  (
@@ -60,41 +80,66 @@ IOdictionary microbe_props
  )
 );
 
+/*
+IOdictionary microbe_props
+(
+ IOobject
+ (
+  "globalTransport",
+  runTime.constant(),
+  mesh,
+  IOobject::MUST_READ_IF_MODIFIED,
+  IOobject::NO_WRITE
+ )
+);
+*/
+
 dimensionedScalar reaction_update_time
 (   "reaction_update_time",
      dimTime,
-     microbe_props.lookup("reaction_update_time"));
+     reaction_props.lookup("reaction_update_time"));
 
 dimensionedScalar fluid_update_time
 (   "fluid_update_time",
      dimTime,
-     microbe_props.lookup("fluid_update_time"));
+     reaction_props.lookup("fluid_update_time"));
 
-dimensionedScalar init_microbe_conc
-(   "initial_microbe_conc",
-     dimMoles/dimVolume,
-     microbe_props.lookup("initial_microbe_conc"));
 
+
+/*
+scalar initial_microbe_conc = microbe_props.lookup<scalar>("putidaLiquid");
+
+scalar initial_glucose = microbe_props.lookup<scalar>("glLiquid");
+
+scalar initial_muconate = microbe_props.lookup<scalar>("maLiquid");
+*/
+/*
 dimensionedScalar init_glucose
 (   "initial_glucose",
      dimMoles/dimVolume,
-     microbe_props.lookup("initial_glucose"));
+     microbe_props.lookup("glLiquid"));
 
+dimensionedScalar init_muconate
+(   "initial_muconate",
+    dimMoles/dimVolume,
+    microbe_props.lookup("maLiquid"));
+*/
 //=================================================================
 //
 //Create volume scalars for bioeractor fields======================
-volScalarField microbe_conc
+/*
+volScalarField pH
 (
  IOobject
  (
-  "microbe_conc",
+  "pH",
   runTime.timeName(),
   mesh,
   IOobject::NO_READ,
   IOobject::AUTO_WRITE
  ),
  mesh,
- init_microbe_conc
+ 
  );
 
 volScalarField glucose
@@ -108,7 +153,7 @@ volScalarField glucose
   IOobject::AUTO_WRITE
  ),
  mesh,
- init_glucose
+ initial_glucose
  );
 
 volScalarField muconate
@@ -122,9 +167,9 @@ volScalarField muconate
   IOobject::AUTO_WRITE
  ),
  mesh,
- dimensionedScalar("muconate", dimMoles/dimVolume, 0)
+ initial_muconate
  );
-
+*/
 volScalarField our
 (
  IOobject

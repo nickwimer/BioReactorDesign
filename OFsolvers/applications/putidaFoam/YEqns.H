@@ -1,45 +1,36 @@
 {
-    autoPtr<phaseSystem::massTransferTable>
-        massTransferPtr(fluid.massTransfer());
+    autoPtr<phaseSystem::specieTransferTable>
+        specieTransferPtr(fluid.specieTransfer());
 
-    phaseSystem::massTransferTable&
-        massTransfer(massTransferPtr());
+    phaseSystem::specieTransferTable&
+        specieTransfer(specieTransferPtr());
 
-    if (!phase1.pure())
+    fluid.correctReactions();
+
+    forAll(fluid.multiComponentPhases(), multiComponentPhasei)
     {
-        UPtrList<volScalarField>& Y1 = phase1.YActiveRef();
+        phaseModel& phase = fluid.multiComponentPhases()[multiComponentPhasei];
 
-        forAll(Y1, i)
+        UPtrList<volScalarField>& Y = phase.YActiveRef();
+        const volScalarField& alpha = phase;
+        const volScalarField& rho = phase.rho();
+
+        forAll(Y, i)
         {
-            fvScalarMatrix Y1iEqn
+	  // Info<< "Accessing species:\t" << Y[i].name() << "\n";
+	  // Info<< "where mass fracs SHOULD be given by:\t" << Y[i] << "\n";
+            fvScalarMatrix YiEqn
             (
-                phase1.YiEqn(Y1[i])
+                phase.YiEqn(Y[i])
              ==
-               *massTransfer[Y1[i].name()]
-              + fvOptions(alpha1, rho1, Y1[i])
+               *specieTransfer[Y[i].name()]
+              + fvModels.source(alpha, rho, Y[i])
             );
 
-            Y1iEqn.relax();
-            Y1iEqn.solve(mesh.solver("Yi"));
+            YiEqn.relax();
+            YiEqn.solve("Yi");
         }
     }
 
-    if (!phase2.pure())
-    {
-        UPtrList<volScalarField>& Y2 = phase2.YActiveRef();
-
-        forAll(Y2, i)
-        {
-            fvScalarMatrix Y2iEqn
-            (
-                phase2.YiEqn(Y2[i])
-             ==
-               *massTransfer[Y2[i].name()]
-              + fvOptions(alpha2, rho2, Y2[i])
-            );
-
-            Y2iEqn.relax();
-            Y2iEqn.solve(mesh.solver("Yi"));
-        }
-    }
+    fluid.correctSpecies();
 }

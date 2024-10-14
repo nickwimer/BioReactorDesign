@@ -1,5 +1,4 @@
-bdoMathFuncs.C
 microbeModel.C
-bdoFoam.C
+putidaFoam.C
 
-EXE = $(FOAM_APPBIN)/bdoFoam
+EXE = $(FOAM_USER_APPBIN)/putidaFoam

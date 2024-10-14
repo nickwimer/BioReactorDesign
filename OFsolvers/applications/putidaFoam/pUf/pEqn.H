@@ -1,69 +1,74 @@
-surfaceScalarField alphaf1("alphaf1", fvc::interpolate(alpha1));
-surfaceScalarField alphaf2("alphaf2", scalar(1) - alphaf1);
+// Face volume fractions
+PtrList<surfaceScalarField> alphafs(phases.size());
+PtrList<surfaceScalarField> alphaRho0fs(phases.size());
+forAll(phases, phasei)
+{
+    phaseModel& phase = phases[phasei];
+    const volScalarField& alpha = phase;
 
-surfaceScalarField alphaRhof10
-(
-    "alphaRhof10",
-    fvc::interpolate
+    alphafs.set(phasei, fvc::interpolate(alpha).ptr());
+    alphafs[phasei].rename("pEqn" + alphafs[phasei].name());
+
+    alphaRho0fs.set
     (
-        max(alpha1.oldTime(), phase1.residualAlpha())
-       *rho1.oldTime()
-    )
-);
-
-surfaceScalarField alphaRhof20
-(
-    "alphaRhof20",
-    fvc::interpolate
-    (
-        max(alpha2.oldTime(), phase2.residualAlpha())
-       *rho2.oldTime()
-    )
-);
-
-// Drag coefficient
-const surfaceScalarField Kdf("Kdf", fluid.Kdf());
+        phasei,
+        (
+            fvc::interpolate
+            (
+                max(alpha.oldTime(), phase.residualAlpha())
+               *phase.rho()().oldTime()
+            )
+        ).ptr()
+    );
+}
 
 // Diagonal coefficients
-PtrList<surfaceScalarField> AFfs(fluid.AFfs());
+rAUfs.clear();
+rAUfs.setSize(phases.size());
+{
+    PtrList<surfaceScalarField> AFfs(fluid.AFfs());
 
-PtrList<surfaceScalarField> rAUfs;
-rAUfs.append
-(
-    new surfaceScalarField
-    (
-        IOobject::groupName("rAUf", phase1.name()),
-        1.0
-       /(
-            byDt(alphaRhof10)
-          + fvc::interpolate(U1Eqn.A())
-          + AFfs[0]
-        )
-    )
-);
-rAUfs.append
-(
-    new surfaceScalarField
-    (
-        IOobject::groupName("rAUf", phase2.name()),
-        1.0
-       /(
-            byDt(alphaRhof20)
-          + fvc::interpolate(U2Eqn.A())
-          + AFfs[0]
-        )
-    )
-);
-const surfaceScalarField& rAUf1 = rAUfs[0];
-const surfaceScalarField& rAUf2 = rAUfs[1];
+    forAll(fluid.movingPhases(), movingPhasei)
+    {
+        phaseModel& phase = fluid.movingPhases()[movingPhasei];
 
-AFfs.clear();
+        rAUfs.set
+        (
+            phase.index(),
+            new surfaceScalarField
+            (
+                IOobject::groupName("rAUf", phase.name()),
+                1.0
+               /(
+                    byDt(alphaRho0fs[phase.index()])
+                  + fvc::interpolate(UEqns[phase.index()].A())
+                  + AFfs[phase.index()]
+                )
+            )
+        );
+    }
+}
+fluid.fillFields("rAUf", dimTime/dimDensity, rAUfs);
+
+// Phase diagonal coefficients
+PtrList<surfaceScalarField> alpharAUfs(phases.size());
+forAll(phases, phasei)
+{
+    phaseModel& phase = phases[phasei];
+    alpharAUfs.set
+    (
+        phase.index(),
+        (
+            max(alphafs[phase.index()], phase.residualAlpha())
+           *rAUfs[phase.index()]
+        ).ptr()
+    );
+}
 
 // Explicit force fluxes
 PtrList<surfaceScalarField> phiFfs(fluid.phiFfs(rAUfs));
-const surfaceScalarField& phiFf1 = phiFfs[0];
-const surfaceScalarField& phiFf2 = phiFfs[1];
 
+// --- Pressure corrector loop
 while (pimple.correct())
 {
     volScalarField rho("rho", fluid.rho());
@@ -71,335 +76,271 @@ while (pimple.correct())
     // Correct p_rgh for consistency with p and the updated densities
     p_rgh = p - rho*gh;
 
-    surfaceScalarField rhof1(fvc::interpolate(rho1));
-    surfaceScalarField rhof2(fvc::interpolate(rho2));
-
     // Correct fixed-flux BCs to be consistent with the velocity BCs
-    MRF.correctBoundaryFlux(U1, phi1);
-    MRF.correctBoundaryFlux(U2, phi2);
-
-    const surfaceScalarField alpharAUf1
-    (
-        IOobject::groupName("alpharAUf", phase1.name()),
-        max(alphaf1, phase1.residualAlpha())*rAUf1
-    );
-
-    const surfaceScalarField alpharAUf2
-    (
-        IOobject::groupName("alpharAUf", phase2.name()),
-        max(alphaf2, phase2.residualAlpha())*rAUf2
-    );
+    fluid.correctBoundaryFlux();
 
     // Combined buoyancy and force fluxes
-    const surfaceScalarField ghSnGradRho
-    (
-        "ghSnGradRho",
-        ghf*fvc::snGrad(rho)*mesh.magSf()
-    );
+    PtrList<surfaceScalarField> phigFs(phases.size());
+    {
+        const surfaceScalarField ghSnGradRho
+        (
+            "ghSnGradRho",
+            ghf*fvc::snGrad(rho)*mesh.magSf()
+        );
 
-    const surfaceScalarField phigF1
-    (
-        alpharAUf1
-       *(
-            ghSnGradRho
-          - alphaf2*(rhof1 - rhof2)*(g & mesh.Sf())
-        )
-      + phiFf1
-    );
+        forAll(phases, phasei)
+        {
+            phaseModel& phase = phases[phasei];
 
-    const surfaceScalarField phigF2
-    (
-        alpharAUf2
-       *(
-            ghSnGradRho
-          - alphaf1*(rhof2 - rhof1)*(g & mesh.Sf())
-        )
-      + phiFf2
-    );
+            phigFs.set
+            (
+                phasei,
+                (
+                    alpharAUfs[phasei]
+                   *(
+                       ghSnGradRho
+                     - (fvc::interpolate(phase.rho() - rho))*(g & mesh.Sf())
+                     - fluid.surfaceTension(phase)*mesh.magSf()
+                    )
+                ).ptr()
+            );
 
-    // Predicted fluxes
-    surfaceScalarField phiHbyA1
-    (
-        IOobject::groupName("phiHbyA", phase1.name()),
-        phi1
-    );
+            if (phiFfs.set(phasei))
+            {
+                phigFs[phasei] += phiFfs[phasei];
+            }
+        }
+    }
 
-    phiHbyA1 =
-        rAUf1
-       *(
-            alphaRhof10*byDt(MRF.absolute(phi1.oldTime()))
-          + fvc::flux(U1Eqn.H())
-        )
-      - phigF1;
+    // Predicted fluxes for each phase
+    PtrList<surfaceScalarField> phiHbyAs(phases.size());
+    forAll(fluid.movingPhases(), movingPhasei)
+    {
+        phaseModel& phase = fluid.movingPhases()[movingPhasei];
 
-    surfaceScalarField phiHbyA2
-    (
-        IOobject::groupName("phiHbyA", phase2.name()),
-        phi2
-    );
+        phiHbyAs.set
+        (
+            phase.index(),
+            constrainPhiHbyA
+            (
+                rAUfs[phase.index()]
+               *(
+                   fvc::flux(UEqns[phase.index()].H())
+                 + alphaRho0fs[phase.index()]
+                  *byDt
+                   (
+                       phase.Uf().valid()
+                     ? (mesh.Sf() & phase.Uf()().oldTime())
+                     : MRF.absolute(phase.phi()().oldTime())
+                   )
+                )
+              - phigFs[phase.index()],
+                phase.U(),
+                p_rgh
+            )
+        );
+    }
+    fluid.fillFields("phiHbyA", dimForce/dimDensity/dimVelocity, phiHbyAs);
 
-    phiHbyA2 =
-        rAUf2
-       *(
-            alphaRhof20*byDt(MRF.absolute(phi2.oldTime()))
-          + fvc::flux(U2Eqn.H())
-        )
-      - phigF2;
-
-    // Drag fluxes
+    // Add explicit drag forces and fluxes
     PtrList<surfaceScalarField> phiKdPhifs(fluid.phiKdPhifs(rAUfs));
-    const surfaceScalarField& phiKdPhif1 = phiKdPhifs[0];
-    const surfaceScalarField& phiKdPhif2 = phiKdPhifs[1];
+
+    forAll(phases, phasei)
+    {
+        if (phiKdPhifs.set(phasei))
+        {
+            phiHbyAs[phasei] -= phiKdPhifs[phasei];
+        }
+    }
 
     // Total predicted flux
     surfaceScalarField phiHbyA
     (
-        "phiHbyA",
-        alphaf1*(phiHbyA1 - phiKdPhif1) + alphaf2*(phiHbyA2 - phiKdPhif2)
+        IOobject
+        (
+            "phiHbyA",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar(dimFlux, 0)
     );
+
+    forAll(phases, phasei)
+    {
+        phiHbyA += alphafs[phasei]*phiHbyAs[phasei];
+    }
 
     MRF.makeRelative(phiHbyA);
-
-    phiKdPhifs.clear();
+    fvc::makeRelative(phiHbyA, phases[0].U());
 
     // Construct pressure "diffusivity"
-    const surfaceScalarField rAUf
+    surfaceScalarField rAUf
     (
-        "rAUf",
-        mag(alphaf1*alpharAUf1 + alphaf2*alpharAUf2)
+        IOobject
+        (
+            "rAUf",
+            runTime.timeName(),
+            mesh
+        ),
+        mesh,
+        dimensionedScalar(dimensionSet(-1, 3, 1, 0, 0), 0)
     );
+
+    forAll(phases, phasei)
+    {
+        rAUf += alphafs[phasei]*alpharAUfs[phasei];
+    }
+
+    rAUf = mag(rAUf);
 
     // Update the fixedFluxPressure BCs to ensure flux consistency
-    setSnGrad<fixedFluxPressureFvPatchScalarField>
-    (
-        p_rgh.boundaryFieldRef(),
+    {
+        surfaceScalarField::Boundary phib
         (
-            phiHbyA.boundaryField()
-          - (
-                alphaf1.boundaryField()*phi1.boundaryField()
-              + alphaf2.boundaryField()*phi2.boundaryField()
-            )
-        )/(mesh.magSf().boundaryField()*rAUf.boundaryField())
-    );
+            surfaceScalarField::Internal::null(),
+            phi.boundaryField()
+        );
+        phib = 0;
 
-    // Construct the compressibility parts of the pressure equation
-    tmp<fvScalarMatrix> pEqnComp1, pEqnComp2;
-    if (phase1.compressible())
-    {
-        if (pimple.transonic())
+        forAll(phases, phasei)
         {
-            surfaceScalarField phid1
+            phaseModel& phase = phases[phasei];
+            phib +=
+                alphafs[phasei].boundaryField()*phase.phi()().boundaryField();
+        }
+
+        setSnGrad<fixedFluxPressureFvPatchScalarField>
+        (
+            p_rgh.boundaryFieldRef(),
             (
-                IOobject::groupName("phid", phase1.name()),
-                fvc::interpolate(psi1)*phi1
-            );
-
-            pEqnComp1 =
-                (
-                    fvc::ddt(alpha1, rho1) + fvc::div(phase1.alphaRhoPhi())
-                  - fvc::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), rho1)
-                )/rho1
-              + correction
-                (
-                    (alpha1/rho1)*
-                    (
-                        psi1*fvm::ddt(p_rgh)
-                      + fvm::div(phid1, p_rgh) - fvm::Sp(fvc::div(phid1), p_rgh)
-                    )
-                );
-
-            pEqnComp1.ref().relax();
-        }
-        else
-        {
-            pEqnComp1 =
-                (
-                    fvc::ddt(alpha1, rho1) + fvc::div(phase1.alphaRhoPhi())
-                  - fvc::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), rho1)
-                )/rho1
-              + (alpha1*psi1/rho1)*correction(fvm::ddt(p_rgh));
-        }
-    }
-    if (phase2.compressible())
-    {
-        if (pimple.transonic())
-        {
-            surfaceScalarField phid2
-            (
-                IOobject::groupName("phid", phase2.name()),
-                fvc::interpolate(psi2)*phi2
-            );
-
-            pEqnComp2 =
-                (
-                    fvc::ddt(alpha2, rho2) + fvc::div(phase2.alphaRhoPhi())
-                  - fvc::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), rho2)
-                )/rho2
-              + correction
-                (
-                    (alpha2/rho2)*
-                    (
-                        psi2*fvm::ddt(p_rgh)
-                      + fvm::div(phid2, p_rgh) - fvm::Sp(fvc::div(phid2), p_rgh)
-                    )
-                );
-
-            pEqnComp2.ref().relax();
-        }
-        else
-        {
-            pEqnComp2 =
-                (
-                    fvc::ddt(alpha2, rho2) + fvc::div(phase2.alphaRhoPhi())
-                  - fvc::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), rho2)
-                )/rho2
-              + (alpha2*psi2/rho2)*correction(fvm::ddt(p_rgh));
-        }
+                phiHbyA.boundaryField() - phib
+            )/(mesh.magSf().boundaryField()*rAUf.boundaryField())
+        );
     }
 
-    // Add option sources
-    {
-        if (fvOptions.appliesToField(rho1.name()))
-        {
-            tmp<fvScalarMatrix> optEqn1 = fvOptions(alpha1, rho1);
-            if (pEqnComp1.valid())
-            {
-                pEqnComp1.ref() -= (optEqn1 & rho1)/rho1;
-            }
-            else
-            {
-                pEqnComp1 = fvm::Su(- (optEqn1 & rho1)/rho1, p_rgh);
-            }
-        }
-        if (fvOptions.appliesToField(rho2.name()))
-        {
-            tmp<fvScalarMatrix> optEqn2 = fvOptions(alpha2, rho2);
-            if (pEqnComp2.valid())
-            {
-                pEqnComp2.ref() -= (optEqn2 & rho2)/rho2;
-            }
-            else
-            {
-                pEqnComp2 = fvm::Su(- (optEqn2 & rho2)/rho2, p_rgh);
-            }
-        }
-    }
-
-    // Add mass transfer
-    {
-        PtrList<volScalarField> dmdts(fluid.dmdts());
-        if (dmdts.set(0))
-        {
-            if (pEqnComp1.valid())
-            {
-                pEqnComp1.ref() -= dmdts[0]/rho1;
-            }
-            else
-            {
-                pEqnComp1 = fvm::Su(- dmdts[0]/rho1, p_rgh);
-            }
-        }
-        if (dmdts.set(1))
-        {
-            if (pEqnComp2.valid())
-            {
-                pEqnComp2.ref() -= dmdts[1]/rho2;
-            }
-            else
-            {
-                pEqnComp2 = fvm::Su(- dmdts[1]/rho2, p_rgh);
-            }
-        }
-    }
+    // Compressible pressure equations
+    #include "pEqnComps.H"
 
     // Cache p prior to solve for density update
-    volScalarField p_rgh_0("p_rgh_0", p_rgh);
+    volScalarField p_rgh_0(p_rgh);
 
+    // Iterate over the pressure equation to correct for non-orthogonality
     while (pimple.correctNonOrthogonal())
     {
+        // Construct the transport part of the pressure equation
         fvScalarMatrix pEqnIncomp
         (
             fvc::div(phiHbyA)
           - fvm::laplacian(rAUf, p_rgh)
         );
 
+        // Solve
         {
             fvScalarMatrix pEqn(pEqnIncomp);
 
-            if (pEqnComp1.valid())
+            forAll(phases, phasei)
             {
-                pEqn += pEqnComp1();
+                pEqn += pEqnComps[phasei];
             }
 
-            if (pEqnComp2.valid())
+            if (fluid.incompressible())
             {
-                pEqn += pEqnComp2();
+                pEqn.setReference
+                (
+                    pressureReference.refCell(),
+                    pressureReference.refValue()
+                );
             }
 
-            solve
-            (
-                pEqn,
-                mesh.solver(p_rgh.select(pimple.finalInnerIter()))
-            );
+            pEqn.solve();
         }
 
+        // Correct fluxes and velocities on last non-orthogonal iteration
         if (pimple.finalNonOrthogonalIter())
         {
-            surfaceScalarField mSfGradp("mSfGradp", pEqnIncomp.flux()/rAUf);
-
             phi = phiHbyA + pEqnIncomp.flux();
 
-            const surfaceScalarField phi1s
-            (
-                phiHbyA1 + alpharAUf1*mSfGradp
-            );
+            surfaceScalarField mSfGradp("mSfGradp", pEqnIncomp.flux()/rAUf);
 
-            const surfaceScalarField phi2s
-            (
-                phiHbyA2 + alpharAUf2*mSfGradp
-            );
-
-            surfaceScalarField phir
-            (
-                ((phi2s + rAUf2*Kdf*phi1s) - (phi1s + rAUf1*Kdf*phi2s))
-               /(1 - rAUf1*rAUf2*sqr(Kdf))
-            );
-
-            phi1 = phi - alphaf2*phir;
-            phi2 = phi + alphaf1*phir;
-
-            U1 = fvc::reconstruct(MRF.absolute(phi1));
-            U1.correctBoundaryConditions();
-            fvOptions.correct(U1);
-
-            U2 = fvc::reconstruct(MRF.absolute(phi2));
-            U2.correctBoundaryConditions();
-            fvOptions.correct(U2);
-
-            // Set the phase dilatation rates
-            if (pEqnComp1.valid())
+            forAll(fluid.movingPhases(), movingPhasei)
             {
-                phase1.divU(-pEqnComp1 & p_rgh);
+                phaseModel& phase = fluid.movingPhases()[movingPhasei];
+
+                phase.phiRef() =
+                    phiHbyAs[phase.index()]
+                  + alpharAUfs[phase.index()]*mSfGradp;
+
+                // Set the phase dilatation rate
+                phase.divU(-pEqnComps[phase.index()] & p_rgh);
             }
-            if (pEqnComp2.valid())
+
+            if (partialElimination)
             {
-                phase2.divU(-pEqnComp2 & p_rgh);
+                fluid.partialEliminationf(rAUfs, alphafs, phiKdPhifs);
+            }
+            else
+            {
+                forAll(fluid.movingPhases(), movingPhasei)
+                {
+                    phaseModel& phase = fluid.movingPhases()[movingPhasei];
+
+                    MRF.makeRelative(phase.phiRef());
+                    fvc::makeRelative(phase.phiRef(), phase.U());
+                }
+            }
+
+            forAll(fluid.movingPhases(), movingPhasei)
+            {
+                phaseModel& phase = fluid.movingPhases()[movingPhasei];
+
+                phase.URef() = fvc::reconstruct
+                (
+                    fvc::absolute(MRF.absolute(phase.phi()), phase.U())
+                );
+
+                phase.URef().correctBoundaryConditions();
+                phase.correctUf();
+                fvConstraints.constrain(phase.URef());
             }
         }
     }
 
     // Update and limit the static pressure
-    p = max(p_rgh + rho*gh, pMin);
+    p = p_rgh + rho*gh;
+    fvConstraints.constrain(p);
+
+    // Account for static pressure reference
+    if (p_rgh.needReference() && fluid.incompressible())
+    {
+        p += dimensionedScalar
+        (
+            "p",
+            p.dimensions(),
+            pressureReference.refValue()
+          - getRefCellValue(p, pressureReference.refCell())
+        );
+    }
 
     // Limit p_rgh
     p_rgh = p - rho*gh;
 
     // Update densities from change in p_rgh
-    rho1 += psi1*(p_rgh - p_rgh_0);
-    rho2 += psi2*(p_rgh - p_rgh_0);
+    forAll(phases, phasei)
+    {
+        phaseModel& phase = phases[phasei];
+        phase.thermoRef().rho() += phase.thermo().psi()*(p_rgh - p_rgh_0);
+    }
 
     // Correct p_rgh for consistency with p and the updated densities
     rho = fluid.rho();
     p_rgh = p - rho*gh;
     p_rgh.correctBoundaryConditions();
+}
+
+if (!fluid.implicitPhasePressure())
+{
+    rAUfs.clear();
 }

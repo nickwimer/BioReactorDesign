@@ -5,43 +5,45 @@ for (int Ecorr=0; Ecorr<nEnergyCorrectors; Ecorr++)
     autoPtr<phaseSystem::heatTransferTable>
         heatTransferPtr(fluid.heatTransfer());
 
-    phaseSystem::heatTransferTable&
-        heatTransfer = heatTransferPtr();
+    phaseSystem::heatTransferTable& heatTransfer = heatTransferPtr();
 
-    if (!phase1.isothermal())
+    forAll(fluid.anisothermalPhases(), anisothermalPhasei)
     {
-        fvScalarMatrix E1Eqn
+        phaseModel& phase = fluid.anisothermalPhases()[anisothermalPhasei];
+
+        const volScalarField& alpha = phase;
+        tmp<volScalarField> tRho = phase.rho();
+        const volScalarField& rho = tRho();
+        tmp<volVectorField> tU = phase.U();
+        const volVectorField& U = tU();
+
+        fvScalarMatrix EEqn
         (
-            phase1.heEqn()
+            phase.heEqn()
          ==
-           *heatTransfer[phase1.name()]
-          + alpha1*rho1*(U1&g)
-          + fvOptions(alpha1, rho1, thermo1.he())
+           *heatTransfer[phase.name()]
+          + alpha*rho*(U&g)
+          + fvModels.source(alpha, rho, phase.thermoRef().he())
         );
 
-        E1Eqn.relax();
-        fvOptions.constrain(E1Eqn);
-        E1Eqn.solve();
-        fvOptions.correct(thermo1.he());
-    }
-
-    if (!phase2.isothermal())
-    {
-        fvScalarMatrix E2Eqn
-        (
-            phase2.heEqn()
-         ==
-           *heatTransfer[phase2.name()]
-          + alpha2*rho2*(U2&g)
-          + fvOptions(alpha2, rho2, phase2.thermoRef().he())
-        );
-
-        E2Eqn.relax();
-        fvOptions.constrain(E2Eqn);
-        E2Eqn.solve();
-        fvOptions.correct(thermo2.he());
+        EEqn.relax();
+        fvConstraints.constrain(EEqn);
+        EEqn.solve();
+        fvConstraints.constrain(phase.thermoRef().he());
     }
 
     fluid.correctThermo();
-    fluid.correct();
+    fluid.correctContinuityError();
+}
+
+
+forAll(phases, phasei)
+{
+    phaseModel& phase = phases[phasei];
+
+    Info<< phase.name() << " min/max T "
+        << min(phase.thermo().T()).value()
+        << " - "
+        << max(phase.thermo().T()).value()
+        << endl;
 }

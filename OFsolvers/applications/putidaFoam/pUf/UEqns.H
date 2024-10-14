@@ -1,7 +1,6 @@
 Info<< "Constructing face momentum equations" << endl;
 
-fvVectorMatrix U1Eqn(U1, rho1.dimensions()*U1.dimensions()*dimVol/dimTime);
-fvVectorMatrix U2Eqn(U2, rho2.dimensions()*U2.dimensions()*dimVol/dimTime);
+PtrList<fvVectorMatrix> UEqns(phases.size());
 
 {
     fluid.momentumTransfer(); // !!! Update coefficients shouldn't be necessary
@@ -13,31 +12,29 @@ fvVectorMatrix U2Eqn(U2, rho2.dimensions()*U2.dimensions()*dimVol/dimTime);
     phaseSystem::momentumTransferTable&
         momentumTransfer(momentumTransferPtr());
 
+    forAll(fluid.movingPhases(), movingPhasei)
     {
-        U1Eqn =
-        (
-            phase1.UfEqn()
-         ==
-           *momentumTransfer[phase1.name()]
-          + fvOptions(alpha1, rho1, U1)
-        );
-        U1Eqn.relax();
-        fvOptions.constrain(U1Eqn);
-        U1.correctBoundaryConditions();
-        fvOptions.correct(U1);
-    }
+        phaseModel& phase = fluid.movingPhases()[movingPhasei];
 
-    {
-        U2Eqn =
+        const volScalarField& alpha = phase;
+        const volScalarField& rho = phase.rho();
+        volVectorField& U = phase.URef();
+
+        UEqns.set
         (
-            phase2.UfEqn()
-         ==
-           *momentumTransfer[phase2.name()]
-          + fvOptions(alpha2, rho2, U2)
+            phase.index(),
+            new fvVectorMatrix
+            (
+                phase.UfEqn()
+             ==
+               *momentumTransfer[phase.name()]
+              + fvModels.source(alpha, rho, U)
+            )
         );
-        U2Eqn.relax();
-        fvOptions.constrain(U2Eqn);
-        U2.correctBoundaryConditions();
-        fvOptions.correct(U2);
+
+        UEqns[phase.index()].relax();
+        fvConstraints.constrain(UEqns[phase.index()]);
+        U.correctBoundaryConditions();
+        fvConstraints.constrain(U);
     }
 }
