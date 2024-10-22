@@ -113,12 +113,12 @@ def integratesoln(p, f0, kLa, tfinal, exptdata, avg_comp, cell_comp, ax, nrows, 
         row = int((i - 1) / (ncols-2))
         col = int((i - 1) % ncols)
         
-        ax[0][i-1].set_ylabel("["+varnames[i]+"] mol/m^3")
-        ax[0][i-1].set_xlabel("time (h)")
+        ax[0][i-1].set_ylabel("["+varnames[i]+"] mol/m^3", fontsize=14)
+        ax[0][i-1].set_xlabel("time (h)", fontsize=14)
         ax[0][i-1].plot(exptdata[:, 2 * i - 2], exptdata[:, 2 * i - 1], "ro", label="expr")
-        ax[0][i-1].plot(t, f[:, i],"gv", fillstyle="none", label="0d")
-        ax[0][i-1].plot(avg_comp[:, 0], avg_comp[:, i+1], "k*", label="avged chem")
-        ax[0][i-1].plot(cell_comp[:, 0], cell_comp[:, i+1], color="tab:orange", label="cell-wise chem")
+        # ax[0][i-1].plot(t, f[:, i],"gv", fillstyle="none", label="0d")
+        # ax[0][i-1].plot(avg_comp[:, 0], avg_comp[:, i+1], "k*", label="avged chem")
+        ax[0][i-1].plot(cell_comp[:, 0], cell_comp[:, i+1], label="cell-wise chem")
         if(i == 1):
             fig.legend(loc="upper right")
 
@@ -144,6 +144,6 @@ if __name__ == "__main__":
     ax = fig.subplots(1, 3, squeeze=False)
     # (fig, ax) = plt.subplots(nrows, ncols)
     integratesoln(p0, f0, kLa, tfinal, exptdata, avg_comp, cell_comp,  ax, nrows, ncols)
-    fig.suptitle('Well-mixed P. putida reaction advance for different chemistry implementations')
+    fig.suptitle('Well-mixed P. putida reaction advance compared to experimental data', fontsize=14)
     plt.savefig('chem_comp.pdf')
     plt.show()
