@@ -1,0 +1,24 @@
+Juan Flux Units from ME Surrogate model:
+mmol/gDCW/h EXCEPT for biomass dilution, which is 1/h
+
+(Current) Julia Flux Units from CFD biokinetic model:
+mol/m^3/h EXCEPT for biomass, which is kg/m^3/h (expr data in g/L or gDCW/L from Will; 1g/L = 1kg/m^3)
+
+PROCEDURE OUTLINE:
+CFD -> get current O2 and Glucose flux to feed into Juan's ME Surrogate model
+MES -> input O2 and Glucose flux; output Muconate and Biomass flux (and later CO2/other stuff)
+CFD -> use MES-generated Muconate and Biomass fluxes along with CFD-generated O2 and Glucose fluxes to evolve ODE system
+
+QUESTIONS:
+1. Need to do some sort of splitting? If evolving ODE_model in fit_bioreaction_model.py, need to generate rglu and roxy first then feed those to ME surrogate to get rbio and rmuc.  
+
+Conversions to reconcile flux units:
+CFD to MES: 
+    EX_o2_e = roxy / bio  => mmol/gDCW/h
+    EX_glc_D_e = rglu / bio => mmol/gDCW/h
+MES back to CFD:
+    rbio = biomass_dilution * bio => kgDCW/m^3/h
+    rmuc = EX_ccmuac_e * bio => mol/m^3/h
+EVOLVE: roxy, rglu, rbio, rmuc (all CFD units)
+
+Not sure about the gDCW part but that's what I'm thinking.

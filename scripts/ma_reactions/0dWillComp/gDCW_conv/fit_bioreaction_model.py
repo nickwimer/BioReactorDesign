@@ -12,7 +12,7 @@ def setmodelconstants(p):
     modelConstants = {}
     # modelConstants["Fs_max"] = p[0]  # molS/m^3 / kgBio/m^3
     modelConstants["q_max"] = p[0]  # molS/m^3 / kgBio/m^3
-    modelConstants["bio_max"] = 8.1  # kg/m^3
+    modelConstants["bio_max"] = 7.9  # kg/m^3
 
     modelConstants["K_o"] = p[1]  # mol/m^3
     # modelConstants['K_s'] = p[3] # mol/m^3
@@ -22,7 +22,7 @@ def setmodelconstants(p):
     modelConstants["Y_os"] = p[4]  # molO/molS
 
     modelConstants["o2sat"] = 0.214
-    modelConstants["K_s"] = 0.92  # mol/m^3
+    modelConstants["K_s"] = p[5] # 0.92  # mol/m^3
 
     modelConstants["k_la"] = 50 # p[3]
     return modelConstants
@@ -173,8 +173,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     case_dir = os.path.abspath(args.fdir)
 
-    # Parameter order: t, bio, t, glu, t, muc, t, o2
-    exp_data = np.loadtxt(os.path.join(case_dir, "exptdata_ma.csv"))
+    # Data order: t, bio, glu, muc, o2
+    exp_data = np.loadtxt(os.path.join(case_dir, "exptdata_ma.dat"))
     init_cond = np.loadtxt(os.path.join(case_dir, "initial_cond.dat"))
 
     # Extract experimental data
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     }
     # print(exp_data_dict)
 
-    # Initial parameters in order: q_max, K_o, Y_xs, Y_ms, Y_os, k_la
+    # Initial parameter order: q_max, K_o, Y_xs, Y_ms, Y_os
     p0 = np.loadtxt(os.path.join(case_dir, "initial_param.dat"))
 
     if args.param_fit:
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         result = minimize(
             loss_function,
             initial_guess,
-            bounds=[(0, None)] * 5,
+            bounds=[(0, None)] * 6,
             args=(init_cond, 33, exp_data_dict, True),  # Final argument is for norm mse
         )
         fitted_params = result.x
