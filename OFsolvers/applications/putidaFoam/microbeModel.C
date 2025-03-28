@@ -15,21 +15,20 @@ namespace microbemodel
 						  {"C6H6O4.liquid", 3},
 						  {"CO2.liquid", 4}};
 
-    // Summary of parameters that need to be updated
-    // y_os, Fo_max, Fs_max, K_o, kLa
-    const double y_xs = 0.109;
-    const double y_ms = 0.3;
-    const double y_os = 0.0467; // NEED UPDATE
+    // Parameters fit from Will 0d Fixed Stir Rate Data
+    
+    const double y_xs = 0.04906035;
+    const double y_ms = 0.32507258;
+    const double y_os = 0.19208614;
 
     const double x_max = 7.9;
-    const double Fo_max = 1; // NEED UPDATE
-    const double Fs_max = 1.1; // NEED UPDATE
+    const double q_max = 4.50031626;
     const double o2_max = 0.214;
 
-    const double K_o = 0.0214; // NEED UPDATE 
-    const double K_s = 0.92;
+    const double K_o = 0.01582577; 
+    const double K_s = 0.91640568;
 
-    const double kLa = 50; // NEED UPDATE; approximated with current range provided 
+    const double kLa = 50; // Not used here; kLa calculated in OpenFOAM and used with OTR modeling there
 
     double X_avg=0.0;
     double G_avg=0.0;
@@ -50,9 +49,9 @@ namespace microbemodel
     {
  
         // calculate q_s
-        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
-        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
-        double q_s = F_s*F_e;
+        double F_s = solnvec[G]/(solnvec[G] + K_s);
+        double F_e = solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = q_max*F_s*F_e;
 
         // calculate final rates
         rhs[X] = y_xs*q_s*solnvec[X]*(1 - solnvec[X]/x_max);
@@ -101,9 +100,9 @@ namespace microbemodel
     double get_our(std::vector<double> solnvec,int nvars)
     {
         // calculate q_s
-        double F_s = Fs_max*solnvec[G]/(solnvec[G] + K_s);
-        double F_e = Fo_max*solnvec[O2]/(solnvec[O2] + K_o);
-        double q_s = F_s*F_e;
+        double F_s = solnvec[G]/(solnvec[G] + K_s);
+        double F_e = solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = q_max*F_s*F_e;
 
         double our = y_os*q_s*solnvec[X];
 
