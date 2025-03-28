@@ -151,6 +151,52 @@ def integrate_solution(params, init_cond, t_final, exp_data):
 
     return fig
 
+def plot_rates(params, init_cond, t_final):
+    """Integrate the ODE model with the given parameters"""
+
+    rates = np.empty((1000,4))
+    
+    # Make a smooth time integration
+    time_int = np.linspace(0, t_final, 1000)
+
+    mc = setmodelconstants(params)
+    print(mc)
+
+    sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    print(sol_y)
+    print(sol_y.shape)
+    print(rates.shape)
+    
+
+    for i in range(1000):
+        rates[i] = ode_model(sol_y[i], time_int, mc)
+
+    F_s = sol_y[:, 1] / (sol_y[:, 1] + mc["K_s"])
+    F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"])
+
+    qs = mc["q_max"] * F_s * F_o
+
+    our = qs * mc["Y_os"] * sol_y[:, 0]
+    
+    # Plot results
+    fig, axs = plt.subplots(2, 2, figsize=(14, 10), squeeze=False)
+    axs[0, 0].plot(time_int, rates[:, 0]/sol_y[:, 0], "b-", label="model")
+    axs[0, 0].set_ylabel(r"biomass ($1/h$)", fontsize=14)
+    axs[0, 0].set_xlabel("time (h)", fontsize=14)
+
+    axs[0, 1].plot(time_int, rates[:, 1]/sol_y[:, 0], "b-", label="model")
+    axs[0, 1].set_ylabel(r"glucose ($mmol/gDCW/h$)", fontsize=14)
+    axs[0, 1].set_xlabel("time (h)", fontsize=14)
+
+    axs[1, 0].plot(time_int, rates[:, 2]/sol_y[:, 0], "b-", label="model")
+    axs[1, 0].set_ylabel(r"muconate ($mmol/gDCW/h$)", fontsize=14)
+    axs[1, 0].set_xlabel("time (h)", fontsize=14)
+
+    axs[1, 1].plot(time_int, -our/sol_y[:, 0], "b-", label="model")
+    axs[1, 1].set_ylabel("-OUR ($mmol/gDCW/h$)", fontsize=14)
+    axs[1, 1].set_xlabel("time (h)", fontsize=14)
+
+    return fig
 
 if __name__ == "__main__":
 
@@ -222,3 +268,10 @@ if __name__ == "__main__":
     plt.close(fig)
 
     plt.show()
+
+    fig = plot_rates(fitted_params, init_cond, 33)
+    fig.suptitle("Rates", fontsize=16)
+    fig.savefig(os.path.join(case_dir, "CFD_rates.png"))
+    plt.close(fig)
+
+    
