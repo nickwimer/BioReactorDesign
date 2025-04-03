@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --job-name=redo_5mm_100
+#SBATCH --nodes=1
+#SBATCH --partition=short
+#SBATCH --ntasks-per-node=20
+#SBATCH --time=04:00:00
+#SBATCH --account=microenviro
+#SBATCH --output=log3.out
+#SBATCH --error=log3.err
+
+# module purge
+# ml PrgEnv-cray
+# source /projects/gas2fuels/ofoam_cray_mpich/OpenFOAM-dev/etc/bashrc
+source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
+# module load openfoam/11-craympich
+
+# . ./presteps.sh
+# decomposePar -latestTime -fileHandler collated 
+srun -n 20 multiphaseEulerFoam -parallel -fileHandler collated
+
+# post-process
+reconstructPar -newTimes

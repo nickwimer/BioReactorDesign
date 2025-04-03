@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --job-name=3mm_bubble_recon
+#SBATCH --nodes=2
+#SBATCH --partition=debug
+#SBATCH --ntasks-per-node=50
+#SBATCH --time=01:00:00
+#SBATCH --account=microenviro
+#SBATCH --output=log_recon.out
+#SBATCH --error=log_recon.err
+
+# module purge
+# ml PrgEnv-cray
+# source /projects/gas2fuels/ofoam_cray_mpich/OpenFOAM-dev/etc/bashrc
+source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
+# module load openfoam/11-craympich
+
+# . ./presteps.sh
+# decomposePar -latestTime -fileHandler collated 
+# srun -n 100 multiphaseEulerFoam -parallel -fileHandler collated
+
+# post-process
+reconstructPar -newTimes
