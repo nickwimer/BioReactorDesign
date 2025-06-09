@@ -12,21 +12,21 @@ namespace microbemodel
     std::map<std::string, int> sp_keys = {{"putida.liquid", 0},
 						  {"O2.liquid", 1},
 						  {"C6H12O6.liquid", 2},
-						  {"C6H6O4.liquid", 3},
+						  {"C6H4O4.liquid", 3},
 						  {"CO2.liquid", 4}};
 
     // Parameters fit from Will 0d Fixed Stir Rate Data
     
-    const double y_xs = 0.04906035;
-    const double y_ms = 0.32507258;
-    const double y_os = 0.19208614;
+    const double y_xs = 0.04804688;
+    const double y_ms = 0.31582621;
+    const double y_os = 0.19930839;
 
     const double x_max = 7.9;
-    const double q_max = 4.50031626;
+    const double q_max = 4.50091315;
     const double o2_max = 0.214;
 
-    const double K_o = 0.01582577; 
-    const double K_s = 0.91640568;
+    const double K_o = 0.01384016; 
+    const double K_s = 0.92049743;
 
     const double kLa = 50; // Not used here; kLa calculated in OpenFOAM and used with OTR modeling there
 

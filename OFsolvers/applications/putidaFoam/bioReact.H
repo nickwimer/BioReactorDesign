@@ -16,7 +16,8 @@
     mwt[0] = 663.43; //putida
     mwt[1] = 31.9988; //O2
     mwt[2] = 180.156; //glucose
-    mwt[3] = 142.11; //muconic acid
+    //mwt[3] = 142.11; //muconic acid
+    mwt[3] = 140.09; //muconate
     mwt[4] = 44.00995; //CO2
 
     
@@ -50,7 +51,7 @@
     //get averaged values as mixing time scales are small compared to 
     //reactions
     liqvol = fvc::domainIntegrate(alpha2).value();
-    microbemodel::X_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::X]]/mwt[microbemodel::X]).value()/liqvol;
+    microbemodel::X_avg  = fvc::domainIntegrate(alpha2*rho*Y[species_id[microbemodel::X]]).value()/liqvol;
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
@@ -63,11 +64,11 @@
       {
 	//Info << "Are we looping over these cells or not?\n";
 	// liquid density * species massFrac * kg -> g * mol -> mmol / mol weight
-	solnvec[microbemodel::X] = rho[i]*Y[species_id[microbemodel::X]][i]*1000; // g/m3
-	solnvec[microbemodel::O2] = rho[i]*Y[species_id[microbemodel::O2]][i]*1000*1000/mwt[microbemodel::O2]; //mmol/m3
-	solnvec[microbemodel::G] = rho[i]*Y[species_id[microbemodel::G]][i]*1000*1000/mwt[microbemodel::G]; //mmol/m3
-	solnvec[microbemodel::M] = rho[i]*Y[species_id[microbemodel::M]][i]*1000*1000/mwt[microbemodel::M]; //mmol/m3
-	solnvec[microbemodel::CO2] = rho[i]*Y[species_id[microbemodel::CO2]][i]*1000*1000/mwt[microbemodel::CO2]; //mmol/m3
+	solnvec[microbemodel::X] = rho[i]*Y[species_id[microbemodel::X]][i]; // kg/m3
+	solnvec[microbemodel::O2] = rho[i]*Y[species_id[microbemodel::O2]][i]*1000/mwt[microbemodel::O2]; //mol/m3
+	solnvec[microbemodel::G] = rho[i]*Y[species_id[microbemodel::G]][i]*1000/mwt[microbemodel::G]; //mol/m3
+	solnvec[microbemodel::M] = rho[i]*Y[species_id[microbemodel::M]][i]*1000/mwt[microbemodel::M]; //mol/m3
+	solnvec[microbemodel::CO2] = rho[i]*Y[species_id[microbemodel::CO2]][i]*1000/mwt[microbemodel::CO2]; //mol/m3
 
 	//Info << "before putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
 	//Info << "before putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
@@ -82,11 +83,11 @@
 	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
 	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react);
 
-	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i]/1000/1000*mwt[microbemodel::X];
-	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000/1000*mwt[microbemodel::O2];
-	Y[species_id[microbemodel::G]][i] = solnvec[microbemodel::G]/rho[i]/1000/1000*mwt[microbemodel::G];
-	Y[species_id[microbemodel::M]][i] = solnvec[microbemodel::M]/rho[i]/1000/1000*mwt[microbemodel::M];
-	Y[species_id[microbemodel::CO2]][i] = solnvec[microbemodel::CO2]/rho[i]/1000/1000*mwt[microbemodel::CO2];
+	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i];
+	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000*mwt[microbemodel::O2];
+	Y[species_id[microbemodel::G]][i] = solnvec[microbemodel::G]/rho[i]/1000*mwt[microbemodel::G];
+	Y[species_id[microbemodel::M]][i] = solnvec[microbemodel::M]/rho[i]/1000*mwt[microbemodel::M];
+	Y[species_id[microbemodel::CO2]][i] = solnvec[microbemodel::CO2]/rho[i]/1000*mwt[microbemodel::CO2];
 
 	//Info << "after putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
 	//Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
@@ -128,7 +129,7 @@
 
     //check average values after reaction
     liqvol = fvc::domainIntegrate(alpha2).value();
-    microbemodel::X_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::X]]/mwt[microbemodel::X]).value()/liqvol;
+    microbemodel::X_avg  = fvc::domainIntegrate(alpha2*rho*Y[species_id[microbemodel::X]]).value()/liqvol;
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
