@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  dev
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     pH_test;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         1.0;
+
+deltaT          5e-5;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.1;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.7;
+
+maxDeltaT       1;
+
+functions
+{
+    #includeFunc    fieldAverage(U.gas, U.liquid, alpha.gas, p)
+    #includeFunc    writeObjects(d.gas, thermo:rho.liquid, thermo:rho.gas)
+    #includeFunc    writeObjects(thermo:mu.liquid, thermo:mu.gas)
+    #includeFunc    grad(U.liquid)
+    #includeFunc    shearStress(phase=liquid)
+    #includeFunc    shearStress(phase=gas)
+  /*
+  phaseScalarTransport1
+    {
+        type            phaseScalarTransport;
+        libs            ("libsolverFunctionObjects.so");
+
+        field           s.liquid;
+        alphaPhi        alphaRhoPhi.liquid;
+        rho             rho.liquid;
+	}*/
+}
+// ************************************************************************* //

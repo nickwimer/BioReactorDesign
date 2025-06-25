@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=r500_0
+#SBATCH --nodes=1
+#SBATCH --partition=short
+#SBATCH --ntasks-per-node=20
+#SBATCH --time=01:00:00
+#SBATCH --account=microenviro
+#SBATCH --output=logr.out
+#SBATCH --error=logr.err
+
+# module purge
+# ml PrgEnv-cray
+# source /projects/gas2fuels/ofoam_cray_mpich/OpenFOAM-dev/etc/bashrc
+source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
+# module load openfoam/11-craympich
+# module load conda
+
+# . ./presteps.sh
+# decomposePar -latestTime -fileHandler collated 
+# srun -n 20 multiphaseEulerFoam -parallel -fileHandler collated
+
+# post-process
+reconstructPar -newTimes

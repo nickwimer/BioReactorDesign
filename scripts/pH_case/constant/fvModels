@@ -1,0 +1,136 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  dev
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvModels;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "${FOAM_CASE}/constant/globalVars"
+
+massSource
+{
+    type            massSource;
+
+//    selectionMode   cellZone;
+//    cellZone        injection;
+
+    selectionMode   points;
+    points
+    (
+        ($x1 0.002 $z1)
+        ($x2 0.002 $z2)
+        ($x3 0.002 $z3)
+        ($x4 0.002 $z4)
+	($x1neg 0.002 $z1)
+        ($x2neg 0.002 $z2)
+        ($x3neg 0.002 $z3)
+	($x1 0.002 $z1neg)
+        ($x2 0.002 $z2neg)
+        ($x3 0.002 $z3neg)
+        ($x4 0.002 $z4neg)
+	($x1neg 0.002 $z1neg)
+        ($x2neg 0.002 $z2neg)
+        ($x3neg 0.002 $z3neg)
+
+    );
+
+    massFlowRate    $M_flowRate;
+    phase           gas;
+    rho             thermo:rho.gas;
+
+    fieldValues
+    {
+        U.gas     (0 0 0);
+        O2.gas  0.23;
+        H2O.gas  0;
+    }
+}
+
+/*baseSource
+{
+    type            massSource;
+
+    selectionMode   points;
+    points
+    (
+        (-0.035 0 0)
+    );
+
+    massFlowRate    $base_flowRate;
+    phase           liquid;
+    rho             thermo:rho.liquid;
+
+    fieldValues
+    {
+        U.liquid     (0 0 0);
+        NH3.liquid 0.3;
+    }
+    }*/
+
+/* O2sink
+{
+  type            coded;
+//  active          yes;                                                                                      
+//  name            sourceTime;                                                                               
+
+  selectionMode   all;
+  field           O2.liquid;
+
+    codeInclude
+    #{
+    #};
+
+    codeAddAlphaRhoSup
+      #{
+
+           const vectorField& C = mesh().C();
+           const scalarField& V = mesh().V();
+
+           const volScalarField& alphaL = mesh().lookupObject<volScalarField>("alpha.liquid");
+           const volScalarField& rhoL = mesh().lookupObject<volScalarField>("thermo:rho.liquid");
+           const volScalarField& y_O2 = mesh().lookupObject<volScalarField>("O2.liquid");
+           //const volScalarField& our_O2 = mesh().lookupObject<volScalarField>("our");                       
+
+           scalarField& O2src = eqn.source();
+
+           double our_max=0.0; //mol/m3/hr                                                                  
+           double ko = 0.01; //mol/m3                                                                         
+           double mw_O2  = 32.0; //gm/mol                                                                     
+           double kg_to_g = 1000.0;
+           double hr_to_sec = 3600.0;
+           double time = mesh().time().value();
+           double kg_m3_to_mol_m3 = kg_to_g/mw_O2;
+           double mol_m3_to_kg_m3 = mw_O2/kg_to_g;
+           double our_src,diss_o;
+
+           forAll(C,i)
+               {
+                 diss_o = rhoL[i]*y_O2[i]*kg_m3_to_mol_m3;
+                 our_src = our_max/hr_to_sec*diss_o/(diss_o+ko);
+                 O2src[i] += alphaL[i]*our_src*mol_m3_to_kg_m3*V[i];
+		 
+		 //our_src = our_O2[i]/hr_to_sec;
+                 // Info << "O2src before" << O2src[i] << endl;                                               
+                 //O2src[i] += alphaL[i]*our_src*mol_m3_to_kg_m3*V[i];                                                      
+                 // Info << "O2src after" << O2src[i] << endl;                                                
+               }
+           Info  << "***Added o2 sink***\t" << our_src << endl;
+        #};
+
+            codeSetValue
+            #{
+                Pout<< "**codeSetValue**" << endl;
+            #};
+
+	    }*/
+
+// ************************************************************************* //
