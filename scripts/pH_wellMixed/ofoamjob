@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=120_05_sat_init
+#SBATCH --nodes=1
+#SBATCH --partition=debug
+#SBATCH --ntasks-per-node=20
+#SBATCH --time=00-00:30:00
+#SBATCH --account=microenviro
+#SBATCH --output=log1.out
+#SBATCH --error=log1.err
+
+# module purge
+# ml PrgEnv-cray
+# source /projects/gas2fuels/ofoam_cray_mpich/OpenFOAM-dev/etc/bashrc
+source /scratch/jream/OpenFOAM/OpenFOAM-9/etc/bashrc
+# module load openfoam/11-craympich
+# module load conda
+
+# . ./presteps.sh
+# decomposePar -latestTime -fileHandler collated 
+srun -n 20 pH_test -parallel -fileHandler collated
+
+# post-process
+reconstructPar -newTimes

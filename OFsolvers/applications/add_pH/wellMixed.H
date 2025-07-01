@@ -1,10 +1,10 @@
 {
     std::vector<double> solnvec(microbemodel::nvars);
     std::vector<double> totalConc(acidbasemodel::nvars - 1);
-    std::vector<double> baseConc(6);
-    double advance_time=5.0; //hours
+    std::vector<double> baseConc(13);
+    double advance_time=4.0; //hours
     double dt_react=advance_time/50.0; //hours
-    double final_time=30.0; //hours
+    double final_time=36.0; //hours
     double pH = 7.0;
     double H = 1.0E-14;
     double H_start = 1.0E-7;
@@ -12,7 +12,7 @@
 
     // BR52 04112025 initial conditions (except base concentration, which is endpoint condition)
     solnvec[microbemodel::X]=0.350147052723467;  // kg/m^3
-    solnvec[microbemodel::O2]=0.214;             // mol/m^3
+    solnvec[microbemodel::O2]=0.05;               // mol/m^3
     solnvec[microbemodel::G]=545.9946375;        // mol/m^3
     solnvec[microbemodel::M]=0.157763;           // mol/m^3
 
@@ -22,12 +22,18 @@
     totalConc[3]= 0.193039;                                 // mol/L
     totalConc[4]= 0.0;
 
+    // Base conc roughly interpolated from BR52 04112025 (U.B.)
     baseConc[0] = 0.0;
     baseConc[1] = 0.0;
-    baseConc[2] = 0.083732977;
-    baseConc[3] = 0.2;
-    baseConc[4] = 0.487798268;
-    baseConc[5] = 0.615927712;
+    baseConc[2] = 0.079665546;
+    baseConc[3] = 0.083732977;
+    baseConc[4] = 0.356565343;
+    baseConc[5] = 0.4;
+    baseConc[6] = 0.487798268;
+    baseConc[7] = 0.615927712;
+    baseConc[8] = 0.698626333;
+    baseConc[9] = 0.702196826;
+    baseConc[10] = 0.736052744;
     
     std::ofstream outfile("wellmixed.dat");
     
@@ -55,13 +61,14 @@
     outfile<<-std::log10(H_start)<<"\t";
     outfile<<"\n";
     acidbasemodel::getSpectatorsNonBio(totalConc);
-    outfile << "spec ions: " << totalConc[acidbasemodel::nvars/2] << "\n";
-    outfile<<"\n";
+    // outfile << "spec ions: " << totalConc[acidbasemodel::nvars/2] << "\n";
+    // outfile<<"\n";
     int baseTime = 0;
     while(current_time < final_time)
     {
         current_time += advance_time;
         microbemodel::advance(solnvec,microbemodel::nvars,current_time,advance_time,dt_react);
+	double tauC = microbemodel::get_tauC(solnvec, microbemodel::nvars);
 	totalConc[acidbasemodel::MuconicAcid] = solnvec[microbemodel::M]/1000;
 	totalConc[acidbasemodel::AmmoniaBase] = baseConc[baseTime];
 	H_new = acidbasemodel::NewtonRaphson(H, totalConc);
@@ -77,6 +84,7 @@
 	    outfile<<totalConc[i]<<"\t";
 	}
 	outfile<<pH<<"\t";
+	outfile<<tauC<<"\t";
         outfile<<"\n";
 	baseTime += 1;
     }

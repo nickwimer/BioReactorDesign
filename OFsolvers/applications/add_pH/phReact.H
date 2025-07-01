@@ -47,7 +47,7 @@
 	Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
       }
     
-    Info << "Starting reaction update..\n";
+    Info << "Starting pH snapshot \n";
     
     // find initial OUR and advance solution
     forAll(C,i)
@@ -73,7 +73,7 @@
 	double H_set = 1.0E-15;
 	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
 	pH[i] = -std::log10(H);
-	Info << "pH is: " << pH[i] << "\n";
+	// Info << "pH is: " << pH[i] << "\n";
 
 	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
 	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * H / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
@@ -91,11 +91,11 @@
     liqvol = fvc::domainIntegrate(alpha2).value();
     acidbasemodel::pH_avg  = fvc::domainIntegrate(alpha2*pH).value();
     
-    if(Pstream::master())
+    /*if(Pstream::master())
       {                                                                                                                                             
 	os_timehist << " " << acidbasemodel::pH_avg << "\n";
 	os_timehist.flush();
-      }
+	}*/
 
     //exit(0);
 }

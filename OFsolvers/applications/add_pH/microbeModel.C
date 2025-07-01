@@ -108,4 +108,15 @@ namespace microbemodel
 
         return our;
     }
+    double get_tauC(std::vector<double> solnvec,int nvars)
+    {
+        // calculate q_s
+        double F_s = solnvec[G]/(solnvec[G] + K_s);
+        double F_e = solnvec[O2]/(solnvec[O2] + K_o);
+        double q_s = q_max*F_s*F_e;
+
+        double tauC = solnvec[G]/(q_s*solnvec[X]);
+
+        return tauC;
+    }
 }

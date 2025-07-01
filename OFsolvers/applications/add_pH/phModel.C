@@ -90,7 +90,7 @@ namespace acidbasemodel
   {
     double tol = 1.0E-14;
     double test = charge(H_init, totalConc);
-    std::cout << "Initialized Charge is: " << test << "\n";
+    // std::cout << "Initialized Charge is: " << test << "\n";
     double H_next = 0.0;
     double H_now = H_init;
     int iter = 0;
