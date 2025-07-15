@@ -104,7 +104,10 @@ dimensionedScalar fluid_update_time
      dimTime,
      reaction_props.lookup("fluid_update_time"));
 
-
+dimensionedScalar base_inflow_init
+(   "base_inflow_init",
+     dimTime,
+     reaction_props.lookup("base_inflow_init"));
 
 /*
 scalar initial_microbe_conc = microbe_props.lookup<scalar>("putidaLiquid");

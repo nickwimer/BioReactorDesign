@@ -15,6 +15,7 @@
     double sAcidConc = 0.0;
     double sBaseConc = 0.0;
     double Kw = 1.0E-14;
+    double NH3scaleUp = reaction_update_time.value()/((fluid_update_time.value()-base_inflow_init.value())/3600);
 
     mwt[0] = 95.98; //HPO4
     mwt[1] = 96.98; //H2PO4
@@ -55,8 +56,8 @@
 	// fill abSystem with mol/L = M amounts of each component present in cell i (kg/m3 = g/L)
 	abSystem[acidbasemodel::PB] = rho[i]*Y[species_id[acidbasemodel::PB]][i]/mwt[acidbasemodel::PB]; //mol/L
 	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]/mwt[acidbasemodel::PA]; //mol/L
-	abSystem[acidbasemodel::NB] = rho[i]*Y[species_id[acidbasemodel::NB]][i]/mwt[acidbasemodel::NB]; //mol/L
-	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
+	abSystem[acidbasemodel::NB] = NH3scaleUp*rho[i]*Y[species_id[acidbasemodel::NB]][i]/mwt[acidbasemodel::NB]; //mol/L
+	abSystem[acidbasemodel::NA] = NH3scaleUp*rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
 	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
 
 	// get conserved totals for system components
@@ -84,8 +85,8 @@
 	// liqvol = Vcell[i]*alpha2[i];
 	Y[species_id[acidbasemodel::PB]][i] = abSystem[acidbasemodel::PB]/rho[i]*mwt[acidbasemodel::PB];
 	Y[species_id[acidbasemodel::PA]][i] = abSystem[acidbasemodel::PA]/rho[i]*mwt[acidbasemodel::PA];
-	Y[species_id[acidbasemodel::NB]][i] = abSystem[acidbasemodel::NB]/rho[i]*mwt[acidbasemodel::NB];
-	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]*mwt[acidbasemodel::NA];
+	Y[species_id[acidbasemodel::NB]][i] = abSystem[acidbasemodel::NB]/rho[i]/NH3scaleUp*mwt[acidbasemodel::NB];
+	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]/NH3scaleUp*mwt[acidbasemodel::NA];
       }
 
     liqvol = fvc::domainIntegrate(alpha2).value();
