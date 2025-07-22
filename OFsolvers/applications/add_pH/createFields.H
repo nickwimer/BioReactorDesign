@@ -180,7 +180,7 @@ volScalarField our
   "our",
   runTime.timeName(),
   mesh,
-  IOobject::NO_READ,
+  IOobject::READ_IF_PRESENT,
   IOobject::AUTO_WRITE
  ),
  mesh,
@@ -194,7 +194,7 @@ volScalarField pH
   "pH",
   runTime.timeName(),
   mesh,
-  IOobject::NO_READ,
+  IOobject::READ_IF_PRESENT,
   IOobject::AUTO_WRITE
  ),
  mesh,
