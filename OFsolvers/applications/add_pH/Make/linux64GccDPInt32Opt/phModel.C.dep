@@ -1,6 +1,0 @@
-$(OBJECTS_DIR)/phModel.C.dep: \
-phModel.C \
-phModel.H \
-
-phModel.H :
-
