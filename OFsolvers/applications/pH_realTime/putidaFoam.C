@@ -118,19 +118,19 @@ int main(int argc, char *argv[])
             #include "setDeltaT.H"
         }
 
-	Info << "\n";
-	Info << "bio update time: " << fluid_update_time.value() << "\n";
-	Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
-	Info << "\n";
+	// Info << "\n";
+	// Info << "bio update time: " << fluid_update_time.value() << "\n";
+	// Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
+	// Info << "\n";
 	if((time-prvs_react_update_time) >= fluid_update_time.value())
         {
              #include "bioReact.H"
              prvs_react_update_time=time;
              reaction_time += reaction_update_time.value();
         }
-	Info << "pH update time: " << ph_update_time.value() << "\n";
-	Info << "Needs to be less than: " << time - prvs_ph_update_time << "\n";
-	Info << "\n";
+	// Info << "pH update time: " << ph_update_time.value() << "\n";
+	// Info << "Needs to be less than: " << time - prvs_ph_update_time << "\n";
+	// Info << "\n";
 	if((time-prvs_ph_update_time) >= ph_update_time.value())
         {
              #include "phReact.H"
