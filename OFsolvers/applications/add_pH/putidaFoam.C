@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
-    double prvs_update_time=0.0;
     double time=runTime.value();
+    double prvs_update_time=time - (int(floor(time))%int(fluid_update_time.value()));
     double reaction_time=0.0;
     std::ofstream os_timehist;
 
@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
             #include "setDeltaT.H"
         }
 
+	// ONLY PH REACTS AFTER BIOREACTION
 	if((time-prvs_update_time) >= fluid_update_time.value())
         {
              #include "bioReact.H"
