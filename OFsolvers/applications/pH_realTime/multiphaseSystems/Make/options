@@ -17,4 +17,5 @@ EXE_INC = \
 
 LIB_LIBS = \
     -lcombustionModels \
-    -lphaseSystem
+    -L$(FOAM_USER_LIBBIN) \
+    -lbirdphaseSystem

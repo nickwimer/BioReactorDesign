@@ -1,3 +1,0 @@
-SOURCE += multiphaseSystems.C
-
-LIB = $(FOAM_LIBBIN)/libmultiphaseSystems

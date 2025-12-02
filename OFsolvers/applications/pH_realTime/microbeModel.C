@@ -16,19 +16,20 @@ namespace microbemodel
                                                   // {"CO2.liquid", 4}};
 
     // Parameters fit from Will 0d Fixed Stir Rate Data
+    // Along with Initial parameter guess provided by Jamshidzadeh et al. (2025) 
     
-    const double y_xs = 0.04804688;
-    const double y_ms = 0.31582621;
-    const double y_os = 0.19930839;
+    const double y_xs = 0.04119077;
+    const double y_ms = 0.31743851;
+    const double y_os = 2.0319953;
 
     const double x_max = 7.9;
-    const double q_max = 4.50091315;
-    const double o2_max = 0.214;
+    const double q_max = 8.26529425;
+    const double o2_max = 0.188125;
 
-    const double K_o = 0.01384016; 
-    const double K_s = 0.92049743;
+    const double K_o = 0.10375191; 
+    const double K_s = 0.40010819;
 
-    const double kLa = 50; // Not used here; kLa calculated in OpenFOAM and used with OTR modeling there
+    const double kLa = 540; // Not used here; kLa calculated in OpenFOAM and used with OTR modeling there
 
     double X_avg=0.0;
     double G_avg=0.0;

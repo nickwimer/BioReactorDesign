@@ -203,6 +203,34 @@ volScalarField pH
  7.0
  );
 
+volScalarField NH3_hold
+(
+ IOobject
+ (
+  "NH3_hold",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ 0.0
+ );
+
+volScalarField NH4_hold
+(
+ IOobject
+ (
+  "NH4_hold",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ 0.0
+ );
+
 /*double liqvol = fvc::domainIntegrate(alpha2).value();
 microbemodel::X_avg  = fvc::domainIntegrate(alpha2*microbe_conc).value()/liqvol;
 microbemodel::G_avg  = fvc::domainIntegrate(alpha2*glucose).value()/liqvol;

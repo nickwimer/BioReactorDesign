@@ -6,12 +6,22 @@
     std::vector<int> species_id(microbemodel::nvars);
     std::vector<double> conc(microbemodel::nvars);
     int O2id=0;
+    int NH3id=0;
+    int NH4id=0;
     int id=0;
     int i=0;
     double liqvol;
     double dt_react=0.01; //hours (need to have it as an input)
     double mwt_O2=32.0;
     double our_avg;
+    double NH3_avg;
+    double NH3_avg_hold;
+    double NH4_avg;
+    double NH4_avg_hold;
+    double delNH3;
+    double delNH4;
+    double NH3_conc;
+    double NH4_conc;
 
     mwt[0] = 663.43; // g/mol putida
     mwt[1] = 31.9988; // g/mol O2
@@ -32,7 +42,15 @@
         Info<<"species name:\t"<<Y[i].name()<<"\n";
 	microbemodel::get_sp_id(Y[i].name(), species_id, i);
 	Info<<"OpenFOAM id is:\t"<<i<<"\n";
-
+        if(Y[i].name()=="NH3.liquid")
+        {
+            NH3id=i;
+        }
+	if(Y[i].name()=="NH4.liquid")
+        {
+            NH4id=i;
+        }
+	
 	//ThermoType s_hold(dict.subDict(Y[i].name()));
 	//mwt[i] = s_hold.W();
     }
@@ -47,7 +65,6 @@
     
     Info << "Starting bioreaction update..\n";
 
-
     //get averaged values as mixing time scales are small compared to 
     //reactions
     liqvol = fvc::domainIntegrate(alpha2).value();
@@ -55,9 +72,18 @@
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
+
+    NH3_avg = fvc::domainIntegrate(alpha2*rho*Y[NH3id]).value()/17.031/liqvol; 
+    NH3_avg_hold = fvc::domainIntegrate(alpha2*rho*NH3_hold).value()/17.031/liqvol;
+    
+    NH4_avg = fvc::domainIntegrate(alpha2*rho*Y[NH4id]).value()/18.04/liqvol;
+    NH4_avg_hold = fvc::domainIntegrate(alpha2*rho*NH4_hold).value()/18.04/liqvol;
+
+    delNH3 = NH3_avg - NH3_avg_hold;
+    delNH4 = NH4_avg - NH4_avg_hold;
   
-    Info<<"Avg quantities before reaction:"<<microbemodel::X_avg<<"\t"<<microbemodel::O2_avg<<"\t"<<microbemodel::G_avg<<"\t"<<
-    microbemodel::M_avg<<"\t"<<our_avg<<"\n";
+    Info<<"Avg quantities before and after mixing window:"<<NH3_avg_hold<<"\t"<<NH3_avg<<"\t"<<NH4_avg_hold<<"\t"<<
+    NH4_avg<<"\n";
     
     //find initial OUR and advance solution
     forAll(C,i)
@@ -93,6 +119,25 @@
 	//Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
 	
 	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
+
+	// Get NH3 concentration to scale up over temporal disparity btwn reaction time and mixing time
+	NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L
+	NH4_conc = rho[i]*Y[NH4id][i]/18.04;  // mol/L
+	
+	//delNH3 = NH3_conc - NH3_hold[i];
+	//delNH4 = NH4_conc - NH4_hold[i];
+
+	NH3_hold[i] = NH3_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH3;
+	NH4_hold[i] = NH4_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH4;
+
+	Y[NH3id][i] = NH3_hold[i]*17.031/rho[i];
+	Y[NH4id][i] = NH4_hold[i]*18.04/rho[i];
+
+	Info << "pre-reaction NH3 conc. " << NH3_conc << "\n";
+	Info << "post-reaction NH3 conc. " << NH3_hold[i] << "\n";
+	Info << "pre-reaction NH4 conc. " << NH4_conc << "\n";
+	Info << "post-reaction NH4 conc. " << NH4_hold[i] << "\n";
+	Info << "\n";
     }
 
     our_avg=fvc::domainIntegrate(alpha2*our).value()/liqvol;

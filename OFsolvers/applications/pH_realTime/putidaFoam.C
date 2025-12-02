@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
     Info<< "\nStarting time loop\n" << endl;
 
     double time=runTime.value();
-    double prvs_react_update_time=time - (int(floor(time))%int(fluid_update_time.value()));;
-    double prvs_ph_update_time=time - (int(floor(time))%int(ph_update_time.value()));
+    double prvs_react_update_time=(int(floor(time))/int(fluid_update_time.value()))*fluid_update_time.value();
+    double prvs_ph_update_time=(int(floor(time))/int(ph_update_time.value()))*ph_update_time.value();
     double reaction_time=0.0;
     std::ofstream os_timehist;
 
@@ -118,19 +118,19 @@ int main(int argc, char *argv[])
             #include "setDeltaT.H"
         }
 
-	// Info << "\n";
-	// Info << "bio update time: " << fluid_update_time.value() << "\n";
-	// Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
-	// Info << "\n";
+	Info << "\n";
+	Info << "bio update time: " << fluid_update_time.value() << "\n";
+	Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
+	Info << "\n";
 	if((time-prvs_react_update_time) >= fluid_update_time.value())
         {
              #include "bioReact.H"
              prvs_react_update_time=time;
              reaction_time += reaction_update_time.value();
         }
-	// Info << "pH update time: " << ph_update_time.value() << "\n";
-	// Info << "Needs to be less than: " << time - prvs_ph_update_time << "\n";
-	// Info << "\n";
+	Info << "pH update time: " << ph_update_time.value() << "\n";
+	Info << "Needs to be less than: " << time - prvs_ph_update_time << "\n";
+	Info << "\n";
 	if((time-prvs_ph_update_time) >= ph_update_time.value())
         {
              #include "phReact.H"
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         }
 	
         runTime++;
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        Info<< "Time = " << runTime.timeName() <<  nl << endl;
 	time=runTime.value();
 	
         // --- Pressure-velocity PIMPLE corrector loop

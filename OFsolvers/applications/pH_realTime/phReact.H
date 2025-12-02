@@ -59,26 +59,26 @@
 	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
 	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
 
-	// Info << "\n";
-	// Info << "Density: " << rho[i] << "\n";
-	// Info << "alphaL: " << alpha2[i] << "\n";
-	// Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
-	// Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
-	// Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
-	// Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
-	// Info << "Muconate: " << abSystem[acidbasemodel::MB] << "\n";
+	Info << "\n";
+	Info << "Density: " << rho[i] << "\n";
+	Info << "alphaL: " << alpha2[i] << "\n";
+	Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
+	Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
+	Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
+	Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
+	Info << "Muconate: " << abSystem[acidbasemodel::MB] << "\n";
 	
 	
 	// get conserved totals for system components
 	acidbasemodel::getTotalConc(abSystem, totalConc);
-	// Info << "\n";
-	// Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
-	// Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
-	// Info << "Acid total: " << totalConc[acidbasemodel::MuconicAcid] << "\n";
+	Info << "\n";
+	Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
+	Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
+	Info << "Acid total: " << totalConc[acidbasemodel::MuconicAcid] << "\n";
 
 	// get spectator ions from buffer
 	acidbasemodel::getSpectatorsNonBio(totalConc);
-	// Info << "Spectators: " << totalConc[3] << "\n";
+	Info << "Spectators: " << totalConc[3] << "\n";
 	
 	// get spectator ions from bio components
 	// this would be stuff the bio spits out that contributes to charge balance but not pH;
@@ -88,7 +88,7 @@
 	double H_set = 1.0E-15;
 	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
 	pH[i] = -std::log10(H);
-	// Info << "pH is: " << pH[i] << "\n";
+	Info << "pH is: " << pH[i] << "\n";
 
 	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
 	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * H / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
