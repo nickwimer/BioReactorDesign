@@ -1,0 +1,4 @@
+phModel.C
+tyroFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/tyroFoam

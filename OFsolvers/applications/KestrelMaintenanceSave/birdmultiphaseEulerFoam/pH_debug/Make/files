@@ -1,0 +1,5 @@
+phModel.C
+microbeModel.C
+putidaFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/pH_debug
