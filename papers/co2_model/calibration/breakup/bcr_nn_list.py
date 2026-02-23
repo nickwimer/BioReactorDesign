@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 import time
 
 import joblib
@@ -32,7 +31,7 @@ def flexible_activation(x, activation):
     elif activation.lower() == "leakyrelu":
         out = layers.LeakyReLU()(x)
     else:
-        sys.exit(f"ERROR: unknown activation {activation}")
+        raise NotImplementedError(f"Unknown activation {activation}")
     return out
 
 
@@ -129,14 +128,19 @@ class BCR_NN(keras.Model):
         joblib.dump(scaler_y, os.path.join(scaler_folder, "scaler_y.mod"))
 
         # Split and shuffle
-        z_train, z_test, par_train, par_test, y_train, y_test = (
-            train_test_split(
-                scaler_z.transform(z_dat),
-                scaler_par.transform(par_dat),
-                scaler_y.transform(y_dat),
-                test_size=0.01,
-                random_state=42,
-            )
+        (
+            z_train,
+            z_test,
+            par_train,
+            par_test,
+            y_train,
+            y_test,
+        ) = train_test_split(
+            scaler_z.transform(z_dat),
+            scaler_par.transform(par_dat),
+            scaler_y.transform(y_dat),
+            test_size=0.01,
+            random_state=42,
         )
 
         return {
@@ -294,7 +298,8 @@ class BCR_NN(keras.Model):
         os.makedirs(self.log_loss_folder, exist_ok=True)
         try:
             os.remove(os.path.join(self.log_loss_folder, "log.csv"))
-        except:
+        except FileNotFoundError as err:
+            print(err)
             pass
         # Make log headers
         f = open(os.path.join(self.log_loss_folder, "log.csv"), "a+")

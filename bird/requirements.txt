@@ -1,8 +1,0 @@
-numpy
-prettyPlot>=0.0.27
-ruamel_yaml
-numpy-stl
-scipy
-corner
-jax
-numpyro

@@ -128,5 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+.viminfo
+.bash_history
+
 # output
 .DS_Store
+*.stl
+
+*.swp
+.vim

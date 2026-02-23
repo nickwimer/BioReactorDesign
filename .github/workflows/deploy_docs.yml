@@ -1,0 +1,60 @@
+name: BiRD-deploy-documentation
+ 
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy_docs.yml'
+ 
+jobs:
+ 
+  build_deploy_docs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: ${{github.workspace}}
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Set up micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: test-env
+          create-args: >-
+            python=${{ matrix.python-version }}
+          channels: conda-forge
+          channel-priority: strict
+          cache-downloads: true
+          cache-env: true
+
+      - name: Install dependencies
+        run: |
+          micromamba install --yes -n test-env -c conda-forge paraview
+          pip install --upgrade pip
+          pip install -e .[docs]
+
+      - name: Build documentation
+        run: |
+          cd docs
+          make html
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
+          force_orphan: true
+          full_commit_message: ${{ github.event.head_commit.message }}
+
+
