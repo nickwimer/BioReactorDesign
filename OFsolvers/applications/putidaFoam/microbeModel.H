@@ -13,6 +13,7 @@ namespace microbemodel
     extern const int M;
     extern const int CO2;
     extern const int nvars;
+//    extern const bool do_ml;
     extern std::map<std::string, int> sp_keys;
     extern const double y_xs;
     extern const double y_ms;
@@ -30,7 +31,7 @@ namespace microbemodel
     extern double O2_avg;
 
     void get_rhs(std::vector<double>& rhs,std::vector<double> solnvec,double t,int nvars);
-    void advance(std::vector<double>& solnvec,int nvars,double t_now,double t_adv,double dt);
+    void advance(std::vector<double>& solnvec,int nvars,double t_now,double t_adv,double dt, bool do_ml);
     double get_our(std::vector<double> solnvec,int nvars);
     void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id);
 

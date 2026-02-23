@@ -81,11 +81,11 @@
 	    Info << "\tMolWeight here is\t" << mwt[microbemodel::X] << "\n\n";
 	    }*/
 	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
-	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react);
+	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react, true);
 
-	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i];
+	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i]; // []
 	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000*mwt[microbemodel::O2];
-	Y[species_id[microbemodel::G]][i] = solnvec[microbemodel::G]/rho[i]/1000*mwt[microbemodel::G];
+	Y[species_id[microbemodel::G]][i] = solnvec[microbemodel::G]/rho[i]/1000*mwt[microbemodel::G]; // [mol/m^3] / [kg/m^3] / [g/kg] * [g/mol]=[]  
 	Y[species_id[microbemodel::M]][i] = solnvec[microbemodel::M]/rho[i]/1000*mwt[microbemodel::M];
 	Y[species_id[microbemodel::CO2]][i] = solnvec[microbemodel::CO2]/rho[i]/1000*mwt[microbemodel::CO2];
 
