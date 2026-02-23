@@ -10,7 +10,8 @@ MES -> input O2 and Glucose flux; output Muconate and Biomass flux (and later CO
 CFD -> use MES-generated Muconate and Biomass fluxes along with CFD-generated O2 and Glucose fluxes to evolve ODE system
 
 QUESTIONS:
-1. Need to do some sort of splitting? If evolving ODE_model in fit_bioreaction_model.py, need to generate rglu and roxy first then feed those to ME surrogate to get rbio and rmuc.  
+1. Need to do some sort of splitting? If evolving ODE_model in fit_bioreaction_model.py,
+need to generate rglu and roxy first then feed those to ME surrogate to get rbio and rmuc.  
 
 Conversions to reconcile flux units:
 CFD to MES: 
