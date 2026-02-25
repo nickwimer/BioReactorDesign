@@ -261,10 +261,10 @@ class StirredTankReactor:
         self.meshz = self.meshz.astype(int) + 1  # avoid zero mesh elements
 
         # mapping from section to impeller number
-        section2imp = -1 * np.ones(self.nsections, dtype=int)
+        self.section2imp = -1 * np.ones(self.nsections, dtype=int)
         # index 0-3 -> impeller0, 4-7 -> impeller1, etc.
         for j, sec in enumerate(self.baff_sections):
-            section2imp[sec] = j // 4
+            self.section2imp[sec] = j // 4
 
         self.all_volumes = range(self.nvolumes)
         self.nonbaff_volumes = [
