@@ -224,7 +224,7 @@ class StirredTankReactor:
             self.angle_offsets.append(_theta_offset(z3))
             count = count + 1
 
-        self.reacthts.append(reactor_bottom + reactor_height)
+        self.reacthts.append(self.reactor_bottom + self.reactor_height)
         self.circradii = np.append(
             self.circradii,
             np.array(
