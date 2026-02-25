@@ -87,16 +87,16 @@ class StirredTankReactor:
         self.dangle = 2.0 * np.pi / float(self.nsplits)
 
         if self.round_bottom:
-            curved_bottom_center = [
+            self.curved_bottom_center = [
                 0.0,
                 0.0,
                 self.reactor_bottom + self.reactor_height / 3,
             ]
             curved_bottom_edge = [self.tank_diameter / 2, 0.0, self.reactor_bottom]
-            curved_bottom_radius = np.sqrt(
-                (curved_bottom_edge[0] - curved_bottom_center[0]) ** 2
-                + (curved_bottom_edge[1] - curved_bottom_center[1]) ** 2
-                + (curved_bottom_edge[2] - curved_bottom_center[2]) ** 2
+            self.curved_bottom_radius = np.sqrt(
+                (curved_bottom_edge[0] - self.curved_bottom_center[0]) ** 2
+                + (curved_bottom_edge[1] - self.curved_bottom_center[1]) ** 2
+                + (curved_bottom_edge[2] - self.curved_bottom_center[2]) ** 2
             )
 
         self.circradii = np.array(
