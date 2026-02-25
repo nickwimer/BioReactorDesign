@@ -220,6 +220,20 @@ class StirredTankReactor:
             # self.reacthts.append(
             # reactor_bottom + impeller_centers[n_imp] + blade_width / 2
             # )
+            self.circradii = np.append(
+                self.circradii,
+                np.array(
+                    [
+                        self.impeller_scale[n_imp]
+                        * (self.hub_diameter / 2 - inner_blade_length),
+                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
+                        self.mrf_region_diameter / 2,
+                        self.tank_diameter / 2 - self.baffle_width,
+                        self.tank_diameter / 2,
+                    ]
+                ),
+            )
             self.baff_sections.append(count)
             self.angle_offsets.append(_theta_offset(z3))
             count = count + 1
@@ -241,7 +255,7 @@ class StirredTankReactor:
         )
         self.angle_offsets.append(0.0)
         self.nsections = len(self.reacthts)
-        self.circradii = self.circradii.reshape(self.nsections, 6)
+        self.circradii = self.circradii.reshape(self.nsections, self.ncirc)
         self.nvolumes = self.nsections - 1
         self.meshz = nz * np.diff(self.reacthts)
         self.meshz = self.meshz.astype(int) + 1  # avoid zero mesh elements
