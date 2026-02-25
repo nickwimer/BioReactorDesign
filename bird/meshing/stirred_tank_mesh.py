@@ -61,10 +61,10 @@ def write_vertices(outfile, react):
     ncirc = react.ncirc
     circradii = react.circradii
     polyrad = react.polyrad
-    round_bottom = react.get("round_bottom", False)
+    round_bottom = getattr(react, "round_bottom", False)
     curved_bottom_center = react.curved_bottom_center if round_bottom else None
     curved_bottom_radius = react.curved_bottom_radius if round_bottom else None
-    reactor_bottom = react.get("reactor_bottom", 0.0)
+    reactor_bottom = getattr(react, "reactor_bottom", 0.0)
 
     counter = 0
     for repeat in range(2):
