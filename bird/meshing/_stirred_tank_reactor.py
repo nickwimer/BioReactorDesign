@@ -71,9 +71,11 @@ class StirredTankReactor:
         def _lcm(a, b):
             return a * b // math.gcd(a, b)
 
-        self.hub_diameter = impeller_tip_diameter - 2 * blade_length  # (old Dh)
+        self.hub_diameter = (
+            self.impeller_tip_diameter - 2 * self.blade_length
+        )  # (old Dh)
         self.mrf_region_diameter = (
-            impeller_tip_diameter + tank_diameter - 2 * baffle_width
+            self.impeller_tip_diameter + self.tank_diameter - 2 * self.baffle_width
         ) / 2  # (old Dmrf)
         # self.nsplits = 2 * nbaffles  # we need twice the number of splits
 
@@ -99,7 +101,8 @@ class StirredTankReactor:
 
         self.circradii = np.array(
             [
-                self.impeller_scale[0] * (self.hub_diameter / 2 - inner_blade_length),
+                self.impeller_scale[0]
+                * (self.hub_diameter / 2 - self.inner_blade_length),
                 self.impeller_scale[0] * self.hub_diameter / 2,
                 self.impeller_scale[0] * self.impeller_tip_diameter / 2,
                 self.mrf_region_diameter / 2,
@@ -123,7 +126,7 @@ class StirredTankReactor:
 
         for n_imp in range(self.nimpellers):
             pitch = self.blade_pitch[n_imp]
-            tmp_len = blade_width
+            tmp_len = self.blade_width
             tip_rad = self.impeller_scale[n_imp] * (self.impeller_tip_diameter / 2)
             dz = tmp_len * np.cos(pitch)
             dz_min = self.hub_height_width * 1.05
