@@ -136,8 +136,8 @@ def write_vertices(outfile, react):
 
                 for i in range(nsplits):
                     ang = i * dangle
-                    x = circradii[ci] * np.cos(ang)
-                    y = circradii[ci] * np.sin(ang)
+                    x = circradii[zi][ci] * np.cos(ang)
+                    y = circradii[zi][ci] * np.sin(ang)
                     outfile.write(
                         "( "
                         + str(x)
