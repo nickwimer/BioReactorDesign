@@ -122,7 +122,7 @@ class StirredTankReactor:
         self.baff_volumes = []
         self.hub_volumes = []
         count = 1
-        angle_offsets = [0.0]
+        self.angle_offsets = [0.0]
 
         for n_imp in range(self.nimpellers):
             pitch = self.blade_pitch[n_imp]
