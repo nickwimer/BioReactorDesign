@@ -210,7 +210,7 @@ def write_edges(outfile, react):
     reacthts = react.reacthts
     angle_offsets = react.angle_offsets
     polyrad = react.polyrad
-    round_bottom = react.get("round_bottom", False)
+    round_bottom = getattr(react, "round_bottom", False)
     curved_bottom_center = react.curved_bottom_center if round_bottom else None
     curved_bottom_radius = react.curved_bottom_radius if round_bottom else None
 
