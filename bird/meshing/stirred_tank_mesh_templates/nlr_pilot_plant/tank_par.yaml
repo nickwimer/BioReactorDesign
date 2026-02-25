@@ -10,11 +10,15 @@ geometry:
     baffle_width:          0.026          # Baffle width (old J)
     hub_height_width:         0.0866667 / 5 / 5         # Hub height (Width) (old Wh)
     polyrad:    1     # Stem radius (R_shaft)
-    reactor_bottom:         0.0            # bottom of reactor
     nbaffles:   4              # number of baffles and impeller fins
     round_bottom: true        # whether the bottom of the tank is rounded or flat
     reactor_bottom: 0.0        # z-coordinate of the bottom of the reactor
     n_fins_per_impeller: [6, 4]
+    blade_pitch: [0, 15]
+    impeller_scale: [1, 0.85]
+    aspect_ratio: 0.667
+    target_volume_L: 1000
+
  
 mesh:
     nr:         2            # mesh points per unit radial length
