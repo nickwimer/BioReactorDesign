@@ -174,22 +174,49 @@ def get_globalindex_of(splti, ci, zi, react):
 
 
 def get_baffle_point_of(splti, ci, zi, react):
+    baffle_id = get_globalindex_of(splti, ci, zi, react)
+
+    if zi not in react.baff_sections:
+        return baffle_id
+
     baff_sections = react.baff_sections
     nsections = react.nsections
     npts_per_section = react.npts_per_section
     hub_circ = react.hub_circ
     tank_circ = react.tank_circ
+    section2imp = react.section2imp
+    n_fins_per_impeller = react.n_fins_per_impeller
 
-    baffle_id = get_globalindex_of(splti, ci, zi, react)
+    N = react.nsplits // 2
 
-    if zi in baff_sections:
-        if ci == hub_circ:
-            if splti % 2 == 0:  # even number for impeller
+    # impeller fins on the hub circle
+    if ci == hub_circ:
+        imp_idx = section2imp[zi]
+        if imp_idx >= 0:
+            n_fins = n_fins_per_impeller[imp_idx]
+
+            if splti % 2 == 0:
+                j = (splti // 2) % N
+                step_j = N // n_fins
+                if j % step_j == 0:
+                    baffle_id += nsections * npts_per_section
+
+    # wall baffles on the tank circle
+    if ci == tank_circ:
+        if splti % 2 == 1:
+            j = ((splti - 1) // 2) % N
+            step_jb = N // react.nbaffles
+            if j % step_jb == 0:
                 baffle_id += nsections * npts_per_section
 
-        if ci == tank_circ:
-            if splti % 2 == 1:  # odd number for baffle
-                baffle_id += nsections * npts_per_section
+    # if zi in baff_sections:
+    #     if ci == hub_circ:
+    #         if splti % 2 == 0:  # even number for impeller
+    #             baffle_id += nsections * npts_per_section
+
+    #     if ci == tank_circ:
+    #         if splti % 2 == 1:  # odd number for baffle
+    #             baffle_id += nsections * npts_per_section
 
     return baffle_id
 
