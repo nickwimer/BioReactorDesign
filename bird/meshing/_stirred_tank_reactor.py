@@ -1,49 +1,110 @@
+import math
 import os
+from functools import reduce
 from pathlib import Path
 
 import numpy as np
 
 from bird.utilities.parser import parse_yaml
 
+CUBIC_IN_TO_L = 0.0163871  # conversion factor from cubic inches to liters
+
 
 class StirredTankReactor:
     def __init__(
         self,
-        Dt,
-        Da,
-        H,
+        tank_diameter,
+        impeller_tip_diameter,
+        reactor_height,
         nimpellers,
-        C,
-        W,
-        L,
-        Lin,
-        J,
-        Wh,
+        impeller_centers,
+        blade_width,
+        blade_length,
+        inner_blade_length,
+        baffle_width,
+        hub_height_width,
         polyrad,
-        Z0,
+        reactor_bottom,
         nr,
         nz,
-        Npoly,
-        Na,
+        n_poly,
+        n_azimuth,
         nbaffles,
+        n_fins_per_impeller,
+        blade_pitch,
+        impeller_scale,
+        aspect_ratio,
+        target_volume_L,
+        round_bottom,
     ):
         # Loop through params and setattr v to self.k
         for k, v in locals().items():
             if k != "self":
                 setattr(self, k, v)
-        self.Dh = Da - 2 * L
-        self.Dmrf = (Da + Dt - 2 * J) / 2
-        self.nsplits = 2 * nbaffles  # we need twice the number of splits
+
+        # Convert degrees to radians for blade pitch
+        self.blade_pitch = [angle * np.pi / 180.0 for angle in blade_pitch]
+
+        # Solve for the tank parameters using the provided geometry or aspect ratio
+        (
+            self.tank_diameter,
+            self.reactor_height,
+            self.aspect_ratio,
+            self.final_volume_L,
+        ) = StirredTankReactor.solve_cylinder(
+            target_volume_L=target_volume_L,
+            aspect_ratio=aspect_ratio,
+            tank_diameter=tank_diameter,
+            reactor_height=reactor_height,
+        )
+        print(
+            f"Tank diameter: {self.tank_diameter:.2f}, "
+            f"Reactor height: {self.reactor_height:.2f}, "
+            f"Aspect ratio: {self.aspect_ratio:.2f}, "
+            f"Final volume (L): {self.final_volume_L:.2f}"
+        )
+
+        self.impeller_tip_diameter = 0.5 * self.tank_diameter
+        self.baffle_width = 0.075 * self.tank_diameter
+
+        # compute least common multiple of n_fins_per_impeller using greatest common divisor
+        def _lcm(a, b):
+            return a * b // math.gcd(a, b)
+
+        self.hub_diameter = impeller_tip_diameter - 2 * blade_length  # (old Dh)
+        self.mrf_region_diameter = (
+            impeller_tip_diameter + tank_diameter - 2 * baffle_width
+        ) / 2  # (old Dmrf)
+        # self.nsplits = 2 * nbaffles  # we need twice the number of splits
+
+        base_counts = [self.nbaffles] + self.n_fins_per_impeller
+        n_base = reduce(_lcm, base_counts)
+        print(f"Least common multiple of baffles and fins: {n_base}")
+
+        self.nsplits = 2 * n_base  # we need twice the number of splits
         self.dangle = 2.0 * np.pi / float(self.nsplits)
+
+        if self.round_bottom:
+            curved_bottom_center = [
+                0.0,
+                0.0,
+                self.reactor_bottom + self.reactor_height / 3,
+            ]
+            curved_bottom_edge = [self.tank_diameter / 2, 0.0, self.reactor_bottom]
+            curved_bottom_radius = np.sqrt(
+                (curved_bottom_edge[0] - curved_bottom_center[0]) ** 2
+                + (curved_bottom_edge[1] - curved_bottom_center[1]) ** 2
+                + (curved_bottom_edge[2] - curved_bottom_center[2]) ** 2
+            )
 
         self.circradii = np.array(
             [
-                self.Dh / 2 - Lin,
-                self.Dh / 2,
-                Da / 2,
-                self.Dmrf / 2,
-                Dt / 2 - J,
-                Dt / 2,
+                self.impeller_scale[0] * (self.hub_diameter / 2 - inner_blade_length),
+                self.impeller_scale[0] * self.hub_diameter / 2,
+                self.impeller_scale[0] * self.impeller_tip_diameter / 2,
+                self.mrf_region_diameter / 2,
+                self.tank_diameter / 2 - self.baffle_width,
+                self.tank_diameter / 2,
             ]
         )
         self.ncirc = len(self.circradii)
@@ -53,41 +114,140 @@ class StirredTankReactor:
         self.mrf_circ = self.rot_circ + 1
         self.tank_circ = self.ncirc - 1
 
-        self.reacthts = [Z0]
+        self.reacthts = [reactor_bottom]
         self.baff_sections = []
         self.baff_volumes = []
         self.hub_volumes = []
         count = 1
+        angle_offsets = [0.0]
+
         for n_imp in range(self.nimpellers):
-            self.reacthts.append(Z0 + C[n_imp] - W / 2)
+            pitch = self.blade_pitch[n_imp]
+            tmp_len = blade_width
+            tip_rad = self.impeller_scale[n_imp] * (self.impeller_tip_diameter / 2)
+            dz = tmp_len * np.cos(pitch)
+            dz_min = self.hub_height_width * 1.05
+            if dz < dz_min:
+                dz = dz_min
+            dtheta = (tmp_len * np.sin(pitch)) / max(tip_rad, 1e-12)
+            zc = self.reactor_bottom + self.impeller_centers[n_imp]
+
+            def _theta_offset(z):
+                return (z - zc) * dtheta / dz
+
+            z0 = zc - dz / 2.0
+
+            # self.reacthts.append(
+            #     reactor_bottom + impeller_centers[n_imp] - blade_width / 2
+            # )
+            self.reacthts.append(z0)
+            self.circradii = np.append(
+                self.circradii,
+                np.array(
+                    [
+                        self.impeller_scale[n_imp]
+                        * (self.hub_diameter / 2 - inner_blade_length),
+                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
+                        self.mrf_region_diameter / 2,
+                        self.tank_diameter / 2 - self.baffle_width,
+                        self.tank_diameter / 2,
+                    ]
+                ),
+            )
 
             self.baff_sections.append(count)
             self.baff_volumes.append(count)
+            self.angle_offsets.append(_theta_offset(z0))
             count = count + 1
 
-            self.reacthts.append(Z0 + C[n_imp] - Wh / 2)
+            z1 = zc - self.hub_height_width / 2.0
+            self.reacthts.append(z1)
+            # self.reacthts.append(
+            #     reactor_bottom + impeller_centers[n_imp] - hub_height_width / 2
+            # )
+            self.circradii = np.append(
+                self.circradii,
+                np.array(
+                    [
+                        self.impeller_scale[n_imp]
+                        * (self.hub_diameter / 2 - inner_blade_length),
+                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
+                        self.mrf_region_diameter / 2,
+                        self.tank_diameter / 2 - self.baffle_width,
+                        self.tank_diameter / 2,
+                    ]
+                ),
+            )
 
             self.baff_sections.append(count)
             self.baff_volumes.append(count)
             self.hub_volumes.append(count)
+            self.angle_offsets.append(_theta_offset(z1))
             count = count + 1
 
-            self.reacthts.append(Z0 + C[n_imp] + Wh / 2)
+            z2 = zc + self.hub_height_width / 2.0
+            self.reacthts.append(z2)
+            # self.reacthts.append(
+            # reactor_bottom + impeller_centers[n_imp] + hub_height_width / 2
+            # )
+            self.circradii = np.append(
+                self.circradii,
+                np.array(
+                    [
+                        self.impeller_scale[n_imp]
+                        * (self.hub_diameter / 2 - inner_blade_length),
+                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
+                        self.mrf_region_diameter / 2,
+                        self.tank_diameter / 2 - self.baffle_width,
+                        self.tank_diameter / 2,
+                    ]
+                ),
+            )
 
             self.baff_sections.append(count)
             self.baff_volumes.append(count)
+            self.angle_offsets.append(_theta_offset(z2))
             count = count + 1
 
-            self.reacthts.append(Z0 + C[n_imp] + W / 2)
+            z3 = zc + dz / 2.0
+            self.reacthts.append(z3)
+            # self.reacthts.append(
+            # reactor_bottom + impeller_centers[n_imp] + blade_width / 2
+            # )
             self.baff_sections.append(count)
+            self.angle_offsets.append(_theta_offset(z3))
             count = count + 1
 
-        self.reacthts.append(Z0 + H)
-
+        self.reacthts.append(reactor_bottom + reactor_height)
+        self.circradii = np.append(
+            self.circradii,
+            np.array(
+                [
+                    self.impeller_scale[-1]
+                    * (self.hub_diameter / 2 - inner_blade_length),
+                    self.impeller_scale[-1] * self.hub_diameter / 2,
+                    self.impeller_scale[-1] * self.impeller_tip_diameter / 2,
+                    self.mrf_region_diameter / 2,
+                    self.tank_diameter / 2 - self.baffle_width,
+                    self.tank_diameter / 2,
+                ]
+            ),
+        )
+        self.angle_offsets.append(0.0)
         self.nsections = len(self.reacthts)
+        self.circradii = self.circradii.reshape(self.nsections, 6)
         self.nvolumes = self.nsections - 1
         self.meshz = nz * np.diff(self.reacthts)
         self.meshz = self.meshz.astype(int) + 1  # avoid zero mesh elements
+
+        # mapping from section to impeller number
+        section2imp = -1 * np.ones(self.nsections, dtype=int)
+        # index 0-3 -> impeller0, 4-7 -> impeller1, etc.
+        for j, sec in enumerate(self.baff_sections):
+            section2imp[sec] = j // 4
 
         self.all_volumes = range(self.nvolumes)
         self.nonbaff_volumes = [
@@ -137,3 +297,54 @@ class StirredTankReactor:
         in_dict = parse_yaml(yamlfile)
         react_dict = {**in_dict["geometry"], **in_dict["mesh"]}
         return cls(**react_dict)
+
+    def cylinder_volume_L(diameter_in: float, height_in: float) -> float:
+        return (math.pi * (diameter_in / 2.0) ** 2 * height_in) * CUBIC_IN_TO_L
+
+    def solve_cylinder(
+        target_volume_L: float,
+        aspect_ratio: float | None = None,  # AR = H/D
+        tank_diameter: float | None = None,  # inches
+        reactor_height: float | None = None,  # inches
+    ):
+        """
+        Solves for the cylinder tank geometry using the aspect ratio, tank diameter, or
+        height.
+        """
+        volume_in3 = target_volume_L / CUBIC_IN_TO_L
+
+        if tank_diameter is not None and reactor_height is not None:
+            raise ValueError(
+                "Provide only one of tank_diameter or reactor_height (or neither)."
+            )
+
+        if tank_diameter is not None:
+            tank_diameter_final = float(tank_diameter)
+            reactor_height_final = 4.0 * volume_in3 / (math.pi * tank_diameter_final**2)
+        elif reactor_height is not None:
+            reactor_height_final = float(reactor_height)
+            tank_diameter_final = math.sqrt(
+                4.0 * volume_in3 / (math.pi * reactor_height_final)
+            )
+        else:
+            if aspect_ratio is None:
+                raise ValueError(
+                    "If neither diameter nor height is provided, "
+                    "aspect_ratio is required."
+                )
+            aspect_ratio_final = float(aspect_ratio)
+            tank_diameter_final = (
+                4.0 * volume_in3 / (math.pi * aspect_ratio_final)
+            ) ** (1.0 / 3.0)
+            reactor_height_final = aspect_ratio_final * tank_diameter_final
+
+        aspect_ratio_final = reactor_height_final / tank_diameter_final
+        final_volume_L = (
+            math.pi * (tank_diameter_final / 2.0) ** 2 * reactor_height_final
+        ) * CUBIC_IN_TO_L
+        return (
+            tank_diameter_final,
+            reactor_height_final,
+            aspect_ratio_final,
+            final_volume_L,
+        )
