@@ -1,14 +1,14 @@
 geometry:
-    tank_diameter:         0.26           # Tank diameter  [m] (old Dt)
+    tank_diameter:         null           # Tank diameter  [m] (old Dt)
     impeller_tip_diameter:         0.0866667      # Impleller tip Diameter  [m] (old Da)
-    reactor_height:          0.39           # Height of the reactor  [m] (old H)
+    reactor_height:          null          # Height of the reactor  [m] (old H)
     nimpellers: 2              # number of impellers
     impeller_centers:          [15, 65]  # height of the center of impellers [m] (old C)
-    blade_width:          0.0866667 / 5          # impeller blade width [m] (old W)
+    blade_width:          0.01733334          # impeller blade width [m] (old W)
     blade_length:          0.013          # impeller blade length (beyond the hub) [m] (old L)
-    inner_blade_length:    0.0866667 / 8          # impeller blade length (inside the hub) [m] (old Lin)
+    inner_blade_length:    0.0108333375          # impeller blade length (inside the hub) [m] (old Lin)
     baffle_width:          0.026          # Baffle width (old J)
-    hub_height_width:         0.0866667 / 5 / 5         # Hub height (Width) (old Wh)
+    hub_height_width:         0.003466668         # Hub height (Width) (old Wh)
     polyrad:    1     # Stem radius (R_shaft)
     nbaffles:   4              # number of baffles and impeller fins
     round_bottom: true        # whether the bottom of the tank is rounded or flat
