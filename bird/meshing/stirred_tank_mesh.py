@@ -221,10 +221,10 @@ def get_baffle_point_of(splti, ci, zi, react):
     return baffle_id
 
 
-def _is_duplicated_point(geom, splti: int, ci: int, zi: int) -> bool:
+def _is_duplicated_point(react, splti: int, ci: int, zi: int) -> bool:
     """True if (splti, ci, zi) uses the duplicated "extra ring" point."""
-    return get_baffle_point_of(geom, splti, ci, zi) != get_globalindex_of(
-        geom, splti, ci, zi
+    return get_baffle_point_of(splti, ci, zi, react) != get_globalindex_of(
+        splti, ci, zi, react
     )
 
 
