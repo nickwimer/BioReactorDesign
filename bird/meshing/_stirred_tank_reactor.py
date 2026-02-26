@@ -333,10 +333,11 @@ class StirredTankReactor:
             assert (
                 tank_diameter is not None and reactor_height is not None
             ), "Provide target_volume_L or both tank_diameter and reactor_height."
+            aspect_ratio_final = reactor_height / tank_diameter
             return (
                 tank_diameter,
                 reactor_height,
-                aspect_ratio,
+                aspect_ratio_final,
                 _cylinder_volume_L(tank_diameter, reactor_height),
             )
 
