@@ -316,7 +316,6 @@ class StirredTankReactor:
         return cls(**react_dict)
 
     def solve_cylinder(
-        self,
         target_volume_L: float,
         aspect_ratio: float | None = None,  # AR = H/D
         tank_diameter: float | None = None,  # inches
