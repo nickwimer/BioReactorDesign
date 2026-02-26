@@ -315,10 +315,8 @@ class StirredTankReactor:
         react_dict = {**in_dict["geometry"], **in_dict["mesh"]}
         return cls(**react_dict)
 
-    def cylinder_volume_L(diameter_in: float, height_in: float) -> float:
-        return (math.pi * (diameter_in / 2.0) ** 2 * height_in) * CUBIC_IN_TO_L
-
     def solve_cylinder(
+        self,
         target_volume_L: float,
         aspect_ratio: float | None = None,  # AR = H/D
         tank_diameter: float | None = None,  # inches
@@ -329,6 +327,9 @@ class StirredTankReactor:
         height.
         """
 
+        def _cylinder_volume_L(diameter_in: float, height_in: float) -> float:
+            return (math.pi * (diameter_in / 2.0) ** 2 * height_in) * CUBIC_IN_TO_L
+
         if target_volume_L is None:
             assert (
                 tank_diameter is not None and reactor_height is not None
@@ -337,7 +338,7 @@ class StirredTankReactor:
                 tank_diameter,
                 reactor_height,
                 aspect_ratio,
-                self.cylinder_volume_L(tank_diameter, reactor_height),
+                _cylinder_volume_L(tank_diameter, reactor_height),
             )
 
         volume_in3 = target_volume_L / CUBIC_IN_TO_L
