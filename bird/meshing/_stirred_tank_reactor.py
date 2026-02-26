@@ -328,6 +328,18 @@ class StirredTankReactor:
         Solves for the cylinder tank geometry using the aspect ratio, tank diameter, or
         height.
         """
+
+        if target_volume_L is None:
+            assert (
+                tank_diameter is not None and reactor_height is not None
+            ), "Provide target_volume_L or both tank_diameter and reactor_height."
+            return (
+                tank_diameter,
+                reactor_height,
+                aspect_ratio,
+                self.cylinder_volume_L(tank_diameter, reactor_height),
+            )
+
         volume_in3 = target_volume_L / CUBIC_IN_TO_L
 
         if tank_diameter is not None and reactor_height is not None:
