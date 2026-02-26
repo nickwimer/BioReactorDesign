@@ -1,23 +1,24 @@
 geometry:
-    tank_diameter:         null           # Tank diameter  [m] (old Dt)
-    impeller_tip_diameter:         0.0866667      # Impleller tip Diameter  [m] (old Da)
-    reactor_height:          null          # Height of the reactor  [m] (old H)
-    nimpellers: 2              # number of impellers
-    impeller_centers:          [15, 65]  # height of the center of impellers [m] (old C)
-    blade_width:          0.01733334          # impeller blade width [m] (old W)
-    blade_length:          0.013          # impeller blade length (beyond the hub) [m] (old L)
-    inner_blade_length:    0.0108333375          # impeller blade length (inside the hub) [m] (old Lin)
-    baffle_width:          0.026          # Baffle width (old J)
-    hub_height_width:         0.003466668         # Hub height (Width) (old Wh)
-    polyrad:    1     # Stem radius (R_shaft)
-    nbaffles:   4              # number of baffles and impeller fins
-    round_bottom: true        # whether the bottom of the tank is rounded or flat
-    reactor_bottom: 0.0        # z-coordinate of the bottom of the reactor
-    n_fins_per_impeller: [6, 4]
-    blade_pitch: [0, 15]
-    impeller_scale: [1, 0.85]
-    aspect_ratio: 0.667
-    target_volume_L: 1000
+    tank_diameter:         42.0         # Tank diameter  [m] (old Dt)
+    reactor_height:        68.525       # Height of the reactor  [m] (old H)
+    impeller_tip_diameter: 22.0         # Impleller tip Diameter  [m] (old Da)
+    nimpellers:            2            # number of impellers
+    impeller_centers:  [13.025,36.025]  # height of the center of impellers [m] (old C)
+    blade_width:          4.4           # impeller blade width [m] (old W)
+    blade_length:          2.75         # impeller blade length (beyond the hub) [m] (old L)
+    inner_blade_length:    2.75         # impeller blade length (inside the hub) [m] (old Lin)
+    baffle_width:          3.45         # Baffle width (old J)
+    hub_height_width:      0.88         # Hub height (Width) (old Wh)
+    polyrad:               1            # Stem radius (R_shaft)
+    nbaffles:              4            # number of baffles and impeller fins
+    round_bottom:          true         # whether the bottom of the tank is rounded or flat
+    reactor_bottom:        0.0          # z-coordinate of the bottom of the reactor
+    n_fins_per_impeller:   [6, 4]       # number of fins per impeller
+    blade_pitch:           [0, 15]      # blade pitch in degrees (0 = vertical)
+    impeller_scale:        [0.81818, 1] # scale factor for impellers
+    # alternate way to create tank instead of diameter and height
+    aspect_ratio:          null         # aspect ratio of the tank
+    target_volume_L:       null         # target volume in liters
 
  
 mesh:
