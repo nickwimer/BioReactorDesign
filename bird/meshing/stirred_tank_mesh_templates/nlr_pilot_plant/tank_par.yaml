@@ -11,6 +11,7 @@ geometry:
     hub_height_width:      0.88         # Hub height (Width) (old Wh)
     polyrad:               1            # Stem radius (R_shaft)
     nbaffles:              4            # number of baffles and impeller fins
+    bottom_inlet:          false        # whether the bottom of the tank is an inlet or wall
     round_bottom:          true         # whether the bottom of the tank is rounded or flat
     reactor_bottom:        0.0          # z-coordinate of the bottom of the reactor
     n_fins_per_impeller:   [6, 4]       # number of fins per impeller

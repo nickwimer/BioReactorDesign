@@ -36,6 +36,7 @@ class StirredTankReactor:
         aspect_ratio,
         target_volume_L,
         round_bottom,
+        bottom_inlet,
     ):
         # Loop through params and setattr v to self.k
         for k, v in locals().items():

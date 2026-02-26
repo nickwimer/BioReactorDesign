@@ -439,6 +439,7 @@ def write_patches(outfile, react):
     baff_volumes = react.baff_volumes
     nonbaff_volumes = react.nonbaff_volumes
     only_stem_volumes = react.only_stem_volumes
+    bottom_inlet = react.bottom_inlet
 
     poly_ci = -1
 
@@ -447,46 +448,47 @@ def write_patches(outfile, react):
     )
     outfile.write("patches\n(\n")
 
-    # inlet patch
-    zi = 0
-    centerid = zi * npts_per_section
+    if bottom_inlet:
+        # inlet patch
+        zi = 0
+        centerid = zi * npts_per_section
 
-    outfile.write("\n\tpatch inlet\n\t(\n")
+        outfile.write("\n\tpatch inlet\n\t(\n")
 
-    # polygon
-    outfile.write("\n\t\t//polygon\n")
-    for i in range(nsplits):
-        outfile.write("\t\t( ")
-        outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
-        outfile.write(str(centerid) + " ")
-        outfile.write(str(centerid) + ")\n")
+        # polygon
+        outfile.write("\n\t\t//polygon\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(centerid) + " ")
+            outfile.write(str(centerid) + ")\n")
 
-    outfile.write("\n\t\t//inhub_circ to polygon\n")
-    for i in range(nsplits):
-        outfile.write("\t\t( ")
-        outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n")
+        outfile.write("\n\t\t//inhub_circ to polygon\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n")
 
-    outfile.write("\n\t\t//hub to inhub_circ\n")
-    for i in range(nsplits):
-        outfile.write("\t\t( ")
-        outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n")
+        outfile.write("\n\t\t//hub to inhub_circ\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n")
 
-    outfile.write("\n\t\t//rotor to hub\n")
-    for i in range(nsplits):
-        outfile.write("\t\t( ")
-        outfile.write(str(get_globalindex_of(i, rot_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n")
+        outfile.write("\n\t\t//rotor to hub\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n")
 
-    outfile.write("\t)\n")
+        outfile.write("\t)\n")
 
     # outlet patch
     zi = nsections - 1
@@ -494,15 +496,6 @@ def write_patches(outfile, react):
     outfile.write("\n\tpatch outlet\n\t(\n")
 
     # no polygon patch in outlet when we include stem
-    # polygon
-    # outfile.write("\n\t\t//polygon\n")
-    # for i in range(nsplits):
-    #    outfile.write("\t\t( ")
-    #    outfile.write(str(get_globalindex_of(i,poly_ci,zi))+" ")
-    #    outfile.write(str(get_globalindex_of(i+1,poly_ci,zi))+" ")
-    #    outfile.write(str(centerid)+" ")
-    #    outfile.write(str(centerid)+")\n")
-
     outfile.write("\n\t\t//circles\n")
     for ci in range(ncirc):
         outfile.write("\n\t\t//circle " + str(ci) + " - " + str(ci - 1) + " \n")
