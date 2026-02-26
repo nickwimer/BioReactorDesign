@@ -65,6 +65,7 @@ def write_vertices(outfile, react):
     curved_bottom_center = react.curved_bottom_center if round_bottom else None
     curved_bottom_radius = react.curved_bottom_radius if round_bottom else None
     reactor_bottom = getattr(react, "reactor_bottom", 0.0)
+    angle_offsets = react.angle_offsets
 
     counter = 0
     for repeat in range(2):
@@ -133,9 +134,12 @@ def write_vertices(outfile, react):
 
             for ci in range(ncirc):
                 outfile.write("\n//circle " + str(ci) + "\n")
+                offsetang = 0.0
+                if ci >= 0 and ci <= 2:
+                    offsetang = angle_offsets[zi]
 
                 for i in range(nsplits):
-                    ang = i * dangle
+                    ang = i * dangle + offsetang
                     x = circradii[zi][ci] * np.cos(ang)
                     y = circradii[zi][ci] * np.sin(ang)
                     outfile.write(

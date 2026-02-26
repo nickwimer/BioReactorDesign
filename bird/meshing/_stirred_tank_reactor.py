@@ -130,6 +130,7 @@ class StirredTankReactor:
             tmp_len = self.blade_width
             tip_rad = self.impeller_scale[n_imp] * (self.impeller_tip_diameter / 2)
             dz = tmp_len * np.cos(pitch)
+            # prevent blade from going below rotor hub
             dz_min = self.hub_height_width * 1.05
             if dz < dz_min:
                 dz = dz_min
