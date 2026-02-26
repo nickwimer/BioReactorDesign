@@ -643,6 +643,40 @@ def write_patches(outfile, react):
     tank_ci = ncirc - 1
     outfile.write("\n\twall walls\n\t(\n")
 
+    # Do what used to be the inlet patch
+    if not bottom_inlet:
+        zi = 0
+        centerid = zi * npts_per_section
+        # polygon
+        outfile.write("\n\t\t//polygon\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(centerid) + " ")
+            outfile.write(str(centerid) + ")\n")
+        outfile.write("\n\t\t//inhub_circ to polygon\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n")
+        outfile.write("\n\t\t//hub to inhub_circ\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n")
+        outfile.write("\n\t\t//rotor to hub\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n")
+
     for zi in range(nsections - 1):
         outfile.write("\n\t\t//tank walls " + str(zi) + " - " + str(zi + 1) + "\n")
 
