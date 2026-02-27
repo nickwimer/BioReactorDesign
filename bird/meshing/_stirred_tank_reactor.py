@@ -374,6 +374,17 @@ class StirredTankReactor:
         final_volume_L = (
             math.pi * (tank_diameter_final / 2.0) ** 2 * reactor_height_final
         ) * CUBIC_IN_TO_L
+
+        # Compute the height that yeils 90% of the target volume for water level line
+        water_level_height_final = 0.9 * reactor_height_final
+        water_level_volume_L = _cylinder_volume_L(
+            tank_diameter_final, water_level_height_final
+        )
+        print(
+            f"Water level height for 90% volume: {water_level_height_final:.2f} inches, "
+            f"which corresponds to {water_level_volume_L:.2f} L"
+        )
+
         return (
             tank_diameter_final,
             reactor_height_final,

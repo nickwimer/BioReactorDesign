@@ -4,7 +4,7 @@ geometry:
     impeller_tip_diameter: 22.0         # Impleller tip Diameter  [m] (old Da)
     nimpellers:            2            # number of impellers
     impeller_centers:  [13.025,36.025]  # height of the center of impellers [m] (old C)
-    blade_width:          4.4           # impeller blade width [m] (old W)
+    blade_width:           4.4          # impeller blade width [m] (old W)
     blade_length:          2.75         # impeller blade length (beyond the hub) [m] (old L)
     inner_blade_length:    2.75         # impeller blade length (inside the hub) [m] (old Lin)
     baffle_width:          3.45         # Baffle width (old J)
