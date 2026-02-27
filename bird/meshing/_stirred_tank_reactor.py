@@ -336,6 +336,15 @@ class StirredTankReactor:
                 tank_diameter is not None and reactor_height is not None
             ), "Provide target_volume_L or both tank_diameter and reactor_height."
             aspect_ratio_final = reactor_height / tank_diameter
+
+            water_level_height_final = 0.9 * reactor_height
+            water_level_volume_L = _cylinder_volume_L(
+                tank_diameter, water_level_height_final
+            )
+            print(
+                f"Water level height for 90% volume: {water_level_height_final:.2f} inches, "
+                f"which corresponds to {water_level_volume_L:.2f} L"
+            )
             return (
                 tank_diameter,
                 reactor_height,
