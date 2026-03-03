@@ -213,15 +213,6 @@ def get_baffle_point_of(splti, ci, zi, react):
             if j % step_jb == 0:
                 baffle_id += nsections * npts_per_section
 
-    # if zi in baff_sections:
-    #     if ci == hub_circ:
-    #         if splti % 2 == 0:  # even number for impeller
-    #             baffle_id += nsections * npts_per_section
-
-    #     if ci == tank_circ:
-    #         if splti % 2 == 1:  # odd number for baffle
-    #             baffle_id += nsections * npts_per_section
-
     return baffle_id
 
 

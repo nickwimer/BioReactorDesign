@@ -78,7 +78,6 @@ class StirredTankReactor:
         self.mrf_region_diameter = (
             self.impeller_tip_diameter + self.tank_diameter - 2 * self.baffle_width
         ) / 2  # (old Dmrf)
-        # self.nsplits = 2 * nbaffles  # we need twice the number of splits
 
         base_counts = [self.nbaffles] + self.n_fins_per_impeller
         n_base = reduce(_lcm, base_counts)
@@ -142,9 +141,6 @@ class StirredTankReactor:
 
             z0 = zc - dz / 2.0
 
-            # self.reacthts.append(
-            #     reactor_bottom + impeller_centers[n_imp] - blade_width / 2
-            # )
             self.reacthts.append(z0)
             self.circradii = np.append(
                 self.circradii,
@@ -168,9 +164,6 @@ class StirredTankReactor:
 
             z1 = zc - self.hub_height_width / 2.0
             self.reacthts.append(z1)
-            # self.reacthts.append(
-            #     reactor_bottom + impeller_centers[n_imp] - hub_height_width / 2
-            # )
             self.circradii = np.append(
                 self.circradii,
                 np.array(
@@ -194,9 +187,6 @@ class StirredTankReactor:
 
             z2 = zc + self.hub_height_width / 2.0
             self.reacthts.append(z2)
-            # self.reacthts.append(
-            # reactor_bottom + impeller_centers[n_imp] + hub_height_width / 2
-            # )
             self.circradii = np.append(
                 self.circradii,
                 np.array(
@@ -219,9 +209,6 @@ class StirredTankReactor:
 
             z3 = zc + dz / 2.0
             self.reacthts.append(z3)
-            # self.reacthts.append(
-            # reactor_bottom + impeller_centers[n_imp] + blade_width / 2
-            # )
             self.circradii = np.append(
                 self.circradii,
                 np.array(
