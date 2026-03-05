@@ -1,0 +1,32 @@
+geometry:
+    tank_diameter:         42.0         # Tank diameter  [m] (old Dt)
+    reactor_height:        68.525       # Height of the reactor  [m] (old H)
+    impeller_tip_diameter: 22.0         # Impleller tip Diameter  [m] (old Da)
+    nimpellers:            2            # number of impellers
+    impeller_centers:  [13.025,36.025]  # height of the center of impellers [m] (old C)
+    blade_width:           4.4          # impeller blade width [m] (old W)
+    blade_length:          2.75         # impeller blade length (beyond the hub) [m] (old L)
+    inner_blade_length:    2.75         # impeller blade length (inside the hub) [m] (old Lin)
+    baffle_width:          3.45         # Baffle width (old J)
+    hub_height_width:      0.88         # Hub height (Width) (old Wh)
+    polyrad:               1            # Stem radius (R_shaft)
+    nbaffles:              4            # number of baffles and impeller fins
+    bottom_inlet:          false        # whether the bottom of the tank is an inlet or wall
+    round_bottom:          true         # whether the bottom of the tank is rounded or flat
+    reactor_bottom:        0.0          # z-coordinate of the bottom of the reactor
+    n_fins_per_impeller:   [6, 4]       # number of fins per impeller
+    blade_pitch:           [0, 45]      # blade pitch in degrees (0 = vertical)
+    impeller_scale:        [0.81818, 1] # scale factor for impellers
+    # alternate way to create tank instead of diameter and height
+    aspect_ratio:          null         # aspect ratio of the tank
+    target_volume_L:       null         # target volume in liters
+
+ 
+mesh:
+    nr:         2            # mesh points per unit radial length
+    nz:         2            # mesh points per unit axial length
+    n_poly:     3            # mesh points in the polygon at the axis
+    n_azimuth:  6            # mesh points in the azimuthal direction
+    
+
+
