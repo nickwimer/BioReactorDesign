@@ -42,7 +42,23 @@ def write_ofoam_preamble(outfile, react):
     outfile.write(
         "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n\n"
     )
-    outfile.write("convertToMeters 1.0;\n\n")
+    if react.units == "m":
+        outfile.write("// units: m\n")
+        outfile.write("convertToMeters 1.0;\n\n")
+    elif react.units == "cm":
+        outfile.write("// units: cm\n")
+        outfile.write("convertToMeters 0.01;\n\n")
+    elif react.units == "mm":
+        outfile.write("// units: mm\n")
+        outfile.write("convertToMeters 0.001;\n\n")
+    elif react.units == "ft":
+        outfile.write("// units: ft\n")
+        outfile.write("convertToMeters 0.3048;\n\n")
+    elif react.units == "in":
+        outfile.write("// units: in\n")
+        outfile.write("convertToMeters 0.0254;\n\n")
+    else:
+        raise ValueError("Unsupported units: " + react.units)
     outfile.write(
         "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n\n"
     )
@@ -84,9 +100,7 @@ def write_vertices(outfile, react):
                 azang = np.pi / 2 - np.arccos(polyrad / curved_bottom_radius)
                 x = polyrad * np.cos(ang)
                 y = polyrad * np.sin(ang)
-                z = curved_bottom_center[2] - curved_bottom_radius * np.cos(
-                    azang
-                )
+                z = curved_bottom_center[2] - curved_bottom_radius * np.cos(azang)
                 outfile.write(f"({x} {y} {z}) // {counter}\n")
                 counter = counter + 1
                 outfile.write("\n//circles\n")
@@ -99,9 +113,7 @@ def write_vertices(outfile, react):
                     )
                     x = circradii[0][ci] * np.cos(ang)
                     y = circradii[0][ci] * np.sin(ang)
-                    z = curved_bottom_center[
-                        2
-                    ] - curved_bottom_radius * np.cos(azang)
+                    z = curved_bottom_center[2] - curved_bottom_radius * np.cos(azang)
 
                     outfile.write(f"({x} {y} {z}) // {counter}\n")
                     counter = counter + 1
@@ -259,9 +271,7 @@ def write_edges(outfile, react):
             azang = np.pi / 2 - np.arccos(
                 np.sqrt(midx**2 + midy**2) / curved_bottom_radius
             )
-            outfile.write(
-                "arc " + str(i + 1) + " " + str((i + 1) % nsplits + 1) + " "
-            )
+            outfile.write("arc " + str(i + 1) + " " + str((i + 1) % nsplits + 1) + " ")
             z = curved_bottom_center[2] - curved_bottom_radius * np.cos(azang)
             outfile.write(f"({midx} {midy} {z})\n")
 
@@ -271,19 +281,13 @@ def write_edges(outfile, react):
                 ang = i * dangle
                 midx = circradii[0][ci] * np.cos(ang + dangle / 2)
                 midy = circradii[0][ci] * np.sin(ang + dangle / 2)
-                azang = np.pi / 2 - np.arccos(
-                    circradii[0][ci] / curved_bottom_radius
-                )
+                azang = np.pi / 2 - np.arccos(circradii[0][ci] / curved_bottom_radius)
 
                 globalind1 = get_baffle_point_of(i, ci, 0, react)
                 globalind2 = get_globalindex_of(i + 1, ci, 0, react)
 
-                outfile.write(
-                    "arc " + str(globalind1) + " " + str(globalind2) + " "
-                )
-                z = curved_bottom_center[2] - curved_bottom_radius * np.cos(
-                    azang
-                )
+                outfile.write("arc " + str(globalind1) + " " + str(globalind2) + " ")
+                z = curved_bottom_center[2] - curved_bottom_radius * np.cos(azang)
                 outfile.write(f"({midx} {midy} {z})\n")
 
     for zi in range(1 if round_bottom else 0, nsections):
@@ -307,9 +311,7 @@ def write_edges(outfile, react):
                 globalind1 = get_baffle_point_of(i, ci, zi, react)
                 globalind2 = get_globalindex_of(i + 1, ci, zi, react)
 
-                outfile.write(
-                    "arc " + str(globalind1) + " " + str(globalind2) + " "
-                )
+                outfile.write("arc " + str(globalind1) + " " + str(globalind2) + " ")
                 outfile.write(
                     "( "
                     + str(midx)
@@ -407,9 +409,7 @@ def write_blocks(outfile, react):
             zonename = "none"
 
             # skip blocks inside hub
-            if ((ci == inhub_circ) or (ci == hub_circ)) and (
-                zi in hub_volumes
-            ):
+            if ((ci == inhub_circ) or (ci == hub_circ)) and (zi in hub_volumes):
                 continue
 
             outfile.write("\n//circle " + str(ci) + "\n")
@@ -471,55 +471,33 @@ def write_patches(outfile, react):
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " "
-            )
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
             outfile.write(str(centerid) + " ")
             outfile.write(str(centerid) + ")\n")
 
         outfile.write("\n\t\t//inhub_circ to polygon\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n")
 
         outfile.write("\n\t\t//hub to inhub_circ\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n")
 
         outfile.write("\n\t\t//rotor to hub\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, rot_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n")
 
         outfile.write("\t)\n")
 
@@ -531,19 +509,13 @@ def write_patches(outfile, react):
     # no polygon patch in outlet when we include stem
     outfile.write("\n\t\t//circles\n")
     for ci in range(ncirc):
-        outfile.write(
-            "\n\t\t//circle " + str(ci) + " - " + str(ci - 1) + " \n"
-        )
+        outfile.write("\n\t\t//circle " + str(ci) + " - " + str(ci - 1) + " \n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, ci, zi, react)) + " ")
             outfile.write(str(get_globalindex_of(i + 1, ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, ci - 1, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, ci - 1, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, ci - 1, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, ci - 1, zi, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -570,92 +542,56 @@ def write_patches(outfile, react):
             outfile.write("\n\t\t//hub to blade circle\n")
             for i in range(nsplits):
                 outfile.write("\t\t( ")
-                outfile.write(
-                    str(get_baffle_point_of(i, hub_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_baffle_point_of(i, inhub_ci, zi, react)) + ")\n"
-                )
+                outfile.write(str(get_baffle_point_of(i, hub_ci, zi, react)) + " ")
+                outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+                outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+                outfile.write(str(get_baffle_point_of(i, inhub_ci, zi, react)) + ")\n")
 
             outfile.write("\n\t\t//blade to polygon\n")
             for i in range(nsplits):
                 outfile.write("\t\t( ")
-                outfile.write(
-                    str(get_baffle_point_of(i, inhub_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " "
-                )
-                outfile.write(
-                    str(get_baffle_point_of(i, poly_ci, zi, react)) + ")\n"
-                )
+                outfile.write(str(get_baffle_point_of(i, inhub_ci, zi, react)) + " ")
+                outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+                outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+                outfile.write(str(get_baffle_point_of(i, poly_ci, zi, react)) + ")\n")
 
         # sides
         outfile.write("\n\t\t//sides\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_bottom, react)) + " "
-            )
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_bottom, react)) + " ")
             outfile.write(
                 str(get_globalindex_of(i + 1, hub_ci, zi_bottom, react)) + " "
             )
-            outfile.write(
-                str(get_globalindex_of(i + 1, hub_ci, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_top, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi_top, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_top, react)) + ")\n")
 
     # blades
     outfile.write("\n\t\t//blades\n")
     for zi in baff_volumes:
         zi_bottom = zi
         zi_top = zi + 1
-        for i in range(
-            0, nsplits, 2
-        ):  # even numbers are possible blade locations
+        for i in range(0, nsplits, 2):  # even numbers are possible blade locations
             # skip locations where baffle point == global point for degeneracy reasons
-            if get_baffle_point_of(
+            if get_baffle_point_of(i, hub_ci, zi_bottom, react) == get_globalindex_of(
                 i, hub_ci, zi_bottom, react
-            ) == get_globalindex_of(i, hub_ci, zi_bottom, react):
+            ):
                 continue
             outfile.write("\t\t( ")
             outfile.write(
                 str(get_baffle_point_of(i, hub_ci + 1, zi_bottom, react)) + " "
             )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci + 1, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_bottom, react)) + ")\n"
-            )
+            outfile.write(str(get_baffle_point_of(i, hub_ci + 1, zi_top, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_top, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_bottom, react)) + ")\n")
 
             outfile.write("\t\t( ")
             outfile.write(
                 str(get_globalindex_of(i, hub_ci + 1, zi_bottom, react)) + " "
             )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci + 1, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_bottom, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, hub_ci + 1, zi_top, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_top, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_bottom, react)) + ")\n")
 
     # inside hub blades
     for n_imp in range(nimpellers):
@@ -666,9 +602,7 @@ def write_patches(outfile, react):
             zi_below = zi_pair[0]
             zi_above = zi_pair[1]
 
-            for i in range(
-                0, nsplits, 2
-            ):  # even numbers are possible blade locations
+            for i in range(0, nsplits, 2):  # even numbers are possible blade locations
                 # skip locations where baffle point == global point for degeneracy reasons
                 if get_baffle_point_of(
                     i, hub_ci, zi_below, react
@@ -679,22 +613,17 @@ def write_patches(outfile, react):
                     str(get_baffle_point_of(i, hub_ci, zi_below, react)) + " "
                 )
                 outfile.write(
-                    str(get_baffle_point_of(i, inhub_ci, zi_below, react))
-                    + " "
+                    str(get_baffle_point_of(i, inhub_ci, zi_below, react)) + " "
                 )
                 outfile.write(
-                    str(get_baffle_point_of(i, inhub_ci, zi_above, react))
-                    + " "
+                    str(get_baffle_point_of(i, inhub_ci, zi_above, react)) + " "
                 )
                 outfile.write(
-                    str(get_baffle_point_of(i, hub_ci, zi_above, react))
-                    + ")\n"
+                    str(get_baffle_point_of(i, hub_ci, zi_above, react)) + ")\n"
                 )
 
                 outfile.write("\t\t( ")
-                outfile.write(
-                    str(get_globalindex_of(i, hub_ci, zi_below, react)) + " "
-                )
+                outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
                 outfile.write(
                     str(get_globalindex_of(i, inhub_ci, zi_below, react)) + " "
                 )
@@ -712,18 +641,12 @@ def write_patches(outfile, react):
         zi_top = zi + 1
         for i in range(nsplits):
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_globalindex_of(i, poly_ci, zi_bottom, react)) + " "
-            )
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi_bottom, react)) + " ")
             outfile.write(
                 str(get_globalindex_of(i + 1, poly_ci, zi_bottom, react)) + " "
             )
-            outfile.write(
-                str(get_globalindex_of(i + 1, poly_ci, zi_top, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, poly_ci, zi_top, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi_top, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi_top, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -740,72 +663,40 @@ def write_patches(outfile, react):
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " "
-            )
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
             outfile.write(str(centerid) + " ")
             outfile.write(str(centerid) + ")\n")
         outfile.write("\n\t\t//inhub_circ to polygon\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, poly_ci, zi, react)) + ")\n")
         outfile.write("\n\t\t//hub to inhub_circ\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, inhub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi, react)) + ")\n")
         outfile.write("\n\t\t//rotor to hub\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, rot_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, rot_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, hub_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi, react)) + ")\n")
 
     for zi in range(nsections - 1):
-        outfile.write(
-            "\n\t\t//tank walls " + str(zi) + " - " + str(zi + 1) + "\n"
-        )
+        outfile.write("\n\t\t//tank walls " + str(zi) + " - " + str(zi + 1) + "\n")
 
         for i in range(nsplits):
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, tank_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i + 1, tank_ci, zi + 1, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci, zi + 1, react)) + ")\n"
-            )
+            outfile.write(str(get_baffle_point_of(i, tank_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, tank_ci, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i + 1, tank_ci, zi + 1, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, tank_ci, zi + 1, react)) + ")\n")
 
         # baffles
         outfile.write("\n\t\t//baffles\n")
@@ -817,30 +708,16 @@ def write_patches(outfile, react):
             ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci - 1, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci - 1, zi + 1, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, tank_ci, zi + 1, react)) + ")\n"
-            )
+            outfile.write(str(get_baffle_point_of(i, tank_ci, zi, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, tank_ci - 1, zi, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, tank_ci - 1, zi + 1, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, tank_ci, zi + 1, react)) + ")\n")
 
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, tank_ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i, tank_ci - 1, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, tank_ci - 1, zi + 1, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, tank_ci, zi + 1, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, tank_ci - 1, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, tank_ci - 1, zi + 1, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, tank_ci, zi + 1, react)) + ")\n")
 
     # inlet wall patch
     # skip rotor to hub to inhub_circ to polygon region
@@ -848,19 +725,13 @@ def write_patches(outfile, react):
     zi = 0
     outfile.write("\n\t\t//circles\n")
     for ci in range(rot_ci + 1, ncirc):  # start from rotor circle
-        outfile.write(
-            "\n\t\t//circle " + str(ci) + " - " + str(ci - 1) + " \n"
-        )
+        outfile.write("\n\t\t//circle " + str(ci) + " - " + str(ci - 1) + " \n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
             outfile.write(str(get_globalindex_of(i, ci, zi, react)) + " ")
             outfile.write(str(get_globalindex_of(i + 1, ci, zi, react)) + " ")
-            outfile.write(
-                str(get_globalindex_of(i + 1, ci - 1, zi, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, ci - 1, zi, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i + 1, ci - 1, zi, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, ci - 1, zi, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -874,9 +745,7 @@ def write_patches(outfile, react):
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
         zi_above = zi_pair[1]
-        outfile.write(
-            "\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n"
-        )
+        outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
             # skip the even splits that are not duplicated
@@ -886,18 +755,10 @@ def write_patches(outfile, react):
             ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, inhub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, inhub_ci, zi_above, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_above, react)) + ")\n"
-            )
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, inhub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, inhub_ci, zi_above, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_above, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -906,9 +767,7 @@ def write_patches(outfile, react):
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
         zi_above = zi_pair[1]
-        outfile.write(
-            "\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n"
-        )
+        outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
             # skip the even splits that are not duplicated
@@ -918,18 +777,10 @@ def write_patches(outfile, react):
             ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, inhub_ci, zi_above, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_above, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi_above, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_above, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -939,29 +790,19 @@ def write_patches(outfile, react):
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
         zi_above = zi_pair[1]
-        outfile.write(
-            "\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n"
-        )
+        outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
             # skip locations where baffle point == global point for degeneracy reasons
-            if get_baffle_point_of(
+            if get_baffle_point_of(i, hub_ci, zi_below, react) == get_globalindex_of(
                 i, hub_ci, zi_below, react
-            ) == get_globalindex_of(i, hub_ci, zi_below, react):
+            ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_baffle_point_of(i, rot_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, hub_ci, zi_above, react)) + " "
-            )
-            outfile.write(
-                str(get_baffle_point_of(i, rot_ci, zi_above, react)) + ")\n"
-            )
+            outfile.write(str(get_baffle_point_of(i, rot_ci, zi_below, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, hub_ci, zi_above, react)) + " ")
+            outfile.write(str(get_baffle_point_of(i, rot_ci, zi_above, react)) + ")\n")
 
     outfile.write("\t)\n")
     outfile.write("\n\tempty hub_to_rotor_copy\n\t(\n")
@@ -969,29 +810,19 @@ def write_patches(outfile, react):
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
         zi_above = zi_pair[1]
-        outfile.write(
-            "\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n"
-        )
+        outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
             # skip the even splits that are not duplicated
-            if get_baffle_point_of(
+            if get_baffle_point_of(i, hub_ci, zi_below, react) == get_globalindex_of(
                 i, hub_ci, zi_below, react
-            ) == get_globalindex_of(i, hub_ci, zi_below, react):
+            ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(
-                str(get_globalindex_of(i, rot_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_below, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, hub_ci, zi_above, react)) + " "
-            )
-            outfile.write(
-                str(get_globalindex_of(i, rot_ci, zi_above, react)) + ")\n"
-            )
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_above, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi_above, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -999,9 +830,7 @@ def write_patches(outfile, react):
 
 
 if __name__ == "__main__":
-    react = get_reactor_geom(
-        "stirred_tank_mesh_templates/base_tank/tank_par.yaml"
-    )
+    react = get_reactor_geom("stirred_tank_mesh_templates/base_tank/tank_par.yaml")
     with open("tmp", "w") as outfile:
         write_ofoam_preamble(outfile, react)
         write_vertices(outfile, react)

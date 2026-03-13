@@ -13,6 +13,7 @@ CUBIC_IN_TO_L = 0.0163871  # conversion factor from cubic inches to liters
 class StirredTankReactor:
     def __init__(
         self,
+        units,
         tank_diameter,
         impeller_tip_diameter,
         reactor_height,
@@ -76,9 +77,7 @@ class StirredTankReactor:
             self.impeller_tip_diameter - 2 * self.blade_length
         )  # (old Dh)
         self.mrf_region_diameter = (
-            self.impeller_tip_diameter
-            + self.tank_diameter
-            - 2 * self.baffle_width
+            self.impeller_tip_diameter + self.tank_diameter - 2 * self.baffle_width
         ) / 2  # (old Dmrf)
 
         base_counts = [self.nbaffles] + self.n_fins_per_impeller
@@ -133,9 +132,7 @@ class StirredTankReactor:
         for n_imp in range(self.nimpellers):
             pitch = self.blade_pitch[n_imp]
             tmp_len = self.blade_width
-            tip_rad = self.impeller_scale[n_imp] * (
-                self.impeller_tip_diameter / 2
-            )
+            tip_rad = self.impeller_scale[n_imp] * (self.impeller_tip_diameter / 2)
             dz = tmp_len * np.cos(pitch)
             # prevent blade from going below rotor hub
             dz_min = self.hub_height_width * 1.05
@@ -157,9 +154,7 @@ class StirredTankReactor:
                         self.impeller_scale[n_imp]
                         * (self.hub_diameter / 2 - inner_blade_length),
                         self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp]
-                        * self.impeller_tip_diameter
-                        / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
                         self.mrf_region_diameter / 2,
                         self.tank_diameter / 2 - self.baffle_width,
                         self.tank_diameter / 2,
@@ -181,9 +176,7 @@ class StirredTankReactor:
                         self.impeller_scale[n_imp]
                         * (self.hub_diameter / 2 - inner_blade_length),
                         self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp]
-                        * self.impeller_tip_diameter
-                        / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
                         self.mrf_region_diameter / 2,
                         self.tank_diameter / 2 - self.baffle_width,
                         self.tank_diameter / 2,
@@ -206,9 +199,7 @@ class StirredTankReactor:
                         self.impeller_scale[n_imp]
                         * (self.hub_diameter / 2 - inner_blade_length),
                         self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp]
-                        * self.impeller_tip_diameter
-                        / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
                         self.mrf_region_diameter / 2,
                         self.tank_diameter / 2 - self.baffle_width,
                         self.tank_diameter / 2,
@@ -230,9 +221,7 @@ class StirredTankReactor:
                         self.impeller_scale[n_imp]
                         * (self.hub_diameter / 2 - inner_blade_length),
                         self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp]
-                        * self.impeller_tip_diameter
-                        / 2,
+                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
                         self.mrf_region_diameter / 2,
                         self.tank_diameter / 2 - self.baffle_width,
                         self.tank_diameter / 2,
@@ -332,9 +321,7 @@ class StirredTankReactor:
         """
 
         def _cylinder_volume_L(diameter_in: float, height_in: float) -> float:
-            return (
-                math.pi * (diameter_in / 2.0) ** 2 * height_in
-            ) * CUBIC_IN_TO_L
+            return (math.pi * (diameter_in / 2.0) ** 2 * height_in) * CUBIC_IN_TO_L
 
         if target_volume_L is None:
             assert (
@@ -366,9 +353,7 @@ class StirredTankReactor:
 
         if tank_diameter is not None:
             tank_diameter_final = float(tank_diameter)
-            reactor_height_final = (
-                4.0 * volume_in3 / (math.pi * tank_diameter_final**2)
-            )
+            reactor_height_final = 4.0 * volume_in3 / (math.pi * tank_diameter_final**2)
         elif reactor_height is not None:
             reactor_height_final = float(reactor_height)
             tank_diameter_final = math.sqrt(
