@@ -81,10 +81,19 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
+    double pH_highRes_Fix = 1.0;
+    
+    if(ph_update_time.value() < 1.0) {
+      pH_highRes_Fix = 1.0/ph_update_time.value();
+    }
+    
     double time=runTime.value();
     double prvs_react_update_time=(int(floor(time))/int(fluid_update_time.value()))*fluid_update_time.value();
-    double prvs_ph_update_time=(int(floor(time))/int(ph_update_time.value()))*ph_update_time.value();
+    double prvs_ph_update_time=(int(floor(time*pH_highRes_Fix))/int(ph_update_time.value()*pH_highRes_Fix))*ph_update_time.value();
     double reaction_time=0.0;
+
+    Info << "\nprvs_react_update_time is \n" << prvs_react_update_time << endl;
+    Info << "\nprvs_ph_update_time is \n" << prvs_ph_update_time << endl;
     std::ofstream os_timehist;
 
     if(Pstream::master())

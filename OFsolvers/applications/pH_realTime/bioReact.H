@@ -1,6 +1,7 @@
 
 {
     const vectorField& C = mesh.C();
+    const scalarField& Vcell = mesh.V();
     std::vector<double> solnvec(microbemodel::nvars);
     std::vector<double> mwt(microbemodel::nvars);
     std::vector<int> species_id(microbemodel::nvars);
@@ -13,6 +14,8 @@
     double liqvol;
     double dt_react=0.01; //hours (need to have it as an input)
     double mwt_O2=32.0;
+    double molarity_NH4OH = 7.398273736; // mol/L
+    double base_flowrate = 0.004 / (29.9167 - 26.5) / 3600 / 1000 * 3333.3333; // 1.084e-06 m3/s from constant/glovalVars; should be way to pull this directly
     double our_avg;
     double NH3_avg;
     double NH3_avg_hold;
@@ -23,6 +26,13 @@
     double NH3_conc;
     double NH4_conc;
 
+    double total_moles_added;
+    double total_new_concentration;
+    double cellVol;
+    double NH3_moles;
+    double new_moles;
+    double new_concentration;
+    
     mwt[0] = 663.43; // g/mol putida
     mwt[1] = 31.9988; // g/mol O2
     mwt[2] = 180.156; //g/mol glucose
@@ -34,6 +44,7 @@
     // phase, thermo, and rho are set in createFieldRefs.H
     UPtrList<volScalarField>& Y = phase.YActiveRef();
     const volScalarField& alpha2 = phase;
+    //volScalarField cellVol = Vcell*alpha2;
 
     //dictionary dict(IFstream("thermophysicalProperties.liquid")());
     
@@ -72,18 +83,22 @@
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
-
-    NH3_avg = fvc::domainIntegrate(alpha2*rho*Y[NH3id]).value()/17.031/liqvol; 
-    NH3_avg_hold = fvc::domainIntegrate(alpha2*rho*NH3_hold).value()/17.031/liqvol;
+    
+    //NH3_avg = fvc::domainIntegrate(alpha2*rho*Y[NH3id]).value()/17.031/liqvol; 
+    /* NH3_avg_hold = fvc::domainIntegrate(alpha2*rho*NH3_hold).value()/17.031/liqvol;
     
     NH4_avg = fvc::domainIntegrate(alpha2*rho*Y[NH4id]).value()/18.04/liqvol;
     NH4_avg_hold = fvc::domainIntegrate(alpha2*rho*NH4_hold).value()/18.04/liqvol;
 
     delNH3 = NH3_avg - NH3_avg_hold;
     delNH4 = NH4_avg - NH4_avg_hold;
+    */
+
+    // get total amount of NH3 added over reaction update time: m3/s * 1000L/m3 * reaction h * 3600s/h * moles/L = moles 
+    //total_moles_added = base_flowrate * 1000 * reaction_update_time.value() * 3600 * molarity_NH4OH;
+    //total_new_concentration = total_moles_added/liqvol; //mol/m3 
   
-    Info<<"Avg quantities before and after mixing window:"<<NH3_avg_hold<<"\t"<<NH3_avg<<"\t"<<NH4_avg_hold<<"\t"<<
-    NH4_avg<<"\n";
+    //Info<<"\n Avg quantities before and after mixing window:"<<NH3_avg<<"\t"<<total_new_concentration<< "\n\n";
     
     //find initial OUR and advance solution
     forAll(C,i)
@@ -121,23 +136,31 @@
 	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
 
 	// Get NH3 concentration to scale up over temporal disparity btwn reaction time and mixing time
-	NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L
-	NH4_conc = rho[i]*Y[NH4id][i]/18.04;  // mol/L
+	//NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L
+	// NH4_conc = rho[i]*Y[NH4id][i]/18.04;  // mol/L
+
+	//cellVol = Vcell[i] * alpha2[i];
+	// get current moles of NH3 present in mixture:
+	//Info << "cell volume: " << cellVol << "\n\n";
+	//NH3_moles = NH3_conc * cellVol * 1000; // moles in this specific cell
+
+	//new_moles = total_new_concentration * cellVol; // moles added to this specific cell
+	//new_concentration = (new_moles + NH3_moles) / cellVol / 1000; // mol/L
 	
 	//delNH3 = NH3_conc - NH3_hold[i];
 	//delNH4 = NH4_conc - NH4_hold[i];
 
-	NH3_hold[i] = NH3_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH3;
-	NH4_hold[i] = NH4_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH4;
+	// NH3_hold[i] = NH3_moles + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH3;
+	// NH4_hold[i] = NH4_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH4;
 
-	Y[NH3id][i] = NH3_hold[i]*17.031/rho[i];
-	Y[NH4id][i] = NH4_hold[i]*18.04/rho[i];
+	//Y[NH3id][i] = new_concentration * 17.031 / rho[i];
+	// Y[NH4id][i] = NH4_hold[i]*18.04/rho[i];
 
-	Info << "pre-reaction NH3 conc. " << NH3_conc << "\n";
-	Info << "post-reaction NH3 conc. " << NH3_hold[i] << "\n";
-	Info << "pre-reaction NH4 conc. " << NH4_conc << "\n";
-	Info << "post-reaction NH4 conc. " << NH4_hold[i] << "\n";
-	Info << "\n";
+	//Info << "pre-reaction NH3 conc. " << NH3_conc << "\n";
+	//Info << "post-reaction NH3 conc. " << new_concenctration << "\n";
+	// Info << "pre-reaction NH4 conc. " << NH4_conc << "\n";
+	// Info << "post-reaction NH4 conc. " << NH4_hold[i] << "\n";
+	//Info << "\n";
     }
 
     our_avg=fvc::domainIntegrate(alpha2*our).value()/liqvol;

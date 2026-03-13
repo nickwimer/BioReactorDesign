@@ -83,7 +83,13 @@
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
-    
+
+    /* forAll(C,i)
+      {
+	Info << "In cell " << i << "\n";
+	Info << "NH3 mass frac is now: " << Y[NH3id][i] << "\n\n";
+	}*/
+    Info << "do we hit this even? " << "\n";
     NH3_avg = fvc::domainIntegrate(alpha2*rho*1000*Y[NH3id]/17.031).value()/liqvol/1000; // avg mol/L 
     /*
     NH3_avg_hold = fvc::domainIntegrate(alpha2*rho*NH3_hold).value()/17.031/liqvol;
@@ -98,8 +104,9 @@
     // get total amount of NH3 added over reaction update time: m3/s * 1000L/m3 * reaction h * 3600s/h * moles/L = moles 
     total_moles_added = base_flowrate * 1000 * reaction_update_time.value() * 3600 * molarity_NH4OH;
     total_new_concentration = total_moles_added / liqvol / 1000; //mol/L 
-  
-    Info<<"\n Avg quantities before and after mixing window:"<<NH3_avg<<"\t"<<total_new_concentration<< "\n\n";
+
+    Info<<"\n Base flow rate (m3/s) is: "<<base_flowrate<<"\n";
+    Info<<"\n Avg quantities before and after mixing window: "<<NH3_avg<<"\t"<<total_new_concentration<< "\n\n";
     
     //find initial OUR and advance solution
     forAll(C,i)
@@ -143,10 +150,10 @@
 	cellVol = Vcell[i] * alpha2[i] * 1000; // L of liquid in Cell
 	// get current moles of NH3 present in mixture:
 	// Info << "cell volume (L): " << cellVol << "\n\n";
-	NH3_moles = NH3_conc* cellVol; // moles in this specific cell
+	NH3_moles = NH3_conc * cellVol; // moles in this specific cell
 
 	new_moles = total_new_concentration * cellVol; // moles added to this specific cell
-	new_concentration = (new_moles + NH3_moles)/ cellVol; // mol/L
+	new_concentration = (new_moles + NH3_moles) / cellVol; // mol/L
 	
 	//delNH3 = NH3_conc - NH3_hold[i];
 	//delNH4 = NH4_conc - NH4_hold[i];
@@ -155,6 +162,9 @@
 	// NH4_hold[i] = NH4_avg + 3600/fluid_update_time.value()*reaction_update_time.value()*delNH4;
 
 	Y[NH3id][i] = new_concentration*17.031/rho[i];
+	// Info << "In cell " << i << "\n";
+	// Info << "density " << rho[i] << "\n";
+	// Info << "NH3 mass frac is now: " << Y[NH3id][i] << "\n\n";
 	// Y[NH4id][i] = NH4_hold[i]*18.04/rho[i];
 
 	// Info << "pre-reaction NH3 conc. " << NH3_conc << "\n";
