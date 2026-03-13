@@ -284,9 +284,9 @@ class StirredTankReactor:
         # not that [1] is not a stem volume but baffles are there
         self.mrf_volumes = [1] + self.stem_volumes
 
-        # increase grid points in the impeller section
-        for i in self.baff_volumes:
-            self.meshz[i] *= 2
+        # # increase grid points in the impeller section
+        # for i in self.baff_volumes:
+        #     self.meshz[i] *= 2
 
         self.meshr = nr * np.diff(self.circradii)
 
