@@ -29,23 +29,23 @@
 
     //dictionary dict(IFstream("thermophysicalProperties.liquid")());
     
-    forAll(Y,i)
-    {
-        Info<<"species name:\t"<<Y[i].name()<<"\n";
-	acidbasemodel::getSystemID(Y[i].name(), species_id, i);
-	Info<<"OpenFOAM id is:\t"<<i<<"\n";
+    // forAll(Y,i)
+    // {
+    //     Info<<"species name:\t"<<Y[i].name()<<"\n";
+	// acidbasemodel::getSystemID(Y[i].name(), species_id, i);
+	// Info<<"OpenFOAM id is:\t"<<i<<"\n";
 
-	//ThermoType s_hold(dict.subDict(Y[i].name()));
-	//mwt[i] = s_hold.W();
-    }
+	// //ThermoType s_hold(dict.subDict(Y[i].name()));
+	// //mwt[i] = s_hold.W();
+    // }
 
-    for(i=0; i<acidbasemodel::nvars-1; i++)
-      {
-	Info << "species foam_id = " << species_id[i] << "\n";
-	Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
-	Info << "this foam species should reflect the acid-base model species matching the call order of this loop \n";
-	Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
-      }
+    // for(i=0; i<acidbasemodel::nvars-1; i++)
+    //   {
+	// Info << "species foam_id = " << species_id[i] << "\n";
+	// Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
+	// Info << "this foam species should reflect the acid-base model species matching the call order of this loop \n";
+	// Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
+    //   }
     
     Info << "Starting pH reaction update..\n";
     
@@ -59,26 +59,26 @@
 	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
 	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
 
-	Info << "\n";
-	Info << "Density: " << rho[i] << "\n";
-	Info << "alphaL: " << alpha2[i] << "\n";
-	Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
-	Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
-	Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
-	Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
-	Info << "Muconate: " << abSystem[acidbasemodel::MB] << "\n";
+	// Info << "\n";
+	// Info << "Density: " << rho[i] << "\n";
+	// Info << "alphaL: " << alpha2[i] << "\n";
+	// Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
+	// Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
+	// Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
+	// Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
+	// Info << "Muconate: " << abSystem[acidbasemodel::MB] << "\n";
 	
 	
 	// get conserved totals for system components
 	acidbasemodel::getTotalConc(abSystem, totalConc);
-	Info << "\n";
-	Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
-	Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
-	Info << "Acid total: " << totalConc[acidbasemodel::MuconicAcid] << "\n";
+	// Info << "\n";
+	// Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
+	// Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
+	// Info << "Acid total: " << totalConc[acidbasemodel::MuconicAcid] << "\n";
 
 	// get spectator ions from buffer
 	acidbasemodel::getSpectatorsNonBio(totalConc);
-	Info << "Spectators: " << totalConc[3] << "\n";
+	// Info << "Spectators: " << totalConc[3] << "\n";
 	
 	// get spectator ions from bio components
 	// this would be stuff the bio spits out that contributes to charge balance but not pH;
@@ -88,7 +88,7 @@
 	double H_set = 1.0E-15;
 	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
 	pH[i] = -std::log10(H);
-	Info << "pH is: " << pH[i] << "\n";
+	// Info << "pH is: " << pH[i] << "\n";
 
 	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
 	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * H / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
@@ -102,6 +102,8 @@
 	Y[species_id[acidbasemodel::NB]][i] = abSystem[acidbasemodel::NB]/rho[i]*mwt[acidbasemodel::NB];
 	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]*mwt[acidbasemodel::NA];
       }
+
+	Info << "pH update complete.\n";
 
     liqvol = fvc::domainIntegrate(alpha2).value();
     acidbasemodel::pH_avg  = fvc::domainIntegrate(alpha2*pH).value();

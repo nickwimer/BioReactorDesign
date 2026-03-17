@@ -79,21 +79,17 @@
     //get averaged values as mixing time scales are small compared to 
     //reactions
     liqvol = fvc::domainIntegrate(alpha2).value();
-    if (liqvol <= 1e-12 || !Foam::isfinite(liqvol))
-    {
-        FatalErrorInFunction << "Invalid liqvol = " << liqvol << exit(FatalError);
-    }
     microbemodel::X_avg  = fvc::domainIntegrate(alpha2*rho*Y[species_id[microbemodel::X]]).value()/liqvol;
     microbemodel::G_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::G]]/mwt[microbemodel::G]).value()/liqvol;
     microbemodel::M_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::M]]/mwt[microbemodel::M]).value()/liqvol;
     microbemodel::O2_avg  = fvc::domainIntegrate(alpha2*1000*rho*Y[species_id[microbemodel::O2]]/mwt[microbemodel::O2]).value()/liqvol;
 
-    /* forAll(C,i)
-      {
-	Info << "In cell " << i << "\n";
-	Info << "NH3 mass frac is now: " << Y[NH3id][i] << "\n\n";
-	}*/
-    Info << "do we hit this even? " << "\n";
+    // /* forAll(C,i)
+    //   {
+	// Info << "In cell " << i << "\n";
+	// Info << "NH3 mass frac is now: " << Y[NH3id][i] << "\n\n";
+	// }*/
+    // Info << "do we hit this even? " << "\n";
     NH3_avg = fvc::domainIntegrate(alpha2*rho*1000*Y[NH3id]/17.031).value()/liqvol/1000; // avg mol/L 
     /*
     NH3_avg_hold = fvc::domainIntegrate(alpha2*rho*NH3_hold).value()/17.031/liqvol;
@@ -135,16 +131,6 @@
 	    }*/
 	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
 	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react);
-
-    if (rho[i] <= 1e-12 || !Foam::isfinite(rho[i]))
-    {
-        FatalErrorInFunction
-            << "Invalid rho in cell " << i
-            << " rho = " << rho[i]
-            << " alpha2 = " << alpha2[i]
-            << " Vcell = " << Vcell[i]
-            << exit(FatalError);
-    }
 
 	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i];
 	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000*mwt[microbemodel::O2];
