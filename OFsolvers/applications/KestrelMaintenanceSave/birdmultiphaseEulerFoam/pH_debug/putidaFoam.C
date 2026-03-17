@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
 
         if (LTS)
         {
+            Info<< "Local time-stepping: " << endl;
             #include "setRDeltaT.H"
             if (faceMomentum)
             {
@@ -123,11 +124,13 @@ int main(int argc, char *argv[])
         }
         else
         {
+            Info<< "Global time-stepping: " << endl;
             #include "CourantNo.H"
             #include "setDeltaT.H"
         }
 
 	Info << "\n";
+    Info << "Time = " << time << "\n";
 	Info << "bio update time: " << fluid_update_time.value() << "\n";
 	Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
 	Info << "\n";
