@@ -1,10 +1,11 @@
 {
     const vectorField& C = mesh.C();
-    const volScalarField& Vcell = mesh.V();
+    const scalarField& Vcell = mesh.V();
     
-    std::vector<double> abSystem(acidbasemodel::nvars);
-    std::vector<double> mwt(acidbasemodel::nvars);
-    std::vector<int> species_id(acidbasemodel::nvars);
+    std::vector<double> abSystem(acidbasemodel::nvars - 1);
+    std::vector<double> totalConc(acidbasemodel::nvars/2 + 2);
+    std::vector<double> mwt(acidbasemodel::nvars - 1);
+    std::vector<int> species_id(acidbasemodel::nvars - 1);
     int id=0;
     int i=0;
     double liqvol=0;
@@ -19,7 +20,7 @@
     mwt[2] = 17.031; //NH3
     mwt[3] = 18.039; //NH4
     mwt[4] = 140.09; //C6H4O4
-    mwt[5] = 142.11; //C6H6O4
+    // mwt[5] = 142.11; //C6H6O4
 
     // phase, thermo, and rho are set in createFieldRefs.H
     UPtrList<volScalarField>& Y = phase.YActiveRef();
@@ -27,121 +28,89 @@
 
     //dictionary dict(IFstream("thermophysicalProperties.liquid")());
     
-    forAll(Y,i)
-    {
-        Info<<"species name:\t"<<Y[i].name()<<"\n";
-	acidbaseemodel::getSystemID(Y[i].name(), species_id, i);
-	Info<<"OpenFOAM id is:\t"<<i<<"\n";
+    // forAll(Y,i)
+    // {
+    //     Info<<"species name:\t"<<Y[i].name()<<"\n";
+	// acidbasemodel::getSystemID(Y[i].name(), species_id, i);
+	// Info<<"OpenFOAM id is:\t"<<i<<"\n";
 
-	//ThermoType s_hold(dict.subDict(Y[i].name()));
-	//mwt[i] = s_hold.W();
-    }
+	// //ThermoType s_hold(dict.subDict(Y[i].name()));
+	// //mwt[i] = s_hold.W();
+    // }
 
-    for(i=0; i<acidbasemodel::nvars; i++)
-      {
-	Info << "species foam_id = " << species_id[i] << "\n";
-	Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
-	Info << "this foam species should reflect the acid-base model species matching the call order of this loop \n";
-	Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
-      }
+    // for(i=0; i<acidbasemodel::nvars-1; i++)
+    //   {
+	// Info << "species foam_id = " << species_id[i] << "\n";
+	// Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
+	// Info << "this foam species should reflect the acid-base model species matching the call order of this loop \n";
+	// Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
+    //   }
     
-    Info << "Starting reaction update..\n";
+    Info << "Starting pH reaction update..\n";
     
-    //find initial OUR and advance solution
+    // find initial OUR and advance solution
     forAll(C,i)
       {
-	liqvol = Vcell[i]*alpha2[i];
-	//fill abSystem with mol amounts of each component present in cell i
-	abSystem[acidbasemodel::PB] = rho[i]*Y[species_id[acidbasemodel::PB]][i]*1000.0*liqvol/mwt[acidbasemodel::PB]; //mol
-	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]*1000.0*liqvol/mwt[acidbasemodel::PA]; //mol
-	abSystem[acidbasemodel::NB] = rho[i]*Y[species_id[acidbasemodel::NB]][i]*1000.0*liqvol/mwt[acidbasemodel::NB]; //mol
-	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]*1000.0*liqvol/mwt[acidbasemodel::NA]; //mol
-	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]*1000.0*liqvol/mwt[acidbasemodel::MB]; //mol
-	abSystem[acidbasemodel::MA] = rho[i]*Y[species_id[acidbasemodel::MA]][i]*1000.0*liqvol/mwt[acidbasemodel::MA]; //mol
+	// fill abSystem with mol/L = M amounts of each component present in cell i (kg/m3 = g/L)
+	abSystem[acidbasemodel::PB] = rho[i]*Y[species_id[acidbasemodel::PB]][i]/mwt[acidbasemodel::PB]; //mol/L
+	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]/mwt[acidbasemodel::PA]; //mol/L
+	abSystem[acidbasemodel::NB] = rho[i]*Y[species_id[acidbasemodel::NB]][i]/mwt[acidbasemodel::NB]; //mol/L
+	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
+	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
 
-	// compare moles of base vs moles of acid present in cell, where each mole of muconic acid needs 2 moles of NH3 to fully react
-	double leftoverCheck = 2.0*abSystem[acidbasemodel::MA] - abSystem[acidbasemodel::NB];
+	// Info << "\n";
+	// Info << "Density: " << rho[i] << "\n";
+	// Info << "alphaL: " << alpha2[i] << "\n";
+	// Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
+	// Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
+	// Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
+	// Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
+	// Info << "Muconate: " << abSystem[acidbasemodel::MB] << "\n";
+	
+	
+	// get conserved totals for system components
+	acidbasemodel::getTotalConc(abSystem, totalConc);
+	// Info << "\n";
+	// Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
+	// Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
+	// Info << "Acid total: " << totalConc[acidbasemodel::MuconicAcid] << "\n";
 
-	// more muconic acid present than NH3 base (or full neutralization); update limited by amount of NH3 present
-	if(leftoverCheck >= 0.0)
-	  {
-	    acidRemainderUpdate(abSystem, acidbasemodel::MuconicAcid, acidbasemodel::AmmoniaBase);
-	    // react remaining acid with buffer system
-	    // if no acid is leftover, pH is determined by buffer components using HH-approx.
-	    if(leftoverCheck == 0.0)
-	      {
-		pH[i] = phBufferSystem(abSystem[acidbasemodel::PA], abSystem[acidbasemodel::PB], acidbasemodel::PhosphateBuffer);
-	      }
-	    // if acid is leftover, react with weak base in phosphate buffer
-	    else
-	      {
-		double bufferCheck = 2.0*abSystem[acidbasemodel::MA] - abSystem[acidbasemodel::PB];
+	// get spectator ions from buffer
+	acidbasemodel::getSpectatorsNonBio(totalConc);
+	// Info << "Spectators: " << totalConc[3] << "\n";
+	
+	// get spectator ions from bio components
+	// this would be stuff the bio spits out that contributes to charge balance but not pH;
+	// not needed for this system so fill with 0.0 instead
+	// getSpectatorsBio(totalConc);
+	totalConc[acidbasemodel::nvars/2 + 1] = 0.0;
+	double H_set = 1.0E-15;
+	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
+	pH[i] = -std::log10(H);
+	// Info << "pH is: " << pH[i] << "\n";
 
-		// if more acid is present than the buffer can handle, reaction limited by buffer base
-		// pH determined by remaining strong acid
-		if(bufferCheck > 0.0)
-		  {
-		    acidRemainderUpdate(abSystem, acidbasemodel::MuconicAcid, acidbasemodel::PhosphateBuffer);
-		    sAcidConc = abSystem[acidbasemodel::MA]/liqvol;
-		    pH[i] = phStrongAcid(sAcidConc);
-		  }
-		// if enough buffer is present to fully neutralize muconica acid, pH determined by remaining weak acid in buffer
-		else if(bufferCheck = 0.0)
-		  {
-		    acidRemainderUpdate(abSystem, acidbasemodel::MuconicAcid, acidbasemodel::PhosphateBuffer);
-		    wAcidConc = abSystem[acidbasemodel::PA]/liqvol;
-		    pH[i] = phWeakAcid(wAcidConc, acidbasemodel::PhosphateBuffer);
-		  }
-		// if minimal amount of muconic acid is present and weak base remains after neutralization,
-		// pH approx with HH-equation for buffer systems
-		else
-		  {
-		    baseRemainderUpdate(abSystem, acidbasemodel::MuconicAcid, acidbasemodel::PhosphateBuffer);
-		    pH[i] = phBufferSystem(abSystem[acidbasemodel::PA], abSystem[acidbasemodel::PB], acidbasemodel::PhosphateBuffer);
-		  }
-	      }
-	  }
-	else
-	  {
-	    baseRemainderUpdate(abSystem, acidbasemodel::MuconicAcid, acidbasemodel::AmmoniaBase);
-	    // react remaining base with weak acid in buffer system
-	    double bufferCheck = abSystem[acidbasemodel::NB] - abSystem[acidbasemodel::PA];
-
-	    // if more base is present than the buffer can handle, reaction limited by buffer acid
-	    // pH determined by remaining "strong" base (NH3)
-	    if(bufferCheck > 0.0)
-	      {
-		baseRemainderUpdate(abSystem, acidbasemodel::PhosphateBuffer, acidbasemodel::AmmoniaBase);
-		sBaseConc = abSystem[acidbasemodel::NB]/liqvol;
-		pH[i] = -log(Kw/sBaseConc);
-	      }
-	    // if enough buffer is present to fully neutralize NH3, pH determined by remaining weak base in buffer
-	    else if(bufferCheck = 0.0)
-	      {
-		baseRemainderUpdate(abSystem, acidbasemodel::PhosphateBuffer, acidbasemodel::AmmoniaBase);
-		wBaseConc = abSystem[acidbasemodel::PA]/liqvol;
-		pH[i] = phWeakBase(wBaseConc, acidbasemodel::PhosphateBuffer);
-	      }
-	    // if minimal amount of NH3 is present and weak acid remains after neutralization,
-	    // pH approx with HH-equation for buffer systems
-	    else
-	      {
-		acidRemainderUpdate(abSystem, acidbasemodel::PhosphateBuffer, acidbasemodel::AmmoniaBase);
-		pH[i] = phBufferSystem(abSystem[acidbasemodel::PA], abSystem[acidbasemodel::PB], acidbasemodel::PhosphateBuffer);
-	      }
-	  }
+	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
+	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * H / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
+	abSystem[acidbasemodel::NA] = totalConc[acidbasemodel::AmmoniaBase] * H / (acidbasemodel::Ka[acidbasemodel::AmmoniaBase] + H);
+	abSystem[acidbasemodel::NB] = totalConc[acidbasemodel::AmmoniaBase] - abSystem[acidbasemodel::NA];
+	
+	// convert updated concentrations back into massfracs for CFD 
+	// liqvol = Vcell[i]*alpha2[i];
+	Y[species_id[acidbasemodel::PB]][i] = abSystem[acidbasemodel::PB]/rho[i]*mwt[acidbasemodel::PB];
+	Y[species_id[acidbasemodel::PA]][i] = abSystem[acidbasemodel::PA]/rho[i]*mwt[acidbasemodel::PA];
+	Y[species_id[acidbasemodel::NB]][i] = abSystem[acidbasemodel::NB]/rho[i]*mwt[acidbasemodel::NB];
+	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]*mwt[acidbasemodel::NA];
       }
 
-    // update species mass fractions post-pH reactions
-    forAll(C,i)
-      {
-	liqvol = Vcell[i]*alpha2[i];
-	Y[species_id[acidbasemodel::PB]][i] = abSystem[acidbasemodel::PB]/rho[i]/1000.0/liqvol*mwt[microbemodel::PB];
-	Y[species_id[acidbasemodel::PA]][i] = abSystem[acidbasemodel::PA]/rho[i]/1000.0/liqvol*mwt[microbemodel::PA];
-	Y[species_id[acidbasemodel::NB]][i] = abSystem[acidbasemodel::NB]/rho[i]/1000.0/liqvol*mwt[microbemodel::NB];
-	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]/1000.0/liqvol*mwt[microbemodel::NA];
-	Y[species_id[acidbasemodel::MB]][i] = abSystem[acidbasemodel::MB]/rho[i]/1000.0/liqvol*mwt[microbemodel::MB];
-	Y[species_id[acidbasemodel::MA]][i] = abSystem[acidbasemodel::MA]/rho[i]/1000.0/liqvol*mwt[microbemodel::MA];
+	Info << "pH update complete.\n";
+
+    liqvol = fvc::domainIntegrate(alpha2).value();
+    acidbasemodel::pH_avg  = fvc::domainIntegrate(alpha2*pH).value();
+    
+    if(Pstream::master())
+      {                                                                                                                                             
+	os_timehist << " " << acidbasemodel::pH_avg << "\n";
+	os_timehist.flush();
       }
 
     //exit(0);

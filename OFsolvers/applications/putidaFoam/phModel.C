@@ -1,33 +1,35 @@
-#include "acidBaseModel.H"
+#include "phModel.H"
 #include<map>
+//#include<vector>
 
 namespace acidbasemodel
 {
-
   const int PB = 0;
   const int PA = 1;
   const int NB = 2;
   const int NA = 3;
   const int MB = 4;
-  const int MA = 5;
+  // const int MA = 5;
   
   const int PhosphateBuffer = 0;
   const int AmmoniaBase = 1;
   const int MuconicAcid = 2;
   const int nvars = 6;
 
-  const std::vector<double> Ka(nvars/2);
-  Ka[PhosphateBuffer] = 6.2E-8;
-  Ka[AmmoniaBase] = 5.56E-10;
-  Ka[MuconicAcid] = 0.0;
+  std::vector<double> Ka = {6.2E-8, 5.56E-10, 0.0};
+  //Ka[0] = 6.2E-8;
+  //Ka[AmmoniaBase] = 5.56E-10;
+  //Ka[MuconicAcid] = 0.0;
   const double Kw = 1.0E-14;
+  
+  double pH_avg = 0.0;
   
   std::map<std::string, int> system_keys = {{"HPO4.liquid", 0},
 					    {"H2PO4.liquid", 1},
 					    {"NH3.liquid", 2},
 					    {"NH4.liquid", 3},
-					    {"C6H4O4.liquid", 4},
-					    {"C6H6O4.liquid", 5}};
+					    {"C6H4O4.liquid", 4}};
+					    // {"C6H6O4.liquid", 5}};
   
   void getSystemID(std::string name, std::vector<int>& id_map, int foam_id)
   {
@@ -38,63 +40,75 @@ namespace acidbasemodel
       }
   }
 
-  void acidRemainderUpdate(std::vector<double>& abSystem, int aRef, int bRef)
+  void getTotalConc(std::vector<double>& abSystem, std::vector<double>& totalConc)
   {
-    int aID = aRef*2 - 1;
-    int conjBaseID = aID - 1;
-    int bID = (bRef - 1)*2;
-    int conjAcidID = bID + 1;
-    
-    double baseTotalUse = abSystem[bID];
-
-    abSystem[aID] -= 0.5*baseTotalUse;
-    abSystem[conjBaseID] += 0.5baseTotalUse;
-    abSystem[bID] -= baseTotalUse;
-    abSystem[conjAcidID] += baseTotalUse;
+    for(int i = 0; i<nvars/2 - 1; i++)
+      {
+	totalConc[i] = abSystem[2*i] + abSystem[2*i+1];
+      }
+    totalConc[MuconicAcid] = abSystem[MB];
   }
 
-  void baseRemainderUpdate(std::vector<double>& abSystem, int aRef, int bRef)
+  void getSpectatorsNonBio(std::vector<double>& totalConc)
   {
-    int aID = aRef*2 - 1;
-    int conjBaseID = aID - 1;
-    int bID = (bRef - 1)*2;
-    int conjAcidID = bID + 1;
-    
-    double acidTotalUse = abSystem[aID];
+    double H_set = 1.0E-07;
+    double Z = H_set - H_set*totalConc[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer]) \
+      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer]) \
+      - Kw/H_set;
+      
+    totalConc[nvars/2] = -Z;
+  }
 
-    abSystem[aID] -= acidTotalUse;
-    abSystem[conjBaseID] += acidTotalUse;
-    abSystem[bID] -= 2.0*acidTotalUse;
-    abSystem[conjAcidID] += 2.0*acidTotalUse;
+  double charge(double H, std::vector<double>& totalConc)
+  {
+    // getRatio; // figure this out later...
+
+    double ratio = 2.0;
+    double ch = H						\
+      + totalConc[AmmoniaBase] * H / (H + Ka[AmmoniaBase])	\
+      - ratio * totalConc[MuconicAcid] \
+      - totalConc[PhosphateBuffer] * H / (H + Ka[PhosphateBuffer]) \
+      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / (H + Ka[PhosphateBuffer]) \
+      - Kw / H \
+      + totalConc[nvars/2];
+
+    return ch;
   }
   
-  double phBufferSystem(double wAcidConc, double wBaseConc, int abRef)
-  {    
-    double pH = -log(Ka[abRef-1]) + log(wAcidConc/wBaseConc);
-    
-    return pH;
-  }
-
-  double phWeakAcid(double wAcidConc, int abRef)
-  { 
-    double hConc = 0.5*(-Ka[abRef-1] + sqrt(pow(Ka[abRef-1],2) - 4.0*Ka[abRef-1]*wAcidConc));
-    double pH = -log(hConc);
-    
-    return pH;
-  }
-
-  double phWeakBase(double wBaseConc, int abRef)
-  { 
-    double ohConc = 0.5*(-Kw/Ka[abRef-1] + sqrt(pow(Kw/Ka[abRef-1],2) - 4.0*Kw/Ka[abRef-1]*wBaseConc));
-    double pH = -log(Kw/ohConc);
-    
-    return pH;
-  }
-  
-  double phStrongAcid(double sAcidConc)
+  double dchargedH(double H, std::vector<double>& totalConc)
   {
-    double pH = -log(sAcidConc);
+    double dchdH = 1.0 \
+      + Ka[AmmoniaBase] * totalConc[AmmoniaBase] / ((Ka[AmmoniaBase] + H) * (Ka[AmmoniaBase] + H)) \
+      - Ka[PhosphateBuffer] * totalConc[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
+      + 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
+      + Kw/(H*H);
+    
+    return dchdH;
+  }
 
-    return pH;
+  double NewtonRaphson(double H_init, std::vector<double>& totalConc)
+  {
+    double tol = 1.0E-14;
+    double test = charge(H_init, totalConc);
+    // std::cout << "Initialized Charge is: " << test << "\n";
+    double H_next = 0.0;
+    double H_now = H_init;
+    int iter = 0;
+    while(std::abs(test) > tol && iter<100)
+  { 
+	double chargeCurrent = charge(H_now, totalConc);
+	double dchargedHCurrent = dchargedH(H_now, totalConc);
+	// std::cout << "current Charge: " << chargeCurrent << "\n";
+	// std::cout << "current derivative: " << dchargedHCurrent << "\n";
+	H_next =  H_now - charge(H_now, totalConc)/dchargedH(H_now, totalConc);
+	test = charge(H_next, totalConc);
+	H_now = H_next;
+	// std::cout << "\n";
+	// std::cout << "Updated Charge: " << test << "\n";
+	// std::cout << "Updated H: " << H_now << "\n";
+	// std::cout << "\n\n";
+	iter += 1;
+      }
+    return H_now;
   }
 }

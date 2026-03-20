@@ -104,6 +104,11 @@ dimensionedScalar fluid_update_time
      dimTime,
      reaction_props.lookup("fluid_update_time"));
 
+dimensionedScalar ph_update_time
+(   "ph_update_time",
+     dimTime,
+     reaction_props.lookup("ph_update_time"));
+
 
 
 /*
@@ -177,11 +182,53 @@ volScalarField our
   "our",
   runTime.timeName(),
   mesh,
-  IOobject::NO_READ,
+  IOobject::READ_IF_PRESENT,
   IOobject::AUTO_WRITE
  ),
  mesh,
  dimensionedScalar("our", dimMoles/dimVolume/dimTime, 0)
+);
+
+volScalarField pH
+(
+ IOobject
+ (
+  "pH",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ 7.0
+ );
+
+volScalarField NH3_hold
+(
+ IOobject
+ (
+  "NH3_hold",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ 0.0
+ );
+
+volScalarField NH4_hold
+(
+ IOobject
+ (
+  "NH4_hold",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ 0.0
 );
 
 /*double liqvol = fvc::domainIntegrate(alpha2).value();

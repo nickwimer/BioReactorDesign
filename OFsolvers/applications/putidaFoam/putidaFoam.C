@@ -43,6 +43,7 @@ Description
 #include "fvcSmooth.H"
 #include "specie.H"
 #include "microbeModel.H"
+#include "phModel.H"
 
 
 
@@ -80,15 +81,26 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
-    double prvs_update_time=0.0;
+    double pH_highRes_Fix = 1.0;
+    
+    if(ph_update_time.value() < 1.0) {
+      pH_highRes_Fix = 1.0/ph_update_time.value();
+    }
+    
     double time=runTime.value();
+    double prvs_react_update_time=(int(floor(time))/int(fluid_update_time.value()))*fluid_update_time.value();
+    double prvs_ph_update_time=(int(floor(time*pH_highRes_Fix))/int(ph_update_time.value()*pH_highRes_Fix))*ph_update_time.value();
     double reaction_time=0.0;
+
+    Info << "\nprvs_react_update_time is \n" << prvs_react_update_time << endl;
+    Info << "\nprvs_ph_update_time is \n" << prvs_ph_update_time << endl;
     std::ofstream os_timehist;
 
     if(Pstream::master())
     {
       Info << "Calling WellMixed.H\n";
         #include "wellMixed.H"
+        //return 0;
         os_timehist.open("timehist.dat");
     }
 
@@ -115,15 +127,28 @@ int main(int argc, char *argv[])
             #include "setDeltaT.H"
         }
 
-	if((time-prvs_update_time) >= fluid_update_time.value())
+	Info << "\n";
+    Info << "Time = " << time << "\n";
+	Info << "bio update time: " << fluid_update_time.value() << "\n";
+	Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
+	Info << "\n";
+	if((time-prvs_react_update_time) >= fluid_update_time.value())
         {
              #include "bioReact.H"
-             prvs_update_time=time;
+             prvs_react_update_time=time;
              reaction_time += reaction_update_time.value();
+        }
+	Info << "pH update time: " << ph_update_time.value() << "\n";
+	Info << "Needs to be less than: " << time - prvs_ph_update_time << "\n";
+	Info << "\n";
+	if((time-prvs_ph_update_time) >= ph_update_time.value())
+        {
+             #include "phReact.H"
+             prvs_ph_update_time=time;
         }
 	
         runTime++;
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        Info<< "Time = " << runTime.timeName() <<  nl << endl;
 	time=runTime.value();
 	
         // --- Pressure-velocity PIMPLE corrector loop
