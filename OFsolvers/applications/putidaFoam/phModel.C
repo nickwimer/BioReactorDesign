@@ -4,11 +4,12 @@
 
 namespace acidbasemodel
 {
-  const int PB = 0;
-  const int PA = 1;
-  const int NB = 2;
-  const int NA = 3;
-  const int MB = 4;
+  // PB=HPO4, PA=H2PO4, NB=NH3, NA=NH4, MB=C6H4O4
+  const int PB = 0; // HPO4
+  const int PA = 1; // H2PO4
+  const int NB = 2; // NH3
+  const int NA = 3; // NH4
+  const int MB = 4; // C6H4O4
   // const int MA = 5;
   
   const int PhosphateBuffer = 0;

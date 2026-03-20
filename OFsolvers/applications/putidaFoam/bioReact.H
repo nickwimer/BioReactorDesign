@@ -15,7 +15,7 @@
     double dt_react=0.01; //hours (need to have it as an input)
     double mwt_O2=32.0;
     double molarity_NH4OH = 7.398273736; // mol/L
-    double base_flowrate = 0.004 / (29.9167 - 26.5) / 3600 / 1000 * 3333.3333; // 1.084e-06 m3/s from constant/glovalVars; should be way to pull this directly
+    const scalar baseFlowRate = base_flowrate.value(); // m3/s, from constant/microbeUpdateProperties
     double our_avg;
     double NH3_avg;
     double NH3_avg_hold;
@@ -86,7 +86,7 @@
     NH3_avg = fvc::domainIntegrate(alpha2*rho*1000*Y[NH3id]/17.031).value()/liqvol/1000; // avg mol/L 
 
     // get total amount of NH3 added over reaction update time: m3/s * 1000L/m3 * reaction h * 3600s/h * moles/L = moles 
-    total_moles_added = base_flowrate * 1000 * reaction_update_time.value() * 3600 * molarity_NH4OH;
+    total_moles_added = baseFlowRate * 1000 * reaction_update_time.value() * 3600 * molarity_NH4OH;
     total_new_concentration = total_moles_added / liqvol / 1000; //mol/L 
   
     Info<<"\n Base flow rate (m3/s) is: "<<base_flowrate<<"\n";

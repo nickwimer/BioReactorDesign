@@ -109,6 +109,12 @@ dimensionedScalar ph_update_time
      dimTime,
      reaction_props.lookup("ph_update_time"));
 
+// base flow rate into reactor (m3/s)
+dimensionedScalar base_flowrate
+(   "base_flowrate",
+     dimVolume/dimTime,
+     reaction_props.lookup("base_flowrate"));
+
 
 
 /*

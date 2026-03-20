@@ -5,7 +5,7 @@
     std::vector<double> abSystem(acidbasemodel::nvars - 1);
     std::vector<double> totalConc(acidbasemodel::nvars/2 + 2);
     std::vector<double> mwt(acidbasemodel::nvars - 1);
-    std::vector<int> species_id(acidbasemodel::nvars - 1);
+    std::vector<int> species_id(acidbasemodel::nvars - 1, -1);
     int id=0;
     int i=0;
     double liqvol=0;
@@ -25,6 +25,44 @@
     // phase, thermo, and rho are set in createFieldRefs.H
     UPtrList<volScalarField>& Y = phase.YActiveRef();
     const volScalarField& alpha2 = phase;
+
+    // Map species names in Y[] to acid-base model indices via system_keys
+    int mappedSpecies = 0;
+    forAll(Y, id)
+    {
+        auto it = acidbasemodel::system_keys.find(Y[id].name());
+        if (it == acidbasemodel::system_keys.end())
+        {
+            Info << "phReact: skipping non-acid-base species " << Y[id].name() << nl;
+            continue;
+        }
+
+        const int acidIndex = it->second;
+        species_id[acidIndex] = id;
+        mappedSpecies++;
+
+        Info << "phReact: mapped " << Y[id].name()
+             << " -> modelIndex=" << acidIndex
+             << " foamIndex=" << id << nl;
+    }
+
+    if (mappedSpecies != acidbasemodel::nvars - 1)
+    {
+        FatalErrorInFunction
+            << "Expected " << (acidbasemodel::nvars - 1)
+            << " acid-base species mapped, got " << mappedSpecies << nl
+            << exit(FatalError);
+    }
+
+    for (int k = 0; k < acidbasemodel::nvars - 1; ++k)
+    {
+        if (species_id[k] < 0)
+        {
+            FatalErrorInFunction
+                << "Acid-base species index " << k << " is not mapped in YActiveRef()" << nl
+                << exit(FatalError);
+        }
+    }
 
     //dictionary dict(IFstream("thermophysicalProperties.liquid")());
     
@@ -47,10 +85,19 @@
     //   }
     
     Info << "Starting pH reaction update..\n";
-    
+
+    const scalar alphaLiquidMin = 1.0e-6;
+
     // find initial OUR and advance solution
     forAll(C,i)
       {
+	if (alpha2[i] < alphaLiquidMin)
+	{
+	    // No liquid in this cell, use neutral pH in gas region
+	    pH[i] = 7.0;
+	    continue;
+	}
+
 	// fill abSystem with mol/L = M amounts of each component present in cell i (kg/m3 = g/L)
 	abSystem[acidbasemodel::PB] = rho[i]*Y[species_id[acidbasemodel::PB]][i]/mwt[acidbasemodel::PB]; //mol/L
 	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]/mwt[acidbasemodel::PA]; //mol/L
