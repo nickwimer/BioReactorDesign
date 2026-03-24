@@ -102,6 +102,11 @@
     total_new_concentration = total_moles_added / liqvol / 1000; //mol/L 
   
     Info<<"\n Base flow rate (m3/s) is: "<<base_flowrate<<"\n";
+    Info<<"\n Use ML for bio kinetics? "<<do_ml<<"\n";
+    Info<<"\n MM parameters are: \n";
+    for (const auto& param : microbemodel::MM_param_keys) {
+        Info << "\t" << param.first << ": " << MM_params[param.second] << "\n";
+    }
     Info<<"\n Avg quantities before and after mixing window: "<<NH3_avg<<"\t"<<total_new_concentration<< "\n\n";
     
     //find initial OUR and advance solution

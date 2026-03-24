@@ -132,7 +132,8 @@ dimensionedScalar y_ms
      reaction_props.lookup("y_ms"));
 dimensionedScalar y_os
 (   "y_os",
-     dimless,     reaction_props.lookup("y_os"));
+     dimless,     
+     reaction_props.lookup("y_os"));
 dimensionedScalar x_max
 (   "x_max",
      dimMoles/dimMass,
