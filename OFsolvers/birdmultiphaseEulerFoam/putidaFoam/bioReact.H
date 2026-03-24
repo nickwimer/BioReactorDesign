@@ -6,16 +6,27 @@
     std::vector<double> mwt(microbemodel::nvars);
     std::vector<int> species_id(microbemodel::nvars);
     std::vector<double> conc(microbemodel::nvars);
-    int O2id=0;
-    int NH3id=0;
-    int NH4id=0;
+    // int O2id=0;
+    int NH3id=-1;
+    int NH4id=-1;
     int id=0;
     int i=0;
     double liqvol;
     double dt_react=0.01; //hours (need to have it as an input)
-    double mwt_O2=32.0;
+    // double mwt_O2=32.0;
     double molarity_NH4OH = 7.398273736; // mol/L
     const scalar baseFlowRate = base_flowrate.value(); // m3/s, from constant/microbeUpdateProperties
+    std::vector<double> MM_params(9); // 9 parameters for the Monod Michaelis Menten kinetics
+    MM_params[microbemodel::MM_param_keys["y_xs"]] = y_xs.value();
+    MM_params[microbemodel::MM_param_keys["y_ms"]] = y_ms.value();
+    MM_params[microbemodel::MM_param_keys["y_os"]] = y_os.value();
+    MM_params[microbemodel::MM_param_keys["x_max"]] = x_max.value();
+    MM_params[microbemodel::MM_param_keys["q_max"]] = q_max.value();
+    MM_params[microbemodel::MM_param_keys["o2_max"]] = o2_max.value();
+    MM_params[microbemodel::MM_param_keys["K_o"]] = K_o.value();
+    MM_params[microbemodel::MM_param_keys["K_s"]] = K_s.value();
+    MM_params[microbemodel::MM_param_keys["kLa"]] = kLa.value();
+
     double our_avg;
     double NH3_avg;
     double NH3_avg_hold;
@@ -25,6 +36,7 @@
     double delNH4;
     double NH3_conc;
     double NH4_conc;
+    bool do_ml = use_ml.value();
 
     double total_moles_added;
     double total_new_concentration;
@@ -114,7 +126,7 @@
 	    Info << "\tMolWeight here is\t" << mwt[microbemodel::X] << "\n\n";
 	    }*/
 	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
-	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react);
+	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react, MM_params, do_ml);
 
 	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i];
 	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000*mwt[microbemodel::O2];

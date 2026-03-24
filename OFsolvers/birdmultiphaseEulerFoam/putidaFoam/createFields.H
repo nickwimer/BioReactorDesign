@@ -115,6 +115,48 @@ dimensionedScalar base_flowrate
      dimVolume/dimTime,
      reaction_props.lookup("base_flowrate"));
 
+// boolean for whether to use ML model for reaction updates or not
+Switch use_ml
+(
+    "use_ml",
+    reaction_props.lookup("use_ml")
+);
+// MM parameters to pass into microbe model
+dimensionedScalar y_xs
+(   "y_xs",
+     dimless,
+     reaction_props.lookup("y_xs"));
+dimensionedScalar y_ms
+(   "y_ms",
+     dimless,
+     reaction_props.lookup("y_ms"));
+dimensionedScalar y_os
+(   "y_os",
+     dimless,     reaction_props.lookup("y_os"));
+dimensionedScalar x_max
+(   "x_max",
+     dimMoles/dimMass,
+     reaction_props.lookup("x_max"));
+dimensionedScalar q_max
+(   "q_max",
+     dimMoles/dimMass/dimTime,
+     reaction_props.lookup("q_max"));
+dimensionedScalar o2_max
+(   "o2_max",
+     dimMoles/dimVolume,
+     reaction_props.lookup("o2_max"));
+dimensionedScalar K_o
+(   "K_o",
+     dimMoles/dimVolume,
+     reaction_props.lookup("K_o"));
+dimensionedScalar K_s
+(   "K_s",
+     dimMoles/dimVolume,
+     reaction_props.lookup("K_s"));
+dimensionedScalar kLa
+(   "kLa",
+     dimTime^-1,
+     reaction_props.lookup("kLa"));
 
 
 /*
