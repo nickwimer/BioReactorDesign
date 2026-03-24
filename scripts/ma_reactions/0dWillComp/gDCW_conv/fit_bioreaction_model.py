@@ -4,31 +4,42 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 from scipy.optimize import minimize
 
 
 def setmodelconstants(p):
 
+    # Initial parameter guess provided by Jamshidzadeh et al. (2025) in fixedstir1/paper_param.dat
+    # Hard-coded values from exp data/conditions; kla is within order of mag. 
+    
     modelConstants = {}
     # modelConstants["Fs_max"] = p[0]  # molS/m^3 / kgBio/m^3
-    modelConstants["q_max"] = p[0]  # molS/m^3 / kgBio/m^3
-    modelConstants["bio_max"] = 7.9  # kg/m^3
+    modelConstants["q_max"] = p[0]  # molS/m^3 / kgBio/m^3 / h
+    modelConstants["bio_max"] = 7.65  # kg/m^3
 
     modelConstants["K_o"] = p[1]  # mol/m^3
     # modelConstants['K_s'] = p[3] # mol/m^3
 
-    modelConstants["Y_xs"] = p[2]  # g/molS
+    modelConstants["Y_xs"] = p[2]  # kg/molS
     modelConstants["Y_ms"] = p[3]  # molB/molS
     modelConstants["Y_os"] = p[4]  # molO/molS
 
-    modelConstants["o2sat"] = 0.214
+    # modelConstants["o2sat"] = 0.25906 # mol/m3 pilot
+    modelConstants["o2sat"] = 0.188125 # mol/m3 lab
     modelConstants["K_s"] = p[5] # 0.92  # mol/m^3
+    # modelConstants["K_i"] = p[6] # 0.92  # mol/m^3
 
-    modelConstants["k_la"] = 50 # p[3]
+    # modelConstants["k_la"] = 57.6 # p[3]
+    # modelConstants["k_la"] = 92.8 # 1/h Averaged FS exp. from Will calc. w/ probe delay
+    # modelConstants["k_la"] = 300 # p[3]
+    # modelConstants["k_la"] = 428 # p[3] # 1/h; 2L, 1000 RPM, 1 VVM calc. from J. et al. 2025  
+    modelConstants["k_la"] = 540 # p[3]
     return modelConstants
 
 
-def ode_model(y, t, mc):
+# def ode_model(y, t, mc):
+def ode_model(t, y, mc):
     """
     Definition of simplified metabolic model, as defined
     in the document.
@@ -52,15 +63,15 @@ def ode_model(y, t, mc):
     F_o = o2 / (o2 + mc["K_o"])
 
     # Calculate qs
-    qs = mc["q_max"]*F_s * F_o
+    qs = mc["q_max"]*F_s * F_o # mol/kg/h
 
     # Calculate rates
-    rbio = mc["Y_xs"] * qs * bio * (1 - bio / mc["bio_max"])  # biomass
-    rglu = -qs * bio  # glucose
-    rmuc = mc["Y_ms"] * qs * bio  # muconate
+    rbio = mc["Y_xs"] * qs * bio * (1 - bio / mc["bio_max"])  # biomass; kg/m3/h
+    rglu = -qs * bio  # glucose; mol/m3/h
+    rmuc = mc["Y_ms"] * qs * bio  # muconate; mol/m3/h
 
     otr = k_la * (mc["o2sat"] - o2)  # oxygen transfer rate
-    roxy = -mc["Y_os"] * qs * bio + otr  # oxygen
+    roxy = -mc["Y_os"] * qs * bio + otr  # oxygen; mol/m3/h
 
     return np.array([rbio, rglu, rmuc, roxy])
 
@@ -73,7 +84,9 @@ def loss_function(params, init_cond, t_final, exp_data, normalize=False):
     # Just solve at the experimental time points
     time_int = exp_data["time"]
 
-    sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    # sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    result = solve_ivp(ode_model, [0, t_final], init_cond, t_eval=time_int, args=(mc,), method='Radau')
+    sol_y = np.transpose(result.y)
 
     F_s = sol_y[:, 1] / (sol_y[:, 1] + mc["K_s"])
     F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"])
@@ -113,11 +126,14 @@ def integrate_solution(params, init_cond, t_final, exp_data):
     mc = setmodelconstants(params)
     print(mc)
 
-    sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    # sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    result = solve_ivp(ode_model, [0, t_final], init_cond, t_eval=time_int, args=(mc,), method='Radau')
+    sol_y = np.transpose(result.y)
     print(sol_y)
 
     F_s = sol_y[:, 1] / (sol_y[:, 1] + mc["K_s"])
     F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"])
+    # F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"] + (sol_y[:, 3]**2 / mc["K_i"]))
 
     qs = mc["q_max"] * F_s * F_o
 
@@ -162,21 +178,29 @@ def plot_rates(params, init_cond, t_final):
     mc = setmodelconstants(params)
     print(mc)
 
-    sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    # sol_y = odeint(ode_model, init_cond, time_int, args=(mc,))
+    result = solve_ivp(ode_model, [0, t_final], init_cond, t_eval=time_int, args=(mc,), method='Radau')
+    sol_y = np.transpose(result.y)
     print(sol_y)
     print(sol_y.shape)
     print(rates.shape)
     
 
     for i in range(1000):
-        rates[i] = ode_model(sol_y[i], time_int, mc)
+        rates[i] = ode_model(time_int, sol_y[i], mc)
 
     F_s = sol_y[:, 1] / (sol_y[:, 1] + mc["K_s"])
     F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"])
+    # F_o = sol_y[:, 3] / (sol_y[:, 3] + mc["K_o"] + (sol_y[:, 3]**2 / mc["K_i"]))
 
-    qs = mc["q_max"] * F_s * F_o
+    qs = mc["q_max"] * F_s * F_o 
 
     our = qs * mc["Y_os"] * sol_y[:, 0]
+
+    print()
+    print(sol_y)
+    print(rates)
+    print()
     
     # Plot results
     fig, axs = plt.subplots(2, 2, figsize=(14, 10), squeeze=False)
@@ -193,7 +217,7 @@ def plot_rates(params, init_cond, t_final):
     axs[1, 0].set_xlabel("time (h)", fontsize=14)
 
     axs[1, 1].plot(time_int, -our/sol_y[:, 0], "b-", label="model")
-    axs[1, 1].set_ylabel("-OUR ($mmol/gDCW/h$)", fontsize=14)
+    axs[1, 1].set_ylabel("OUR ($mmol/gDCW/h$)", fontsize=14)
     axs[1, 1].set_xlabel("time (h)", fontsize=14)
 
     return fig
@@ -208,7 +232,7 @@ if __name__ == "__main__":
         dest="fdir",
         help="directory containing experiment data, initial conditions, and initial parameter guess",
         type=str,
-        default=".",
+        default="fixedstir1",
     )
     parser.add_argument(
         "-pf",
@@ -233,12 +257,13 @@ if __name__ == "__main__":
     }
     # print(exp_data_dict)
 
-    # Initial parameter order: q_max, K_o, Y_xs, Y_ms, Y_os
-    p0 = np.loadtxt(os.path.join(case_dir, "initial_param.dat"))
+    # Initial parameter order: q_max, K_o, Y_xs, Y_ms, Y_os, K_s, K_i
+    p0 = np.loadtxt(os.path.join(case_dir, "paper_param.dat"))
+    # p0 = np.loadtxt(os.path.join(case_dir, "will_param.dat"))
 
     if args.param_fit:
         # Solve ODE
-        fig = integrate_solution(p0, init_cond, 33, exp_data_dict)
+        fig = integrate_solution(p0, init_cond, 32.25, exp_data_dict)
         fig.suptitle(f"Initial Parameters: {p0}", fontsize=16)
         fig.savefig(os.path.join(case_dir, "initial_parameters.png"))
         plt.close(fig)
@@ -249,7 +274,7 @@ if __name__ == "__main__":
             loss_function,
             initial_guess,
             bounds=[(0, None)] * 6,
-            args=(init_cond, 33, exp_data_dict, True),  # Final argument is for norm mse
+            args=(init_cond, 32.25, exp_data_dict, True),  # Final argument is for norm mse
         )
         fitted_params = result.x
 
@@ -262,14 +287,14 @@ if __name__ == "__main__":
     np.savetxt(os.path.join(case_dir,"fitted_param.dat"), np.transpose(fitted_params), delimiter=" ")
 
     # Solve ODE with fitted parameters
-    fig = integrate_solution(fitted_params, init_cond, 33, exp_data_dict)
-    fig.suptitle(f"Fitted Parameters: {fitted_params}", fontsize=16)
+    fig = integrate_solution(fitted_params, init_cond, 32.25, exp_data_dict)
+    fig.suptitle(f"Initial Parameters: {p0}"+"\n"+f"Fitted Parameters: {fitted_params}", fontsize=16)
     fig.savefig(os.path.join(case_dir, "fitted_parameters.png"))
     plt.close(fig)
 
     plt.show()
 
-    fig = plot_rates(fitted_params, init_cond, 33)
+    fig = plot_rates(fitted_params, init_cond, 32.25)
     fig.suptitle("Rates", fontsize=16)
     fig.savefig(os.path.join(case_dir, "CFD_rates.png"))
     plt.close(fig)
