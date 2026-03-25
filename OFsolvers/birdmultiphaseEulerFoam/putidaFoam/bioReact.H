@@ -26,6 +26,7 @@
     MM_params[microbemodel::MM_param_keys["K_o"]] = K_o.value();
     MM_params[microbemodel::MM_param_keys["K_s"]] = K_s.value();
     MM_params[microbemodel::MM_param_keys["kLa"]] = kLa.value();
+    bool do_ml = bool(use_ml);
 
     double our_avg;
     double NH3_avg;
@@ -36,7 +37,6 @@
     double delNH4;
     double NH3_conc;
     double NH4_conc;
-    bool do_ml = use_ml.value();
 
     double total_moles_added;
     double total_new_concentration;
@@ -130,7 +130,7 @@
 	    Info << "\tFluid density  here is\t" << rho[i] << "\n";
 	    Info << "\tMolWeight here is\t" << mwt[microbemodel::X] << "\n\n";
 	    }*/
-	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
+	our[i]=0.5*microbemodel::get_our(solnvec,microbemodel::nvars, MM_params);
 	microbemodel::advance(solnvec,microbemodel::nvars,0.0,reaction_update_time.value(),dt_react, MM_params, do_ml);
 
 	Y[species_id[microbemodel::X]][i] = solnvec[microbemodel::X]/rho[i];
@@ -142,7 +142,7 @@
 	//Info << "after putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
 	//Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
 	
-	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars);
+	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars, MM_params);
 
 	// Get NH3 concentration to scale up over temporal disparity btwn reaction time and mixing time
 	NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L

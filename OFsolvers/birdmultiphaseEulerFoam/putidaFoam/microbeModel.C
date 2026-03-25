@@ -217,16 +217,6 @@ namespace microbemodel
 	}
     }
 
-
-    void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id)
-    {
-      auto it = sp_keys.find(name);
-      if(it != sp_keys.end())
-	{
-	  id_map[it->second] = foam_id;
-	}
-    }
-
   
     void get_rhs(std::vector<double>& rhs, std::vector<double> solnvec, double t, int nvars, std::vector<double>& MM_params)
     {
@@ -288,7 +278,7 @@ namespace microbemodel
         rhs[O2] = 0.0;
         rhs[G] = rglu;
         rhs[M] = rmuc_ml;
-        rhs[CO2] = 0.0;
+        // rhs[CO2] = 0.0;
 
     }
 
