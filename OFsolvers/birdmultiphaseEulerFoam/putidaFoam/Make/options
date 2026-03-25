@@ -1,3 +1,6 @@
+# Set the libtorch path
+LIBTORCH_PATH = $(HOME)/libs/libtorch
+
 EXE_INC = \
     -I../include \
     -I../phaseSystems/lnInclude \
@@ -15,8 +18,8 @@ EXE_INC = \
 
 # Includes for ML model
 EXE_INC += \
-    -I/opt/libtorch/include \
-    -I/opt/libtorch/include/torch/csrc/api/include
+    -I$(LIBTORCH_PATH)/include \   
+    -I$(LIBTORCH_PATH)/include/torch/csrc/api/include
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
@@ -37,7 +40,7 @@ EXE_LIBS = \
 
 # Libs for ML model
 EXE_LIBS += \
-    -L/opt/libtorch/lib \
+    -L$(LIBTORCH_PATH)/lib \
     -ltorch -ltorch_cpu -lc10
 
 # EXE_INC = \
