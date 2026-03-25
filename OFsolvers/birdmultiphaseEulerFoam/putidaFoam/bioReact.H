@@ -137,13 +137,15 @@
 	Y[species_id[microbemodel::O2]][i] = solnvec[microbemodel::O2]/rho[i]/1000*mwt[microbemodel::O2];
 	Y[species_id[microbemodel::G]][i] = solnvec[microbemodel::G]/rho[i]/1000*mwt[microbemodel::G];
 	Y[species_id[microbemodel::M]][i] = solnvec[microbemodel::M]/rho[i]/1000*mwt[microbemodel::M];
+	// Save H+ contribution from cell; only used if MEML in use 
+	Hcell[i] = solnvec[microbemodel::H]; // mol/m3
 	// Y[species_id[microbemodel::CO2]][i] = solnvec[microbemodel::CO2]/rho[i]/1000*mwt[microbemodel::CO2];
 
 	//Info << "after putida concentration for this cell is:\t" << solnvec[microbemodel::X] << "\n";
 	//Info << "after putida mass frac for this cell is:\t" << Y[species_id[microbemodel::X]][i] << "\n";
 	
 	our[i] += 0.5*microbemodel::get_our(solnvec,microbemodel::nvars, MM_params);
-
+	
 	// Get NH3 concentration to scale up over temporal disparity btwn reaction time and mixing time
 	NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L
 	// NH4_conc = rho[i]*Y[NH4id][i]/18.04;  // mol/L

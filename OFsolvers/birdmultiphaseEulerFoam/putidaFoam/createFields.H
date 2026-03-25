@@ -235,6 +235,20 @@ volScalarField our
  dimensionedScalar("our", dimMoles/dimVolume/dimTime, 0)
 );
 
+volScalarField Hcell
+(
+ IOobject
+ (
+  "Hcell",
+  runTime.timeName(),
+  mesh,
+  IOobject::READ_IF_PRESENT,
+  IOobject::AUTO_WRITE
+ ),
+ mesh,
+ dimensionedScalar("Hcell", dimMoles/dimVolume, 0)
+);
+
 volScalarField pH
 (
  IOobject

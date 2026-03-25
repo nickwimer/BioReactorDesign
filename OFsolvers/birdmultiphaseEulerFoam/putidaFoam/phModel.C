@@ -60,11 +60,14 @@ namespace acidbasemodel
     totalConc[nvars/2] = -Z;
   }
 
-  double charge(double H, std::vector<double>& totalConc)
+  double charge(double H, std::vector<double>& totalConc, bool do_ml)
   {
     // getRatio; // figure this out later...
-
-    double ratio = 2.0;
+    if(do_ml) {
+      double ratio = 1.0;
+    } else {
+      double ratio = 2.0;
+    }
     double ch = H						\
       + totalConc[AmmoniaBase] * H / (H + Ka[AmmoniaBase])	\
       - ratio * totalConc[MuconicAcid] \
@@ -87,22 +90,22 @@ namespace acidbasemodel
     return dchdH;
   }
 
-  double NewtonRaphson(double H_init, std::vector<double>& totalConc)
+  double NewtonRaphson(double H_init, std::vector<double>& totalConc, bool do_ml)
   {
     double tol = 1.0E-14;
-    double test = charge(H_init, totalConc);
+    double test = charge(H_init, totalConc, do_ml);
     // std::cout << "Initialized Charge is: " << test << "\n";
     double H_next = 0.0;
     double H_now = H_init;
     int iter = 0;
     while(std::abs(test) > tol && iter<100)
   { 
-	double chargeCurrent = charge(H_now, totalConc);
+        double chargeCurrent = charge(H_now, totalConc, do_ml);
 	double dchargedHCurrent = dchargedH(H_now, totalConc);
 	// std::cout << "current Charge: " << chargeCurrent << "\n";
 	// std::cout << "current derivative: " << dchargedHCurrent << "\n";
-	H_next =  H_now - charge(H_now, totalConc)/dchargedH(H_now, totalConc);
-	test = charge(H_next, totalConc);
+	H_next =  H_now - charge(H_now, totalConc, do_ml)/dchargedH(H_now, totalConc);
+	test = charge(H_next, totalConc, do_ml);
 	H_now = H_next;
 	// std::cout << "\n";
 	// std::cout << "Updated Charge: " << test << "\n";

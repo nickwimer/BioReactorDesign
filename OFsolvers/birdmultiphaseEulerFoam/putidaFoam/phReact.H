@@ -14,6 +14,7 @@
     double sAcidConc = 0.0;
     double sBaseConc = 0.0;
     double Kw = 1.0E-14;
+    bool do_ml = bool(use_ml);
 
     mwt[0] = 95.98; //HPO4
     mwt[1] = 96.98; //H2PO4
@@ -103,8 +104,13 @@
 	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]/mwt[acidbasemodel::PA]; //mol/L
 	abSystem[acidbasemodel::NB] = rho[i]*Y[species_id[acidbasemodel::NB]][i]/mwt[acidbasemodel::NB]; //mol/L
 	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
-	abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
 
+	if(do_ml) {
+	  abSystem[acidbasemodel::MB] = Hcell[i]/1000; //mol/L
+	} else {
+	  abSystem[acidbasemodel::MB] = rho[i]*Y[species_id[acidbasemodel::MB]][i]/mwt[acidbasemodel::MB]; //mol/L
+	}
+	
 	// Info << "\n";
 	// Info << "Density: " << rho[i] << "\n";
 	// Info << "alphaL: " << alpha2[i] << "\n";
@@ -132,7 +138,7 @@
 	// getSpectatorsBio(totalConc);
 	totalConc[acidbasemodel::nvars/2 + 1] = 0.0;
 	double H_set = 1.0E-15;
-	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
+	double H = acidbasemodel::NewtonRaphson(H_set, totalConc, do_ml);
 	pH[i] = -std::log10(H);
 	// Info << "pH is: " << pH[i] << "\n";
 

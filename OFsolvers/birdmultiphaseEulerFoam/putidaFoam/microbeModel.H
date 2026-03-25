@@ -11,6 +11,7 @@ namespace microbemodel
     extern const int O2;
     extern const int G;
     extern const int M;
+    extern const int H;
     //extern const int CO2;
     extern const int nvars;
     extern std::map<std::string, int> sp_keys;
