@@ -41,6 +41,7 @@ EXE_LIBS = \
 # Libs for ML model
 EXE_LIBS += \
     -L$(LIBTORCH_PATH)/lib \
+    -Wl,-rpath,$(LIBTORCH_PATH)/lib \
     -ltorch -ltorch_cpu -lc10
 
 # EXE_INC = \
