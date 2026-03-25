@@ -156,7 +156,7 @@ dimensionedScalar K_s
      reaction_props.lookup("K_s"));
 dimensionedScalar kLa
 (   "kLa",
-     dimTime^-1,
+     dimless/dimTime,
      reaction_props.lookup("kLa"));
 
 
