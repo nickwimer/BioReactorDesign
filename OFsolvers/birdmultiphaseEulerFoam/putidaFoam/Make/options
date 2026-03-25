@@ -1,8 +1,8 @@
 EXE_INC = \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/include \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/phaseSystems/lnInclude \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialModels/lnInclude \
-    -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialCompositionModels/lnInclude \
+    -I../include \
+    -I../phaseSystems/lnInclude \
+    -I../interfacialModels/lnInclude \
+    -I../interfacialCompositionModels/lnInclude \
     -I$(LIB_SRC)/transportModels/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
@@ -13,13 +13,19 @@ EXE_INC = \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/dynamicFvMesh/lnInclude
 
+# Includes for ML model
+EXE_INC += \
+    -I/opt/libtorch/include \
+    -I/opt/libtorch/include/torch/csrc/api/include
+
 EXE_LIBS = \
-    -lphaseSystem \
-    -lmultiphaseSystems \
-    -leulerianInterfacialModels \
-    -leulerianInterfacialCompositionModels \
-    -lmultiphaseMomentumTransportModels \
-    -lmultiphaseReactions \
+    -L$(FOAM_USER_LIBBIN) \
+    -lbirdphaseSystem \
+    -lbirdmultiphaseSystems \
+    -lbirdeulerianInterfacialModels \
+    -lbirdeulerianInterfacialCompositionModels \
+    -lbirdmultiphaseMomentumTransportModels \
+    -lbirdmultiphaseReactions \
     -lphaseFluidThermophysicalTransportModels \
     -lphaseFluidReactionThermophysicalTransportModels \
     -lspecie \
@@ -28,3 +34,40 @@ EXE_LIBS = \
     -lfvConstraints \
     -lmeshTools \
     -ldynamicFvMesh
+
+# Libs for ML model
+EXE_LIBS += \
+    -L/opt/libtorch/lib \
+    -ltorch -ltorch_cpu -lc10
+
+# EXE_INC = \
+#     -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/include \
+#     -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/phaseSystems/lnInclude \
+#     -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialModels/lnInclude \
+#     -I$(FOAM_APP)/solvers/multiphase/multiphaseEulerFoam/interfacialCompositionModels/lnInclude \
+#     -I$(LIB_SRC)/transportModels/lnInclude \
+#     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+#     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+#     -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+#     -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
+#     -I$(LIB_SRC)/MomentumTransportModels/phaseCompressible/lnInclude \
+#     -I$(LIB_SRC)/finiteVolume/lnInclude \
+#     -I$(LIB_SRC)/meshTools/lnInclude \
+#     -I$(LIB_SRC)/dynamicFvMesh/lnInclude
+
+# EXE_LIBS = \
+#     -lphaseSystem \
+#     -lmultiphaseSystems \
+#     -leulerianInterfacialModels \
+#     -leulerianInterfacialCompositionModels \
+#     -lmultiphaseMomentumTransportModels \
+#     -lmultiphaseReactions \
+#     -lphaseFluidThermophysicalTransportModels \
+#     -lphaseFluidReactionThermophysicalTransportModels \
+#     -lspecie \
+#     -lfiniteVolume \
+#     -lfvModels \
+#     -lfvConstraints \
+#     -lmeshTools \
+#     -ldynamicFvMesh
+
