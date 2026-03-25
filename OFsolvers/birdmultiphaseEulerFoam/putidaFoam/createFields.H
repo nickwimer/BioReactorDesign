@@ -116,11 +116,8 @@ dimensionedScalar base_flowrate
      reaction_props.lookup("base_flowrate"));
 
 // boolean for whether to use ML model for reaction updates or not
-Switch use_ml
-(
-    "use_ml",
-    reaction_props.lookup("use_ml")
-);
+Switch use_ml(false);
+reaction_props.readIfPresent("use_ml", use_ml);
 // MM parameters to pass into microbe model
 dimensionedScalar y_xs
 (   "y_xs",

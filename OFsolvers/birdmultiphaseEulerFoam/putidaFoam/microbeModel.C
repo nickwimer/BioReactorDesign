@@ -172,9 +172,9 @@ namespace microbemodel
         {
             try
             {
-                std::cout << "Attempting to load model..." << std::endl;
+                // std::cout << "Attempting to load model..." << std::endl;
                 model = torch::jit::load("scripted_model_biomass_h_muconate.pt");
-                std::cout << "Model Loaded..." << std::endl;
+                // std::cout << "Model Loaded..." << std::endl;
                 model.eval();
                 model_loaded = true;
             }
@@ -201,8 +201,8 @@ namespace microbemodel
 
         return outputs;
         } else {
-            std::cout << "Point is outside the convex hull." << std::endl;
-            std::cout << "Inputs: " << inputs << std::endl;
+            // std::cout << "Point is outside the convex hull." << std::endl;
+            // std::cout << "Inputs: " << inputs << std::endl;
             return std::vector<double>(3, 0.0);
 
         }
