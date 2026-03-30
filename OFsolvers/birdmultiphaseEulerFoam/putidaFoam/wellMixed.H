@@ -74,11 +74,11 @@
     {
         current_time += advance_time;
         microbemodel::advance(solnvec,microbemodel::nvars,current_time,advance_time,dt_react, MM_params, do_ml);
-	totalConc[acidbasemodel::MuconicAcid] = solnvec[microbemodel::M]/1000;
-	totalConc[acidbasemodel::AmmoniaBase] = baseConc[baseTime];
-	H_new = acidbasemodel::NewtonRaphson(H, totalConc);
-	pH = -std::log10(H_new);
-	//H = H_new;
+        totalConc[acidbasemodel::MuconicAcid] = solnvec[microbemodel::M]/1000;
+        totalConc[acidbasemodel::AmmoniaBase] = baseConc[baseTime];
+        H_new = acidbasemodel::NewtonRaphson(H, totalConc, do_ml);
+        pH = -std::log10(H_new);
+        //H = H_new;
         outfile<<current_time<<"\t";
         for(int i=0;i<microbemodel::nvars;i++)
         {

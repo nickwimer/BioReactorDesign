@@ -272,18 +272,17 @@ namespace microbemodel
         std::vector<double> outputs = eval_torch_model(inputs);
         // Extract the outputs
         double mu_bio = outputs[0];
-	// @Nick: Assuming index 1 is for H+
-	double r_H = outputs[1];
+	    double r_H = outputs[1];
         double r_muc = outputs[2];
         double rbio_ml = mu_bio * solnvec[X];
         double rmuc_ml = r_muc * solnvec[X];
-	double rH_ml = r_H * solnvec[X];
+	    double rH_ml = r_H * solnvec[X];
         // Calculate final rates
         rhs[X] = rbio_ml;
         rhs[O2] = 0.0;
         rhs[G] = rglu;
         rhs[M] = rmuc_ml;
-	rhs[H] = rH_ml;
+	    rhs[H] = rH_ml;
         // rhs[CO2] = 0.0;
 
     }

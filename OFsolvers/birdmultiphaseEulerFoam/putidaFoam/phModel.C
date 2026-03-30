@@ -62,12 +62,7 @@ namespace acidbasemodel
 
   double charge(double H, std::vector<double>& totalConc, bool do_ml)
   {
-    // getRatio; // figure this out later...
-    if(do_ml) {
-      double ratio = 1.0;
-    } else {
-      double ratio = 2.0;
-    }
+    double ratio = do_ml ? 1.0 : 2.0;
     double ch = H						\
       + totalConc[AmmoniaBase] * H / (H + Ka[AmmoniaBase])	\
       - ratio * totalConc[MuconicAcid] \
