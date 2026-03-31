@@ -1,6 +1,8 @@
 #include "phModel.H"
-#include<map>
-//#include<vector>
+#include <map>
+#include <vector>
+#include <string>
+#include <cmath>
 
 namespace acidbasemodel
 {
@@ -53,8 +55,8 @@ namespace acidbasemodel
   void getSpectatorsNonBio(std::vector<double>& totalConc)
   {
     double H_set = 1.0E-07;
-    double Z = H_set - H_set*totalConc[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer]) \
-      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer]) \
+    double Z = H_set - H_set*totalConc[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer])
+      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer]/(H_set + Ka[PhosphateBuffer])
       - Kw/H_set;
       
     totalConc[nvars/2] = -Z;
@@ -62,24 +64,27 @@ namespace acidbasemodel
 
   double charge(double H, std::vector<double>& totalConc, bool do_ml)
   {
-    double ratio = do_ml ? 1.0 : 2.0;
-    double ch = H						\
-      + totalConc[AmmoniaBase] * H / (H + Ka[AmmoniaBase])	\
-      - ratio * totalConc[MuconicAcid] \
-      - totalConc[PhosphateBuffer] * H / (H + Ka[PhosphateBuffer]) \
-      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / (H + Ka[PhosphateBuffer]) \
-      - Kw / H \
-      + totalConc[nvars/2];
+    double muc_ratio = do_ml ? 0.0 : 2.0;
+    double meml_ratio = do_ml ? 1.0 : 0.0;
+    double ch = H // H = +totalConc[nvars/2 + 1] when ch = 0
+      + totalConc[AmmoniaBase] * H / (H + Ka[AmmoniaBase])
+      - totalConc[PhosphateBuffer] * H / (H + Ka[PhosphateBuffer])
+      - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / (H + Ka[PhosphateBuffer])
+      - Kw / H
+      + totalConc[nvars/2]
+      // TODO: track each of these terms
+      - meml_ratio * totalConc[nvars/2 + 1] // TODO: Check sign (+? -?)
+      - muc_ratio * totalConc[MuconicAcid];
 
     return ch;
   }
   
   double dchargedH(double H, std::vector<double>& totalConc)
   {
-    double dchdH = 1.0 \
-      + Ka[AmmoniaBase] * totalConc[AmmoniaBase] / ((Ka[AmmoniaBase] + H) * (Ka[AmmoniaBase] + H)) \
-      - Ka[PhosphateBuffer] * totalConc[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
-      + 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
+    double dchdH = 1.0
+      + Ka[AmmoniaBase] * totalConc[AmmoniaBase] / ((Ka[AmmoniaBase] + H) * (Ka[AmmoniaBase] + H))
+      - Ka[PhosphateBuffer] * totalConc[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H))
+      + 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H))
       + Kw/(H*H);
     
     return dchdH;
@@ -88,26 +93,26 @@ namespace acidbasemodel
   double NewtonRaphson(double H_init, std::vector<double>& totalConc, bool do_ml)
   {
     double tol = 1.0E-14;
-    double test = charge(H_init, totalConc, do_ml);
+    const double H_floor = 1.0E-14;
+    double H_seed = H_init > H_floor ? H_init : H_floor;
+    double test = charge(H_seed, totalConc, do_ml);
     // std::cout << "Initialized Charge is: " << test << "\n";
     double H_next = 0.0;
-    double H_now = H_init;
+    double H_now = H_seed;
     int iter = 0;
     while(std::abs(test) > tol && iter<100)
-  { 
+    { 
         double chargeCurrent = charge(H_now, totalConc, do_ml);
-	double dchargedHCurrent = dchargedH(H_now, totalConc);
-	// std::cout << "current Charge: " << chargeCurrent << "\n";
-	// std::cout << "current derivative: " << dchargedHCurrent << "\n";
-	H_next =  H_now - charge(H_now, totalConc, do_ml)/dchargedH(H_now, totalConc);
-	test = charge(H_next, totalConc, do_ml);
-	H_now = H_next;
-	// std::cout << "\n";
-	// std::cout << "Updated Charge: " << test << "\n";
-	// std::cout << "Updated H: " << H_now << "\n";
-	// std::cout << "\n\n";
-	iter += 1;
-      }
+        double dchargedHCurrent = dchargedH(H_now, totalConc);
+        H_next =  H_now - charge(H_now, totalConc, do_ml)/dchargedH(H_now, totalConc);
+        if (!(H_next > H_floor))
+          {
+            H_next = H_floor;
+          }
+        test = charge(H_next, totalConc, do_ml);
+        H_now = H_next;
+        iter += 1;
+    }
     return H_now;
   }
 }

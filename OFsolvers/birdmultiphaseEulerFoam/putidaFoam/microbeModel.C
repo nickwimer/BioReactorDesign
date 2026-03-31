@@ -43,7 +43,7 @@ namespace microbemodel
                           {"o2_max", 5},
                           {"K_o", 6},
                           {"K_s", 7},
-                          {"kLa", 8}};
+                          {"kLa", 8}}; // TODO: remove kLa from vector list
 
     double X_avg=0.0;
     double G_avg=0.0;
@@ -242,9 +242,9 @@ namespace microbemodel
         rhs[O2] = 0.0;
         rhs[G] = -q_s*solnvec[X];
         rhs[M] = y_ms*q_s*solnvec[X];
-	// microbe-contributed H+ not supported in pure MM model; H+ only from full ccMA dissociation
-	rhs[H] = 0.0;
-	// rhs[CO2] = 0.0;
+        // microbe-contributed H+ not supported in pure MM model; H+ only from full ccMA dissociation
+        rhs[H] = 0.0;
+	    // rhs[CO2] = 0.0;
 
     }
 

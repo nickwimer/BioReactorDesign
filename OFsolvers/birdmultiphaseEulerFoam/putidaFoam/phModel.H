@@ -1,9 +1,11 @@
-#include<vector>
-#include<scalar.H>
-#include<array>
-#include<map>
-//#include <boost/math/special_functions/gamma.hpp>
-//#include <gamma.hpp>
+#ifndef phModel_H
+#define phModel_H
+
+#include <vector>
+#include <string>
+#include <map>
+#include <scalar.H>
+#include <array>
 
 namespace acidbasemodel
 {
@@ -30,3 +32,5 @@ namespace acidbasemodel
     double dchargedH(double H, std::vector<double>& totalConc);
     double NewtonRaphson(double H_init, std::vector<double>& totalConc, bool do_ml = false);  
 }
+
+#endif
