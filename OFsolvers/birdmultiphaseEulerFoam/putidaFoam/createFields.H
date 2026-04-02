@@ -249,6 +249,25 @@ volScalarField Hcell
  dimensionedScalar("Hcell", dimMoles/dimVolume, 0)
 );
 
+IOdictionary HcellProperties
+(
+    IOobject
+    (
+        "HcellProperties",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+
+dimensionedScalar DHcell
+(
+    "DHcell",
+    dimArea/dimTime,
+    HcellProperties.lookup("DHcell")
+);
+
 volScalarField pH
 (
  IOobject
