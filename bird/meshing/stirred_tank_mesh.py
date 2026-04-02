@@ -777,10 +777,10 @@ def write_patches(outfile, react):
             ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
-            outfile.write(str(get_globalindex_of(i, inhub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_above, react)) + " ")
             outfile.write(str(get_globalindex_of(i, inhub_ci, zi_above, react)) + " ")
-            outfile.write(str(get_globalindex_of(i, hub_ci, zi_above, react)) + ")\n")
+            outfile.write(str(get_globalindex_of(i, inhub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + ")\n")
 
     outfile.write("\t)\n")
 
@@ -793,9 +793,10 @@ def write_patches(outfile, react):
         outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
-            # skip locations where baffle point == global point for degeneracy reasons
-            if get_baffle_point_of(i, hub_ci, zi_below, react) == get_globalindex_of(
-                i, hub_ci, zi_below, react
+            # skip splits that are not duplicated on either side of the interface
+            if not (
+                _is_duplicated_point(react, i, hub_ci, zi_below)
+                or _is_duplicated_point(react, i, hub_ci, zi_above)
             ):
                 continue
             outfile.write("\t\t( ")
@@ -813,16 +814,17 @@ def write_patches(outfile, react):
         outfile.write("\n\t\t//pair :" + str(zi_below) + "-" + str(zi_above) + "\n")
 
         for i in range(0, nsplits, 2):  # even numbers
-            # skip the even splits that are not duplicated
-            if get_baffle_point_of(i, hub_ci, zi_below, react) == get_globalindex_of(
-                i, hub_ci, zi_below, react
+            # skip splits that are not duplicated on either side of the interface
+            if not (
+                _is_duplicated_point(react, i, hub_ci, zi_below)
+                or _is_duplicated_point(react, i, hub_ci, zi_above)
             ):
                 continue
             outfile.write("\t\t( ")
-            outfile.write(str(get_globalindex_of(i, rot_ci, zi_below, react)) + " ")
-            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi_above, react)) + " ")
             outfile.write(str(get_globalindex_of(i, hub_ci, zi_above, react)) + " ")
-            outfile.write(str(get_globalindex_of(i, rot_ci, zi_above, react)) + ")\n")
+            outfile.write(str(get_globalindex_of(i, hub_ci, zi_below, react)) + " ")
+            outfile.write(str(get_globalindex_of(i, rot_ci, zi_below, react)) + ")\n")
 
     outfile.write("\t)\n")
 
