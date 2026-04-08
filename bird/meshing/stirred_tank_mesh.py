@@ -412,7 +412,7 @@ def write_blocks(outfile, react):
 
             outfile.write("\n//circle " + str(ci) + "\n")
 
-            if (zi in mrf_volumes) and (ci <= mrf_circ):
+            if (zi in mrf_volumes) and (rot_circ <= ci <= mrf_circ):
                 zonename = "rotor"
 
             for i in range(nsplits):

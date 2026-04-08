@@ -38,7 +38,8 @@ class StirredTankReactor:
         target_volume_L,
         round_bottom,
         bottom_inlet,
-        mrf_buffer_cells=0,
+        mrf_vertical_buffer_cells=0,
+        mrf_radial_buffer_cells=0,
     ):
         # Loop through params and setattr v to self.k
         for k, v in locals().items():
@@ -120,7 +121,8 @@ class StirredTankReactor:
         self.hub_circ = 1
         self.inhub_circ = self.hub_circ - 1  # circle inside hub
         self.rot_circ = self.hub_circ + 1
-        self.mrf_circ = self.rot_circ + 1
+        radial_buffer = max(0, int(self.mrf_radial_buffer_cells))
+        self.mrf_circ = min(self.rot_circ + 1 + radial_buffer, self.ncirc - 1)
         self.tank_circ = self.ncirc - 1
 
         self.reacthts = [reactor_bottom]
@@ -131,8 +133,8 @@ class StirredTankReactor:
         count = 1
         self.angle_offsets = [0.0]
 
-        # Buffer cells for MRF region above and below impeller
-        nbuf = int(self.mrf_buffer_cells)
+        # Buffer cells for MRF region above and below impeller (vertical direction)
+        nbuf = int(self.mrf_vertical_buffer_cells)
         buffer_ht = nbuf / float(nz) if nbuf > 0 else 0.0
 
         for n_imp in range(self.nimpellers):
