@@ -1,4 +1,8 @@
+#ifndef phModel_H
+#define phModel_H
+
 #include<vector>
+#include<string>
 #include<scalar.H>
 #include<array>
 #include<map>
@@ -28,7 +32,9 @@ namespace acidbasemodel
     void getTotalConc(std::vector<double>& abSystem, std::vector<double>& totalConc);
     void getSpectatorsNonBio(std::vector<double>& totalConc);
     void getSystemID(std::string name, std::vector<int>& id_map, int foam_id);
-    double charge(double H, std::vector<double>& totalConc);
-    double dchargedH(double H, std::vector<double>& totalConc);
-    double NewtonRaphson(double H_init, std::vector<double>& totalConc);  
+    double charge(double H, std::vector<double>& totalConc, bool do_ml = false);
+    double dchargedH(double H, std::vector<double>& totalConc, bool do_ml = false);
+    double NewtonRaphson(double H_init, std::vector<double>& totalConc, bool do_ml = false);  
 }
+
+#endif

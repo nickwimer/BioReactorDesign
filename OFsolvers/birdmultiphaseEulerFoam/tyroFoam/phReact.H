@@ -29,31 +29,59 @@
     UPtrList<volScalarField>& Y = phase.YActiveRef();
     const volScalarField& alpha2 = phase;
 
-    //dictionary dict(IFstream("thermophysicalProperties.liquid")());
-    
-    forAll(Y,i)
+    // Map species names in Y[] to acid-base model indices via system_keys
+    int mappedSpecies = 0;
+    forAll(Y, id)
     {
-        Info<<"species name:\t"<<Y[i].name()<<"\n";
-	acidbasemodel::getSystemID(Y[i].name(), species_id, i);
-	Info<<"OpenFOAM id is:\t"<<i<<"\n";
+        auto it = acidbasemodel::system_keys.find(Y[id].name());
+        if (it == acidbasemodel::system_keys.end())
+        {
+            Info << "phReact: skipping non-acid-base species " << Y[id].name() << nl;
+            continue;
+        }
 
-	//ThermoType s_hold(dict.subDict(Y[i].name()));
-	//mwt[i] = s_hold.W();
+        const int acidIndex = it->second;
+        species_id[acidIndex] = id;
+        mappedSpecies++;
+
+        Info << "phReact: mapped " << Y[id].name()
+             << " -> modelIndex=" << acidIndex
+             << " foamIndex=" << id << nl;
     }
 
-    for(i=0; i<acidbasemodel::nvars-1; i++)
-      {
-	Info << "species foam_id = " << species_id[i] << "\n";
-	Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
-	Info << "this foam species should reflect the acid-base model species matching the call order of this loop \n";
-	Info << "Loop index: " << i << "\t acid/base index: " << acidbasemodel::system_keys[Y[species_id[i]].name()] << "\n\n";
-      }
+    if (mappedSpecies != acidbasemodel::nvars - 1)
+    {
+        FatalErrorInFunction
+            << "Expected " << (acidbasemodel::nvars - 1)
+            << " acid-base species mapped, got " << mappedSpecies << nl
+            << exit(FatalError);
+    }
+
+    for (int k = 0; k < acidbasemodel::nvars - 1; ++k)
+    {
+        if (species_id[k] < 0)
+        {
+            FatalErrorInFunction
+                << "Acid-base species index " << k << " is not mapped in YActiveRef()" << nl
+                << exit(FatalError);
+        }
+    }
     
     Info << "Starting pH reaction update..\n";
+
+    const scalar alphaLiquidMin = 1.0e-6;
     
-    // find initial OUR and advance solution
     forAll(C,i)
       {
+
+	if (alpha2[i] < alphaLiquidMin)
+        {
+            // No liquid in this cell, use neutral pH in gas region
+	    // Neutral or ambient? Ambient/target pH for tyro is 6.3 so that's what I put here
+            pH[i] = 6.3;
+            continue;
+        }
+	
 	// fill abSystem with mol/L = M amounts of each component present in cell i (kg/m3 = g/L)
 	abSystem[acidbasemodel::PB] = rho[i]*Y[species_id[acidbasemodel::PB]][i]/mwt[acidbasemodel::PB]; //mol/L
 	abSystem[acidbasemodel::PA] = rho[i]*Y[species_id[acidbasemodel::PA]][i]/mwt[acidbasemodel::PA]; //mol/L
@@ -61,39 +89,25 @@
 	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
 	abSystem[acidbasemodel::AA] = rho[i]*Y[species_id[acidbasemodel::AA]][i]/mwt[acidbasemodel::AA]; //mol/L
 	abSystem[acidbasemodel::BA] = rho[i]*Y[species_id[acidbasemodel::BA]][i]/mwt[acidbasemodel::BA]; //mol/L
-
-	Info << "\n";
-	Info << "Density: " << rho[i] << "\n";
-	Info << "alphaL: " << alpha2[i] << "\n";
-	Info << "Phosphate Base: " << abSystem[acidbasemodel::PB] << "\n";
-	Info << "Phosphate Acid: " << abSystem[acidbasemodel::PA] << "\n";
-	Info << "Ammonia Base: " << abSystem[acidbasemodel::NB] << "\n";
-	Info << "Ammonia Acid: " << abSystem[acidbasemodel::NA] << "\n";
-	Info << "Butyric Acid: " << abSystem[acidbasemodel::BA] << "\n";
-	Info << "Acetic Acid: " << abSystem[acidbasemodel::AA] << "\n";
-	
 	
 	// get conserved totals for system components
 	acidbasemodel::getTotalConc(abSystem, totalConc);
-	Info << "\n";
-	Info << "Phosphate total: " << totalConc[acidbasemodel::PhosphateBuffer] << "\n";
-	Info << "Ammonia total: " << totalConc[acidbasemodel::AmmoniaBase] << "\n";
-	Info << "Acetic Acid total: " << totalConc[acidbasemodel::AceticAcid] << "\n";
-	Info << "Butyric Acid total: " << totalConc[acidbasemodel::ButyricAcid] << "\n";
 
 	// get spectator ions from buffer
 	acidbasemodel::getSpectatorsNonBio(totalConc);
-	Info << "Spectators: " << totalConc[4] << "\n";
 	
 	// get spectator ions from bio components
-	// this would be stuff the bio spits out that contributes to charge balance but not pH;
-	// not needed for this system so fill with 0.0 instead
-	// getSpectatorsBio(totalConc);
-	totalConc[acidbasemodel::nvars/2 + 2] = 0.0;
+	// ML proton-equivalent source from microbe model, stored in Hcell [mol/m3]
+	// convert to mol/L for acid-base balance
+	totalConc[acidbasemodel::nvars/2 + 2] = do_ml ? (Hcell[i]/1000.0) : 0.0;
 	double H_set = 1.0E-15;
-	double H = acidbasemodel::NewtonRaphson(H_set, totalConc);
+	double H = acidbasemodel::NewtonRaphson(H_set, totalConc, do_ml);
+	if (H < 1.0E-15)
+	{
+	    H = 1.0E-14;
+	}
 	pH[i] = -std::log10(H);
-	Info << "pH is: " << pH[i] << "\n";
+	// Info << "pH is: " << pH[i] << "\n";
 
 	// update individual components for systems; future - might could only track the lumped components for each of these within the broth...
 	// tracking the acids by lumped components; i.e., dissociation only considered for pH calc. 
@@ -111,8 +125,17 @@
 	Y[species_id[acidbasemodel::NA]][i] = abSystem[acidbasemodel::NA]/rho[i]*mwt[acidbasemodel::NA];
       }
 
+    Info << "pH update complete.\n";
+    
     liqvol = fvc::domainIntegrate(alpha2).value();
-    acidbasemodel::pH_avg  = fvc::domainIntegrate(alpha2*pH).value();
+    if (liqvol > 1e-6)
+      {
+	acidbasemodel::pH_avg  = fvc::domainIntegrate(alpha2*pH).value();
+      }
+    else
+      {
+	pH_avg = 6.3;
+      }
     
     if(Pstream::master())
       {                                                                                                                                             
