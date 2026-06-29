@@ -38,6 +38,8 @@ class StirredTankReactor:
         target_volume_L,
         round_bottom,
         bottom_inlet,
+        mrf_vertical_buffer_cells=0,
+        mrf_radial_buffer_cells=0,
     ):
         # Loop through params and setattr v to self.k
         for k, v in locals().items():
@@ -80,6 +82,34 @@ class StirredTankReactor:
             self.impeller_tip_diameter + self.tank_diameter - 2 * self.baffle_width
         ) / 2  # (old Dmrf)
 
+        # Radial MRF buffer measured outward from the local blade tip radius
+        stator_inner_radius = self.tank_diameter / 2.0 - self.baffle_width
+        tank_radius = self.tank_diameter / 2.0
+        radial_buffer_cells = max(0, int(self.mrf_radial_buffer_cells))
+        radial_buffer_thickness = (
+            radial_buffer_cells / float(nr) if radial_buffer_cells > 0 else 0.0
+        )
+        has_radial_buffer_interface = radial_buffer_cells > 0
+
+        def _section_radii(scale_val):
+            tip_radius = scale_val * self.impeller_tip_diameter / 2
+            radii = [
+                scale_val * (self.hub_diameter / 2 - self.inner_blade_length),
+                scale_val * self.hub_diameter / 2,
+                tip_radius,
+            ]
+            if has_radial_buffer_interface:
+                # Keep a dedicated MRF outer interface beyond the tip
+                mrf_buffer_outer_radius = min(
+                    tip_radius + radial_buffer_thickness,
+                    stator_inner_radius - 1e-12,
+                )
+                if mrf_buffer_outer_radius <= tip_radius:
+                    mrf_buffer_outer_radius = tip_radius + 1e-12
+                radii.append(mrf_buffer_outer_radius)
+            radii.extend([stator_inner_radius, tank_radius])
+            return np.array(radii)
+
         base_counts = [self.nbaffles] + self.n_fins_per_impeller
         n_base = reduce(_lcm, base_counts)
         print(f"Least common multiple of baffles and fins: {n_base}")
@@ -104,30 +134,25 @@ class StirredTankReactor:
                 + (curved_bottom_edge[2] - self.curved_bottom_center[2]) ** 2
             )
 
-        self.circradii = np.array(
-            [
-                self.impeller_scale[0]
-                * (self.hub_diameter / 2 - self.inner_blade_length),
-                self.impeller_scale[0] * self.hub_diameter / 2,
-                self.impeller_scale[0] * self.impeller_tip_diameter / 2,
-                self.mrf_region_diameter / 2,
-                self.tank_diameter / 2 - self.baffle_width,
-                self.tank_diameter / 2,
-            ]
-        )
+        self.circradii = _section_radii(self.impeller_scale[0])
         self.ncirc = len(self.circradii)
         self.hub_circ = 1
         self.inhub_circ = self.hub_circ - 1  # circle inside hub
         self.rot_circ = self.hub_circ + 1
-        self.mrf_circ = self.rot_circ + 1
         self.tank_circ = self.ncirc - 1
+        self.mrf_circ = self.rot_circ + (1 if has_radial_buffer_interface else 0)
 
         self.reacthts = [reactor_bottom]
         self.baff_sections = []
         self.baff_volumes = []
         self.hub_volumes = []
+        self.mrf_volumes = []
         count = 1
         self.angle_offsets = [0.0]
+
+        # Buffer cells for MRF region above and below impeller (vertical direction)
+        nbuf = int(self.mrf_vertical_buffer_cells)
+        buffer_ht = nbuf / float(nz) if nbuf > 0 else 0.0
 
         for n_imp in range(self.nimpellers):
             pitch = self.blade_pitch[n_imp]
@@ -146,20 +171,22 @@ class StirredTankReactor:
 
             z0 = zc - dz / 2.0
 
+            # Add buffer section below; make sure to not go below bot or touch next imp
+            if buffer_ht > 0.0 and (z0 - buffer_ht) > self.reacthts[-1]:
+                zb = z0 - buffer_ht
+                self.reacthts.append(zb)
+                self.circradii = np.append(
+                    self.circradii,
+                    _section_radii(self.impeller_scale[n_imp]),
+                )
+                self.mrf_volumes.append(count)
+                self.angle_offsets.append(_theta_offset(z0))  # zero twist in buffer
+                count += 1
+
             self.reacthts.append(z0)
             self.circradii = np.append(
                 self.circradii,
-                np.array(
-                    [
-                        self.impeller_scale[n_imp]
-                        * (self.hub_diameter / 2 - inner_blade_length),
-                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
-                        self.mrf_region_diameter / 2,
-                        self.tank_diameter / 2 - self.baffle_width,
-                        self.tank_diameter / 2,
-                    ]
-                ),
+                _section_radii(self.impeller_scale[n_imp]),
             )
 
             self.baff_sections.append(count)
@@ -171,17 +198,7 @@ class StirredTankReactor:
             self.reacthts.append(z1)
             self.circradii = np.append(
                 self.circradii,
-                np.array(
-                    [
-                        self.impeller_scale[n_imp]
-                        * (self.hub_diameter / 2 - inner_blade_length),
-                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
-                        self.mrf_region_diameter / 2,
-                        self.tank_diameter / 2 - self.baffle_width,
-                        self.tank_diameter / 2,
-                    ]
-                ),
+                _section_radii(self.impeller_scale[n_imp]),
             )
 
             self.baff_sections.append(count)
@@ -194,17 +211,7 @@ class StirredTankReactor:
             self.reacthts.append(z2)
             self.circradii = np.append(
                 self.circradii,
-                np.array(
-                    [
-                        self.impeller_scale[n_imp]
-                        * (self.hub_diameter / 2 - inner_blade_length),
-                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
-                        self.mrf_region_diameter / 2,
-                        self.tank_diameter / 2 - self.baffle_width,
-                        self.tank_diameter / 2,
-                    ]
-                ),
+                _section_radii(self.impeller_scale[n_imp]),
             )
 
             self.baff_sections.append(count)
@@ -216,36 +223,40 @@ class StirredTankReactor:
             self.reacthts.append(z3)
             self.circradii = np.append(
                 self.circradii,
-                np.array(
-                    [
-                        self.impeller_scale[n_imp]
-                        * (self.hub_diameter / 2 - inner_blade_length),
-                        self.impeller_scale[n_imp] * self.hub_diameter / 2,
-                        self.impeller_scale[n_imp] * self.impeller_tip_diameter / 2,
-                        self.mrf_region_diameter / 2,
-                        self.tank_diameter / 2 - self.baffle_width,
-                        self.tank_diameter / 2,
-                    ]
-                ),
+                _section_radii(self.impeller_scale[n_imp]),
             )
             self.baff_sections.append(count)
             self.angle_offsets.append(_theta_offset(z3))
             count = count + 1
 
+            if buffer_ht > 0.0:
+                zt = z3 + buffer_ht
+                # Only add if it doesn't exceed next impeller or tank top
+                if n_imp < self.nimpellers - 1:
+                    next_zc = self.reactor_bottom + self.impeller_centers[n_imp + 1]
+                    next_dz_val = self.blade_width * np.cos(self.blade_pitch[n_imp + 1])
+                    if next_dz_val < self.hub_height_width * 1.05:
+                        next_dz_val = self.hub_height_width * 1.05
+                    next_z = next_zc - next_dz_val / 2.0
+                else:
+                    next_z = self.reactor_bottom + self.reactor_height
+
+                if zt < next_z:
+                    self.reacthts.append(zt)
+                    self.circradii = np.append(
+                        self.circradii,
+                        _section_radii(self.impeller_scale[n_imp]),
+                    )
+
+                    self.angle_offsets.append(_theta_offset(z3))  # zero twist in buffer
+
+                    self.mrf_volumes.append(count - 1)
+                    count = count + 1
+
         self.reacthts.append(self.reactor_bottom + self.reactor_height)
         self.circradii = np.append(
             self.circradii,
-            np.array(
-                [
-                    self.impeller_scale[-1]
-                    * (self.hub_diameter / 2 - inner_blade_length),
-                    self.impeller_scale[-1] * self.hub_diameter / 2,
-                    self.impeller_scale[-1] * self.impeller_tip_diameter / 2,
-                    self.mrf_region_diameter / 2,
-                    self.tank_diameter / 2 - self.baffle_width,
-                    self.tank_diameter / 2,
-                ]
-            ),
+            _section_radii(self.impeller_scale[-1]),
         )
         self.angle_offsets.append(0.0)
         self.nsections = len(self.reacthts)
@@ -264,10 +275,9 @@ class StirredTankReactor:
         self.nonbaff_volumes = [
             sec for sec in self.all_volumes if sec not in self.baff_volumes
         ]
-        self.nonstem_volumes = [
-            0,
-            1,
-        ]  # this is 0,1 no matter how many impellers are there
+        self.nonstem_volumes = (
+            list(range(self.hub_volumes[0])) if len(self.hub_volumes) > 0 else [0, 1]
+        )
 
         # note: stem_volumes include hub volumes also
         # these are volumes where we miss out polygon block
@@ -280,13 +290,13 @@ class StirredTankReactor:
             sec for sec in self.stem_volumes if sec not in self.hub_volumes
         ]
 
-        # to define mrf region
-        # not that [1] is not a stem volume but baffles are there
-        self.mrf_volumes = [1] + self.stem_volumes
+        # Define MRF volumes by merging baffled volumes with buffer volumes
+        mrf_vols = set(self.baff_volumes) | set(self.mrf_volumes)
+        self.mrf_volumes = sorted(list(mrf_vols))
 
-        # increase grid points in the impeller section
-        for i in self.baff_volumes:
-            self.meshz[i] *= 2
+        # # increase grid points in the impeller section
+        # for i in self.baff_volumes:
+        #     self.meshz[i] *= 2
 
         self.meshr = nr * np.diff(self.circradii)
 

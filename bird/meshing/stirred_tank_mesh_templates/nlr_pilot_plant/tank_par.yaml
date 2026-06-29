@@ -1,5 +1,5 @@
 geometry:
-    units:                 in           # units for the geometry parameters (inches)
+    units:                 "in"           # units for the geometry parameters (inches)
     tank_diameter:         42.0         # Tank diameter  [in] (old Dt)
     reactor_height:        68.525       # Height of the reactor  [in] (old H)
     impeller_tip_diameter: 22.0         # Impleller tip Diameter  [in] (old Da)
@@ -26,8 +26,10 @@ geometry:
 mesh:
     nr:         2            # mesh points per unit radial length
     nz:         2            # mesh points per unit axial length
-    n_poly:     3            # mesh points in the polygon at the axis
-    n_azimuth:  6            # mesh points in the azimuthal direction
+    n_poly:     2            # mesh points in the polygon at the axis
+    n_azimuth:  2            # mesh points in the azimuthal direction
+    mrf_vertical_buffer_cells: 2   # number of cells added above/below each impeller span
+    mrf_radial_buffer_cells: 2      # additional radial ring cells in the MRF zone
     
 
 
