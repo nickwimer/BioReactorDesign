@@ -270,23 +270,23 @@ namespace microbemodel
         double m_i = MM_params[MM_param_keys["m_i"]];
         double alpha_ba = MM_params[MM_param_keys["alpha_ba"]];
         double beta_ba = MM_params[MM_param_keys["beta_ba"]];
-	double alpha_aa = MM_params[MM_param_keys["alpha_aa"]];
+	    double alpha_aa = MM_params[MM_param_keys["alpha_aa"]];
         double beta_aa = MM_params[MM_param_keys["beta_aa"]];
-	double Y_x = MM_params[MM_param_keys["Y_x"]];
+	    double Y_x = MM_params[MM_param_keys["Y_x"]];
         double Y_ba = MM_params[MM_param_keys["Y_ba"]];
-	double Y_aa = MM_params[MM_param_keys["Y_aa"]];
+	    double Y_aa = MM_params[MM_param_keys["Y_aa"]];
         double m_s = MM_params[MM_param_keys["m_s"]];
 
-	double mwt_CO2 = 0.04401; // kg/mol
-	double mwt_ba = 0.08801;  // kg/mol
-	double mwt_aa = 0.06005;  // kg/mol
+        double mwt_CO2 = 0.04401; // kg/mol
+        double mwt_ba = 0.08801;  // kg/mol
+        double mwt_aa = 0.06005;  // kg/mol
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s + (solnvec[G] * solnvec[G] / K_i));
         double F_a = 1.0 - (solnvec[B] + solnvec[A])/P_d;
         double q_s = q_max*F_s*pow(F_a, m_i);
 
-	rglu = -(1.0 / Y_x * q_s*solnvec[X] + 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]) + 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) \
+	    double rglu = -(1.0 / Y_x * q_s*solnvec[X] + 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]) + 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) \
 		   + 2.0 * mwt_CO2 / mwt_ba * 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X])		\
 		   + mwt_CO2 / mwt_aa * 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) + m_s*solnvec[X]);
 	
@@ -296,19 +296,19 @@ namespace microbemodel
         std::vector<double> outputs = eval_torch_model(inputs);
         // Extract the outputs
         double mu_bio = outputs[0];
-	double r_H = outputs[1];
+	    double r_H = outputs[1];
         double r_but = outputs[2];
-	double r_ace = outputs[3];
+	    double r_ace = outputs[3];
         double rbio_ml = mu_bio * solnvec[X];
         double rbut_ml = r_but * solnvec[X];
-	double race_ml = r_ace * solnvec[X];
-	double rH_ml = r_H * solnvec[X];
+        double race_ml = r_ace * solnvec[X];
+        double rH_ml = r_H * solnvec[X];
         // Calculate final rates
         rhs[X] = rbio_ml;
         rhs[G] = rglu;
         rhs[B] = rbut_ml;
-	rhs[A] = race_ml;
-	rhs[H] = rH_ml;
+        rhs[A] = race_ml;
+        rhs[H] = rH_ml;
         // rhs[CO2] = 0.0;
 
     }

@@ -10,29 +10,35 @@
     double H_start = 1.0E-7;
     double H_new;
 
-    std::vector<double> MM_params(9);
-    MM_params[microbemodel::MM_param_keys["y_xs"]] = y_xs.value();
-    MM_params[microbemodel::MM_param_keys["y_ms"]] = y_ms.value();
-    MM_params[microbemodel::MM_param_keys["y_os"]] = y_os.value();
-    MM_params[microbemodel::MM_param_keys["x_max"]] = x_max.value();
+    std::vector<double> MM_params(13);
     MM_params[microbemodel::MM_param_keys["q_max"]] = q_max.value();
-    MM_params[microbemodel::MM_param_keys["o2_max"]] = o2_max.value();
-    MM_params[microbemodel::MM_param_keys["K_o"]] = K_o.value();
     MM_params[microbemodel::MM_param_keys["K_s"]] = K_s.value();
-    MM_params[microbemodel::MM_param_keys["kLa"]] = kLa.value();
+    MM_params[microbemodel::MM_param_keys["K_i"]] = K_i.value();
+    MM_params[microbemodel::MM_param_keys["P_d"]] = P_d.value();
+    MM_params[microbemodel::MM_param_keys["m_i"]] = m_i.value();
+    MM_params[microbemodel::MM_param_keys["alpha_ba"]] = alpha_ba.value();
+    MM_params[microbemodel::MM_param_keys["beta_ba"]] = beta_ba.value();
+    MM_params[microbemodel::MM_param_keys["alpha_aa"]] = alpha_aa.value();
+    MM_params[microbemodel::MM_param_keys["beta_aa"]] = beta_aa.value();
+    MM_params[microbemodel::MM_param_keys["Y_x"]] = Y_x.value();
+    MM_params[microbemodel::MM_param_keys["Y_ba"]] = Y_ba.value();
+    MM_params[microbemodel::MM_param_keys["Y_aa"]] = Y_aa.value();
+    MM_params[microbemodel::MM_param_keys["m_s"]] = m_s.value();
     bool do_ml = bool(use_ml);
 
     // BR52 04112025 initial conditions (except base concentration, which is endpoint condition)
     solnvec[microbemodel::X]=0.350147052723467;  // kg/m^3
-    solnvec[microbemodel::O2]=0.214;             // mol/m^3
     solnvec[microbemodel::G]=545.9946375;        // mol/m^3
-    solnvec[microbemodel::M]=0.157763;           // mol/m^3
+    solnvec[microbemodel::B]=193.039;            // mol/m^3
+    solnvec[microbemodel::A]=0.0;                // mol/m^3
+    solnvec[microbemodel::H]=H_start*1000.0;     // mol/m^3
 
     totalConc[acidbasemodel::PhosphateBuffer]= 0.139608336; // mol/L
     totalConc[acidbasemodel::AmmoniaBase]= 0.0; //0.736052744;     // mol/L
-    totalConc[acidbasemodel::MuconicAcid]= 0.0; // 0.000157763;     // mol/L
-    totalConc[3]= 0.193039;                                 // mol/L
-    totalConc[4]= 0.0;
+    totalConc[acidbasemodel::AceticAcid]= solnvec[microbemodel::A]/1000.0; // mol/L
+    totalConc[acidbasemodel::ButyricAcid]= solnvec[microbemodel::B]/1000.0; // mol/L
+    totalConc[acidbasemodel::nvars/2 + 1]= 0.0; // spectator ions
+    totalConc[acidbasemodel::nvars/2 + 2]= 0.0; // bio proton-equivalent source
 
     baseConc[0] = 0.0;
     baseConc[1] = 0.0;
@@ -50,7 +56,7 @@
         Info << solnvec[i] <<"\t";
     }
     Info << "\n";
-    for(int i=0;i<acidbasemodel::nvars-1;i++)
+    for(int i=0;i<acidbasemodel::nvars;i++)
     {
         Info <<totalConc[i]<<"\t";
     }
@@ -60,7 +66,7 @@
     {
         outfile<<solnvec[i]<<"\t";
     }
-    for(int i=0;i<acidbasemodel::nvars-1;i++)
+    for(int i=0;i<acidbasemodel::nvars;i++)
     {
         outfile<<totalConc[i]<<"\t";
     }
@@ -73,18 +79,21 @@
     while(current_time < final_time)
     {
         current_time += advance_time;
+        solnvec[microbemodel::H] = H*1000.0;
         microbemodel::advance(solnvec,microbemodel::nvars,current_time,advance_time,dt_react, MM_params, do_ml);
-        totalConc[acidbasemodel::MuconicAcid] = solnvec[microbemodel::M]/1000;
+        totalConc[acidbasemodel::AceticAcid] = solnvec[microbemodel::A]/1000.0;
+        totalConc[acidbasemodel::ButyricAcid] = solnvec[microbemodel::B]/1000.0;
         totalConc[acidbasemodel::AmmoniaBase] = baseConc[baseTime];
+        totalConc[acidbasemodel::nvars/2 + 2] = do_ml ? (solnvec[microbemodel::H]/1000.0) : 0.0;
         H_new = acidbasemodel::NewtonRaphson(H, totalConc, do_ml);
+        H = H_new;
         pH = -std::log10(H_new);
-        //H = H_new;
         outfile<<current_time<<"\t";
         for(int i=0;i<microbemodel::nvars;i++)
         {
             outfile<<solnvec[i]<<"\t";
         }
-	for(int i=0;i<acidbasemodel::nvars-1;i++)
+	for(int i=0;i<acidbasemodel::nvars;i++)
 	{
 	    outfile<<totalConc[i]<<"\t";
 	}

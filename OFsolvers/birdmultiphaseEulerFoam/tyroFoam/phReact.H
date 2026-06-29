@@ -15,6 +15,7 @@
     double sAcidConc = 0.0;
     double sBaseConc = 0.0;
     double Kw = 1.0E-14;
+    bool do_ml = bool(use_ml);
 
     mwt[0] = 95.98; //HPO4
     mwt[1] = 96.98; //H2PO4
@@ -134,7 +135,7 @@
       }
     else
       {
-	pH_avg = 6.3;
+	acidbasemodel::pH_avg = 6.3;
       }
     
     if(Pstream::master())

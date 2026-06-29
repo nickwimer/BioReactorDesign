@@ -152,7 +152,7 @@
         os_timehist << reaction_time <<" " << microbemodel::X_avg <<
         " " << microbemodel::G_avg <<
         " " << microbemodel::B_avg <<
-        " " << microbemodel::S_avg;
+	    " " << microbemodel::A_avg;
 	os_timehist.flush();
     }
 

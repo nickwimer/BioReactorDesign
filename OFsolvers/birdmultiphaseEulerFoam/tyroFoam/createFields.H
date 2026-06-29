@@ -145,7 +145,7 @@ dimensionedScalar alpha_ba
      reaction_props.lookup("alpha_ba"));
 dimensionedScalar beta_ba
 (   "beta_ba",
-     dimMoles/dimMass/dimeTime,
+     dimMoles/dimMass/dimTime,
      reaction_props.lookup("beta_ba"));
 dimensionedScalar alpha_aa
 (   "alpha_aa",
@@ -154,7 +154,7 @@ dimensionedScalar alpha_aa
 dimensionedScalar beta_aa
 (   "beta_aa",
      dimMoles/dimMass/dimTime,
-     reaction_props.lookup("beta_ba"));
+     reaction_props.lookup("beta_aa"));
 dimensionedScalar Y_x
 (   "Y_x",
      dimMass/dimMoles,
