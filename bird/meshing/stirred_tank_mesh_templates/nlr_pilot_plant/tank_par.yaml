@@ -28,6 +28,8 @@ mesh:
     nz:         2            # mesh points per unit axial length
     n_poly:     2            # mesh points in the polygon at the axis
     n_azimuth:  2            # mesh points in the azimuthal direction
+    mrf_vertical_buffer_cells: 2   # number of cells added above/below each impeller span
+    mrf_radial_buffer_cells: 2      # additional radial ring cells in the MRF zone
     
 
 
