@@ -317,6 +317,11 @@ class StirredTankReactor:
             yamlfile += ".yaml"
         in_dict = parse_yaml(yamlfile)
         react_dict = {**in_dict["geometry"], **in_dict["mesh"]}
+        if "mrf_buffer_cells" in react_dict:
+            react_dict.setdefault(
+                "mrf_vertical_buffer_cells", react_dict["mrf_buffer_cells"]
+            )
+            del react_dict["mrf_buffer_cells"]
         return cls(**react_dict)
 
     def solve_cylinder(

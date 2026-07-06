@@ -221,6 +221,22 @@ namespace microbemodel
 	}
     }
 
+    double product_inhibition(double acid_conc, double P_d, double m_i)
+    {
+        if (P_d <= 0.0)
+        {
+            return 0.0;
+        }
+
+        double F_a = 1.0 - acid_conc/P_d;
+        if (F_a <= 0.0)
+        {
+            return 0.0;
+        }
+
+        return pow(F_a, m_i);
+    }
+
   
     void get_rhs(std::vector<double>& rhs, std::vector<double> solnvec, double t, int nvars, std::vector<double>& MM_params)
     {
@@ -245,8 +261,8 @@ namespace microbemodel
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s + (solnvec[G] * solnvec[G] / K_i));
-        double F_a = 1.0 - (solnvec[B] + solnvec[A])/P_d;
-        double q_s = q_max*F_s*pow(F_a, m_i);
+        double F_a = product_inhibition(solnvec[B] + solnvec[A], P_d, m_i);
+        double q_s = q_max*F_s*F_a;
 
         // calculate final rates
         rhs[X] = q_s*solnvec[X];
@@ -283,8 +299,8 @@ namespace microbemodel
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s + (solnvec[G] * solnvec[G] / K_i));
-        double F_a = 1.0 - (solnvec[B] + solnvec[A])/P_d;
-        double q_s = q_max*F_s*pow(F_a, m_i);
+        double F_a = product_inhibition(solnvec[B] + solnvec[A], P_d, m_i);
+        double q_s = q_max*F_s*F_a;
 
 	    double rglu = -(1.0 / Y_x * q_s*solnvec[X] + 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]) + 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) \
 		   + 2.0 * mwt_CO2 / mwt_ba * 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X])		\

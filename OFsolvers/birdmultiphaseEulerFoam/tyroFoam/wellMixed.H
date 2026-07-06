@@ -1,6 +1,6 @@
 {
     std::vector<double> solnvec(microbemodel::nvars);
-    std::vector<double> totalConc(acidbasemodel::nvars - 1);
+    std::vector<double> totalConc(acidbasemodel::nvars);
     std::vector<double> baseConc(6);
     double advance_time=5.0; //hours
     double dt_react=advance_time/50.0; //hours
@@ -39,6 +39,7 @@
     totalConc[acidbasemodel::ButyricAcid]= solnvec[microbemodel::B]/1000.0; // mol/L
     totalConc[acidbasemodel::nvars/2 + 1]= 0.0; // spectator ions
     totalConc[acidbasemodel::nvars/2 + 2]= 0.0; // bio proton-equivalent source
+    acidbasemodel::getSpectatorsNonBio(totalConc);
 
     baseConc[0] = 0.0;
     baseConc[1] = 0.0;
@@ -72,7 +73,6 @@
     }
     outfile<<-std::log10(H_start)<<"\t";
     outfile<<"\n";
-    acidbasemodel::getSpectatorsNonBio(totalConc);
     outfile << "spec ions: " << totalConc[acidbasemodel::nvars/2] << "\n";
     outfile<<"\n";
     int baseTime = 0;
