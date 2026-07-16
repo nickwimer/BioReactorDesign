@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
 
     if(Pstream::master())
     {
-      Info << "Calling WellMixed.H\n";
-        #include "wellMixed.H"
+      Info << "Skipping WellMixed.H\n";
+      //#include "wellMixed.H"
         //return 0;
         os_timehist.open("timehist.dat");
     }
@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
                     #include "pU/pEqn.H"
                 }
 
-                #include "HcellEqn.H"
+                // #include "HcellEqn.H"
 
                 fluid.correctKinematics();
 
