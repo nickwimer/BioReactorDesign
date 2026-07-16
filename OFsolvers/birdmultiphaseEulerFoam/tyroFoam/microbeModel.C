@@ -1,5 +1,6 @@
 #include"microbeModel.H"
 #include<map>
+#include<limits>
 #include<torch/torch.h>
 #include<torch/script.h>
 
@@ -67,44 +68,48 @@ namespace microbemodel
         return values;
     }
 
-    std::vector<std::vector<double>> load_points(const std::string& filename)
+    bool load_glucose_bounds(const std::string& filename, double& glucose_min, double& glucose_max)
     {
         std::ifstream file(filename);
-        std::vector<std::vector<double>> points;
+        if (!file.is_open())
+        {
+            return false;
+        }
+
         std::string line;
+        bool found_min = false;
+        bool found_max = false;
 
         while (std::getline(file, line))
         {
-            std::istringstream iss(line);
-            std::vector<double> point;
-            double value;
-            while (iss >> value)
-            {
-                point.push_back(value);
-            }
-            points.push_back(point);
-        }
-        return points;
-    }
+            const std::string min_key = "Minimum:";
+            const std::string max_key = "Maximum:";
 
-    std::vector<std::vector<int>> load_simplices(const std::string& filename)
-    {
-        std::ifstream file(filename);
-        std::vector<std::vector<int>> simplices;
-        std::string line;
+            std::size_t min_pos = line.find(min_key);
+            std::size_t max_pos = line.find(max_key);
 
-        while (std::getline(file, line))
-        {
-            std::istringstream iss(line);
-            std::vector<int> simplex;
-            int index;
-            while (iss >> index)
+            try
             {
-                simplex.push_back(index);
+                if (min_pos != std::string::npos)
+                {
+                    std::string val = line.substr(min_pos + min_key.size());
+                    glucose_min = std::stod(val);
+                    found_min = true;
+                }
+                else if (max_pos != std::string::npos)
+                {
+                    std::string val = line.substr(max_pos + max_key.size());
+                    glucose_max = std::stod(val);
+                    found_max = true;
+                }
             }
-            simplices.push_back(simplex);
+            catch (const std::exception&)
+            {
+                // Ignore malformed lines and continue parsing.
+            }
         }
-        return simplices;
+
+        return found_min && found_max && (glucose_min <= glucose_max);
     }
 
     std::vector<double> x_mean = load_scaler("scaler_x_mean.txt");
@@ -112,8 +117,9 @@ namespace microbemodel
     std::vector<double> y_mean = load_scaler("scaler_y_mean.txt");
     std::vector<double> y_scale = load_scaler("scaler_y_scale.txt");
 
-    std::vector<std::vector<double>> tri_points = load_points("tri_points.txt");
-    std::vector<std::vector<int>> tri_simplices = load_simplices("tri_simplices.txt");
+    double glucose_min = -std::numeric_limits<double>::infinity();
+    double glucose_max = std::numeric_limits<double>::infinity();
+    bool glucose_bounds_loaded = load_glucose_bounds("glucose_bounds_ctyro.txt", glucose_min, glucose_max);
 
     std::vector<double> scale_input(const std::vector<double>& input,
                                 const std::vector<double>& mean,
@@ -139,34 +145,15 @@ namespace microbemodel
         return unscaled;
     }
 
-    bool is_point_in_triangle(const std::vector<double>& p,
-                          const std::vector<double>& a,
-                          const std::vector<double>& b,
-                          const std::vector<double>& c)
+    bool is_glucose_in_bounds(const std::vector<double>& point)
     {
-        double detT = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-        double alpha = ((b[0] - p[0]) * (c[1] - p[1]) - (b[1] - p[1]) * (c[0] - p[0])) / detT;
-        double beta = ((c[0] - p[0]) * (a[1] - p[1]) - (c[1] - p[1]) * (a[0] - p[0])) / detT;
-        double gamma = 1.0 - alpha - beta;
-
-        return (alpha >= 0 && beta >= 0 && gamma >= 0);
-    }
-
-    bool is_point_in_convex_hull(const std::vector<double>& point,
-                                const std::vector<std::vector<double>>& points,
-                                const std::vector<std::vector<int>>& simplices)
-    {
-        for (const auto& simplex : simplices)
+        if (point.empty())
         {
-            if (is_point_in_triangle(point,
-                                    points[simplex[0]],
-                                    points[simplex[1]],
-                                    points[simplex[2]]))
-            {
-                return true;
-            }
+            return false;
         }
-        return false;
+
+        const double glucose = point[0];
+        return (glucose >= glucose_min && glucose <= glucose_max);
     }
 
     std::vector<double> eval_torch_model(const std::vector<double>& inputs)
@@ -188,7 +175,7 @@ namespace microbemodel
             }
         }
 
-        if (is_point_in_convex_hull(inputs, tri_points, tri_simplices))
+        if (!glucose_bounds_loaded || is_glucose_in_bounds(inputs))
         {
             std::vector<double> scaled_input = scale_input(inputs, x_mean, x_scale);
             torch::Tensor input_tensor = torch::tensor(scaled_input).unsqueeze(0).to(torch::kFloat32);
@@ -205,8 +192,7 @@ namespace microbemodel
 
         return outputs;
         } else {
-            // std::cout << "Point is outside the convex hull." << std::endl;
-            // std::cout << "Inputs: " << inputs << std::endl;
+            // std::cout << "Input glucose is outside training bounds." << std::endl;
             return std::vector<double>(4, 0.0);
 
         }
