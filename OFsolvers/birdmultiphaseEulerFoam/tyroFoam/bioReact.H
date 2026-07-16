@@ -76,7 +76,7 @@
             }
     }
 
-    for(i=0; i<microbemodel::nvars; i++)
+    for(i=0; i<microbemodel::nvars-1; i++)
       {
         Info << "species foam_id = " << species_id[i] << "\n";
         Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";
@@ -132,10 +132,12 @@
 
         cellVol = Vcell[i] * alpha2[i] * 1000; // L of liquid in Cell
         // get current moles of NH3 present in mixture:
-        NH3_moles = NH3_conc * cellVol; // moles in this specific cell
+        //NH3_moles = NH3_conc * cellVol; // moles in this specific cell
 
-        new_moles = total_new_concentration * cellVol; // moles added to this specific cell
-        new_concentration = (new_moles + NH3_moles) / cellVol; // mol/L
+        //new_moles = total_new_concentration * cellVol; // moles added to this specific cell
+        //new_concentration = (new_moles + NH3_moles) / cellVol; // mol/L
+
+	new_concentration = NH3_conc + total_new_concentration;
 	
         //delNH3 = NH3_conc - NH3_hold[i];
         //delNH4 = NH4_conc - NH4_hold[i];

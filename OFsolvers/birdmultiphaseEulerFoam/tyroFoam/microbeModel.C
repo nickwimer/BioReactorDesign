@@ -10,7 +10,7 @@ namespace microbemodel
     const int B=2;
     const int A=3;
     const int H=4;
-    const int nvars=5;
+    const int nvars=4;
     std::map<std::string, int> sp_keys = {{"tyro.liquid", 0},
 						  {"C6H12O6.liquid", 1},
                                                   {"C3H7COOH.liquid", 2}, // butyric acid
@@ -176,7 +176,7 @@ namespace microbemodel
             try
             {
                 // std::cout << "Attempting to load model..." << std::endl;
-                model = torch::jit::load("scripted_model_biomass_h_muconate.pt");
+                model = torch::jit::load("scripted_tyro_model_biomass_h_but_ac.pt");
                 // std::cout << "Model Loaded..." << std::endl;
                 model.eval();
                 model_loaded = true;
