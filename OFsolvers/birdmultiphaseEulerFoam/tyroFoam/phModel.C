@@ -22,7 +22,7 @@ namespace acidbasemodel
   const int ButyricAcid = 3;
   const int nvars = 6;
 
-  std::vector<double> Ka = {6.2E-8, 5.56E-10, 1.8E-05, 1.5E-05};
+  std::vector<double> Ka = {1.02329E-7, 5.56E-10, 1.75E-05, 1.6E-05};
   //Ka[0] = 6.2E-8;
   //Ka[AmmoniaBase] = 5.56E-10;
   //Ka[MuconicAcid] = 0.0;

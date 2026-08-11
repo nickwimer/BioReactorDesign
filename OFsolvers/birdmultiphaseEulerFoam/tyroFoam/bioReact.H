@@ -2,9 +2,9 @@
 {
     const vectorField& C = mesh.C();
     const scalarField& Vcell = mesh.V();
-    std::vector<double> solnvec(microbemodel::nvars);
+    std::vector<double> solnvec(microbemodel::nvars+1);
     std::vector<double> mwt(microbemodel::nvars);
-    std::vector<int> species_id(microbemodel::nvars);
+    std::vector<int> species_id(microbemodel::nvars+1);
     std::vector<double> conc(microbemodel::nvars);
     // int O2id=0;
     int NH3id=-1;
@@ -76,7 +76,7 @@
             }
     }
 
-    for(i=0; i<microbemodel::nvars-1; i++)
+    for(i=0; i<microbemodel::nvars+1; i++)
       {
         Info << "species foam_id = " << species_id[i] << "\n";
         Info << "which indicates foam species: " << Y[species_id[i]].name() << "\n";

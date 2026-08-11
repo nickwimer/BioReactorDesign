@@ -50,15 +50,15 @@
              << " foamIndex=" << id << nl;
     }
 
-    if (mappedSpecies != acidbasemodel::nvars - 1)
+    if (mappedSpecies != acidbasemodel::nvars)
     {
         FatalErrorInFunction
-            << "Expected " << (acidbasemodel::nvars - 1)
+            << "Expected " << (acidbasemodel::nvars)
             << " acid-base species mapped, got " << mappedSpecies << nl
             << exit(FatalError);
     }
 
-    for (int k = 0; k < acidbasemodel::nvars - 1; ++k)
+    for (int k = 0; k < acidbasemodel::nvars; ++k)
     {
         if (species_id[k] < 0)
         {
