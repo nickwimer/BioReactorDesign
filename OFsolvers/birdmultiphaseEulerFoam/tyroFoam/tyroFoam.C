@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
                     #include "pU/pEqn.H"
                 }
 
-                // #include "HcellEqn.H"
+                #include "HcellEqn.H"
 
                 fluid.correctKinematics();
 

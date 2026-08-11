@@ -1,6 +1,8 @@
 #include"microbeModel.H"
+#include<cmath>
 #include<map>
 #include<limits>
+#include<stdexcept>
 #include<torch/torch.h>
 #include<torch/script.h>
 
@@ -109,7 +111,10 @@ namespace microbemodel
             }
         }
 
-        return found_min && found_max && (glucose_min <= glucose_max);
+        return found_min && found_max
+            && std::isfinite(glucose_min)
+            && std::isfinite(glucose_max)
+            && (glucose_min < glucose_max);
     }
 
     std::vector<double> x_mean = load_scaler("scaler_x_mean.txt");
@@ -117,8 +122,8 @@ namespace microbemodel
     std::vector<double> y_mean = load_scaler("scaler_y_mean.txt");
     std::vector<double> y_scale = load_scaler("scaler_y_scale.txt");
 
-    double glucose_min = -std::numeric_limits<double>::infinity();
-    double glucose_max = std::numeric_limits<double>::infinity();
+    double glucose_min = std::numeric_limits<double>::quiet_NaN();
+    double glucose_max = std::numeric_limits<double>::quiet_NaN();
     bool glucose_bounds_loaded = load_glucose_bounds("glucose_bounds_ctyro.txt", glucose_min, glucose_max);
 
     std::vector<double> scale_input(const std::vector<double>& input,
@@ -153,11 +158,30 @@ namespace microbemodel
         }
 
         const double glucose = point[0];
+        if (!std::isfinite(glucose))
+        {
+            return false;
+        }
+
         return (glucose >= glucose_min && glucose <= glucose_max);
     }
 
     std::vector<double> eval_torch_model(const std::vector<double>& inputs)
     {
+        if (!glucose_bounds_loaded)
+        {
+            throw std::runtime_error
+            (
+                "Unable to load valid ML glucose bounds from "
+                "glucose_bounds_ctyro.txt in the case run directory"
+            );
+        }
+
+        if (!is_glucose_in_bounds(inputs))
+        {
+            return std::vector<double>(4, 0.0);
+        }
+
         if (!model_loaded)
         {
             try
@@ -175,27 +199,20 @@ namespace microbemodel
             }
         }
 
-        if (!glucose_bounds_loaded || is_glucose_in_bounds(inputs))
-        {
-            std::vector<double> scaled_input = scale_input(inputs, x_mean, x_scale);
-            torch::Tensor input_tensor = torch::tensor(scaled_input).unsqueeze(0).to(torch::kFloat32);
-            torch::Tensor output_tensor = model.forward({input_tensor}).toTensor();
+        std::vector<double> scaled_input = scale_input(inputs, x_mean, x_scale);
+        torch::Tensor input_tensor = torch::tensor(scaled_input).unsqueeze(0).to(torch::kFloat32);
+        torch::Tensor output_tensor = model.forward({input_tensor}).toTensor();
 
-            std::vector<double> raw_output = {
-                output_tensor[0][0].item<double>(),
-                output_tensor[0][1].item<double>(),
-                output_tensor[0][2].item<double>(),
-		output_tensor[0][3].item<double>()
-            };
+        std::vector<double> raw_output = {
+            output_tensor[0][0].item<double>(),
+            output_tensor[0][1].item<double>(),
+            output_tensor[0][2].item<double>(),
+	    output_tensor[0][3].item<double>()
+        };
 
-            std::vector<double> outputs = unscale_output(raw_output, y_mean, y_scale);
+        std::vector<double> outputs = unscale_output(raw_output, y_mean, y_scale);
 
         return outputs;
-        } else {
-            // std::cout << "Input glucose is outside training bounds." << std::endl;
-            return std::vector<double>(4, 0.0);
-
-        }
     }
 
     void get_sp_id(std::string name, std::vector<int>& id_map, int foam_id)
