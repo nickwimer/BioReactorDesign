@@ -81,8 +81,8 @@ namespace acidbasemodel
       - 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / (H + Ka[PhosphateBuffer]) \
       - Kw / H \
       + totalConc[nvars/2+1]
-      - mm_ratio * totalConc[AceticAcid] * H / (H + Ka[AceticAcid])	   \
-      - mm_ratio * totalConc[ButyricAcid] * H / (H + Ka[ButyricAcid]) \
+      - mm_ratio * totalConc[AceticAcid] * Ka[AceticAcid] / (H + Ka[AceticAcid])	   \
+      - mm_ratio * totalConc[ButyricAcid] * Ka[ButyricAcid] / (H + Ka[ButyricAcid]) \
       - meml_ratio * totalConc[nvars/2 + 2];
     return ch;
   }
@@ -94,8 +94,8 @@ namespace acidbasemodel
     
     double dchdH = 1.0 \
       + Ka[AmmoniaBase] * totalConc[AmmoniaBase] / ((Ka[AmmoniaBase] + H) * (Ka[AmmoniaBase] + H)) \
-      - mm_ratio * Ka[ButyricAcid] * totalConc[ButyricAcid] / ((Ka[ButyricAcid] + H) * (Ka[ButyricAcid] + H)) \
-      - mm_ratio * Ka[AceticAcid] * totalConc[AceticAcid] / ((Ka[AceticAcid] + H) * (Ka[AceticAcid] + H)) \
+      + mm_ratio * Ka[ButyricAcid] * totalConc[ButyricAcid] / ((Ka[ButyricAcid] + H) * (Ka[ButyricAcid] + H)) \
+      + mm_ratio * Ka[AceticAcid] * totalConc[AceticAcid] / ((Ka[AceticAcid] + H) * (Ka[AceticAcid] + H)) \
       - Ka[PhosphateBuffer] * totalConc[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
       + 2.0 * totalConc[PhosphateBuffer] * Ka[PhosphateBuffer] / ((Ka[PhosphateBuffer] + H) * (Ka[PhosphateBuffer] + H)) \
       + Kw/(H*H);
