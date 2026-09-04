@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
         }
 
 	Info << "\n";
-    Info << "Time = " << time << "\n";
+	Info << "Time = " << time << "\n";
 	Info << "bio update time: " << fluid_update_time.value() << "\n";
 	Info << "Needs to be less than: " << time - prvs_react_update_time << "\n";
 	Info << "\n";

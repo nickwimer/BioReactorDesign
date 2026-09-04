@@ -235,7 +235,7 @@ namespace microbemodel
         double F_a = 1.0 - acid_conc/P_d;
         if (F_a <= 0.0)
         {
-            return 0.0;
+	    return pow(F_a, 1.0);
         }
 
         return pow(F_a, m_i);

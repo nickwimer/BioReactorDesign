@@ -14,7 +14,7 @@
     double liqvol;
     double dt_react=0.01; //hours (need to have it as an input)
     // double mwt_O2=32.0;
-    double molarity_NH4OH = 7.398273736; // mol/L
+    const scalar molarity_NH4OH = NH4OH_conc.value(); // mol/L, from constant/microbeUpdateProperties
     const scalar baseFlowRate = base_flowrate.value(); // m3/s, from constant/microbeUpdateProperties
     std::vector<double> MM_params(13); // 13 parameters for the Monod Michaelis Menten kinetics
     MM_params[microbemodel::MM_param_keys["q_max"]] = q_max.value();

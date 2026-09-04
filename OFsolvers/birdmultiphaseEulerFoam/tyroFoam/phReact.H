@@ -6,6 +6,8 @@
     std::vector<double> abSystem(acidbasemodel::nvars); // 6 mixture components to pull; 2 phosphates, 2 ammonias, 1 butyric, 1 acetic
     std::vector<double> totalConc(acidbasemodel::nvars); // coincidentally also 6 total systems; buffer, base, 2 acids, spectators, bio-contribution
     std::vector<double> mwt(acidbasemodel::nvars);
+    std::vector<double> ZConc(acidbasemodel::nvars);
+    std::vector<double> activity(3);
     std::vector<int> species_id(acidbasemodel::nvars);
     int id=0;
     int i=0;
@@ -25,6 +27,11 @@
     mwt[4] = 60.05; //CH3COOH; acetic acid
     // mwt[6] = 87.11; //C3H7COO
     mwt[5] = 88.11; //C3H7COOH; butyric acid
+
+    for(int i = 0; i < acidbasemodel::nvars; i++)
+      {
+	ZConc[i] = 0.0;
+      }
 
     // phase, thermo, and rho are set in createFieldRefs.H
     UPtrList<volScalarField>& Y = phase.YActiveRef();
@@ -90,31 +97,86 @@
 	abSystem[acidbasemodel::NA] = rho[i]*Y[species_id[acidbasemodel::NA]][i]/mwt[acidbasemodel::NA]; //mol/L
 	abSystem[acidbasemodel::AA] = rho[i]*Y[species_id[acidbasemodel::AA]][i]/mwt[acidbasemodel::AA]; //mol/L
 	abSystem[acidbasemodel::BA] = rho[i]*Y[species_id[acidbasemodel::BA]][i]/mwt[acidbasemodel::BA]; //mol/L
+
+	activity[0] = 1.0;
+	activity[1] = 1.0;
+	activity[2] = 1.0;
 	
 	// get conserved totals for system components
 	acidbasemodel::getTotalConc(abSystem, totalConc);
 
-	// get spectator ions from buffer
-	acidbasemodel::getSpectatorsNonBio(totalConc);
+	// initialize spectator ions with activity = uniform(1)
+	ZConc[acidbasemodel::nvars/2 + 1] = acidbasemodel::getSpectatorsNonBio(totalConc, activity);
+	double Z_hold = 1.0;
+	int Z_count = 0;
+	double Is = 0.0;
+	// iterate over activity correction and Z+ calculation to hone in on Z+ value for starting pH = 6.3
+	while( (std::abs( ZConc[acidbasemodel::nvars/2+1] - Z_hold ) >= 1.0E-06 ) && (Z_count <= 100))
+	  {
+	    if(Z_count > 0)
+	      {
+		ZConc[acidbasemodel::nvars/2 + 1] = Z_hold;
+	      }
+	    Is = acidbasemodel::ionicStrength(std::pow(10, -6.3), ZConc, activity, do_ml);
+	    acidbasemodel::activity(Is, activity);
+	    Z_hold = acidbasemodel::getSpectatorsNonBio(ZConc, activity);
+	    Z_count++;
+	  }
+
+	// reset activity and fill totalConc Z+ with final value from iterative process
+	for(int i = 0; i < 3; i++)
+	  {
+	    activity[i] = 1.0;
+	  }
+	totalConc[acidbasemodel::nvars/2 + 1] = Z_hold;
+
+	if(Z_hold == 1.0)
+	  {
+	    Info << "Z_hold stuck at 1.0..." << "\n";
+	  }
 	
 	// get spectator ions from bio components
 	// ML proton-equivalent source from microbe model, stored in Hcell [mol/m3]
 	// convert to mol/L for acid-base balance
 	totalConc[acidbasemodel::nvars/2 + 2] = do_ml ? (Hcell[i]/1000.0) : 0.0;
-	double H_set = 1.0E-15;
-	double H = acidbasemodel::NewtonRaphson(H_set, totalConc, do_ml);
-	if (H < 1.0E-15)
-	{
-	    H = 1.0E-14;
-	}
-	pH[i] = -std::log10(H);
-	// Info << "pH is: " << pH[i] << "\n";
+	
+	double aH_init = 1.0E-15;
+	double aH_update = 1.0;
+	double pH_init = -std::log10(aH_init);
+	double pH_update = -std::log10(aH_update);
+	int H_counter = 0;
+	// double H = acidbasemodel::NewtonRaphson(H_set, totalConc, activity,  do_ml);
+
+	while((std::abs(pH_init - pH_update) >= 1.0E-08) && (H_counter <= 100))
+	  {
+	    if(H_counter > 0)
+	      {
+		aH_init = aH_update;
+		pH_init = pH_update;
+	      }
+	    if (aH_init < 1.0E-15)
+	      {
+		aH_init = 1.0E-14;
+		pH_init = -std::log10(aH_init);
+	      }
+	    Is = acidbasemodel::ionicStrength(aH_init, totalConc, activity, do_ml);
+	    acidbasemodel::activity(Is, activity);
+	    aH_update = acidbasemodel::NewtonRaphson(aH_init, totalConc, activity, do_ml);
+	    pH_update = -std::log10(aH_update);
+	    H_counter++;
+	  }
+	
+	pH[i] = pH_update;
+	Info << "Ionic Strength is: " << Is << "\n";
+	Info << "pH is: " << pH[i] << "\n";
 
 	// update individual components for systems; future - might could only track the lumped components for each of these within the broth...
 	// tracking the acids by lumped components; i.e., dissociation only considered for pH calc. 
-	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
-	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * H / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] + H);
-	abSystem[acidbasemodel::NA] = totalConc[acidbasemodel::AmmoniaBase] * H / (acidbasemodel::Ka[acidbasemodel::AmmoniaBase] + H);
+	abSystem[acidbasemodel::PB] = totalConc[acidbasemodel::PhosphateBuffer] * acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] * activity[1] \
+	  / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer] * activity[1] + aH_update * activity[2]);
+	abSystem[acidbasemodel::PA] = totalConc[acidbasemodel::PhosphateBuffer] * aH_update * activity[2] \
+	  / (acidbasemodel::Ka[acidbasemodel::PhosphateBuffer]*activity[1] + aH_update * activity[2]);
+	abSystem[acidbasemodel::NA] = totalConc[acidbasemodel::AmmoniaBase] * aH_update / (acidbasemodel::Ka[acidbasemodel::AmmoniaBase] * activity[1] + aH_update);
 	abSystem[acidbasemodel::NB] = totalConc[acidbasemodel::AmmoniaBase] - abSystem[acidbasemodel::NA];
 
 	
