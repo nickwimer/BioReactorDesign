@@ -115,6 +115,12 @@ dimensionedScalar base_flowrate
      dimVolume/dimTime,
      reaction_props.lookup("base_flowrate"));
 
+// base concentration in reactor (mol/L)                                                                                                                                                           
+dimensionedScalar NH4OH_conc
+(   "NH4OH_conc",
+     dimMoles/dimVolume,
+     reaction_props.lookup("NH4OH_conc"));
+
 // boolean for whether to use ML model for reaction updates or not
 Switch use_ml(false);
 reaction_props.readIfPresent("use_ml", use_ml);

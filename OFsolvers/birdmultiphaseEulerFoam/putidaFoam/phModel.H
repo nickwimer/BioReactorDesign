@@ -23,14 +23,17 @@ namespace acidbasemodel
 
     extern const double Kw;
     extern std::vector<double> Ka;
+    extern std::vector<double> charges;
     extern double pH_avg;
 
     void getTotalConc(std::vector<double>& abSystem, std::vector<double>& totalConc);
-    void getSpectatorsNonBio(std::vector<double>& totalConc);
     void getSystemID(std::string name, std::vector<int>& id_map, int foam_id);
-    double charge(double H, std::vector<double>& totalConc, bool do_ml = false);
-    double dchargedH(double H, std::vector<double>& totalConc);
-    double NewtonRaphson(double H_init, std::vector<double>& totalConc, bool do_ml = false);  
+    void activity(double Is, std::vector<double>& a);
+    double getSpectatorsNonBio(std::vector<double>& totalConc, std::vector<double>& a);
+    double ionicStrength(double a_H, std::vector<double>& totalConc, std::vector<double>& a,  bool do_ml = false);
+    double charge(double H, std::vector<double>& totalConc, std::vector<double>& a, bool do_ml = false);
+    double dchargedH(double H, std::vector<double>& totalConc, std::vector<double>& a);
+    double NewtonRaphson(double H_init, std::vector<double>& totalConc, std::vector<double>& a, bool do_ml = false);  
 }
 
 #endif
