@@ -106,6 +106,7 @@
 	acidbasemodel::getTotalConc(abSystem, totalConc);
 
 	// initialize spectator ions with activity = uniform(1)
+	ZConc[acidbasemodel::PhosphateBuffer] = totalConc[acidbasemodel::PhosphateBuffer];
 	ZConc[acidbasemodel::nvars/2 + 1] = acidbasemodel::getSpectatorsNonBio(totalConc, activity);
 	double Z_hold = 1.0;
 	int Z_count = 0;

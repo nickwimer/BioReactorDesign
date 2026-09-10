@@ -99,30 +99,31 @@
 	// get conserved totals for system components
 	acidbasemodel::getTotalConc(abSystem, totalConc);
 
-	        // initialize spectator ions with activity = uniform(1)                                                                                                                                    
+	// initialize spectator ions with activity = uniform(1)
+	ZConc[acidbasemodel::PhosphateBuffer] = totalConc[acidbasemodel::PhosphateBuffer];
         ZConc[acidbasemodel::nvars/2] = acidbasemodel::getSpectatorsNonBio(totalConc, activity);
         double Z_hold = 1.0;
         int Z_count = 0;
         double Is = 0.0;
-        // iterate over activity correction and Z+ calculation to hone in on Z+ value for starting pH = 6.3                                                                                        
+        // iterate over activity correction and Z+ calculation to hone in on Z+ value for starting pH = 7.0       
         while( (std::abs( ZConc[acidbasemodel::nvars/2] - Z_hold ) >= 1.0E-06 ) && (Z_count <= 10))
           {
             if(Z_count > 0)
               {
                 ZConc[acidbasemodel::nvars/2] = Z_hold;
               }
-            Is = acidbasemodel::ionicStrength(std::pow(10, -6.3), ZConc, activity, do_ml);
+            Is = acidbasemodel::ionicStrength(std::pow(10, -7.0), ZConc, activity, do_ml);
             acidbasemodel::activity(Is, activity);
             Z_hold = acidbasemodel::getSpectatorsNonBio(ZConc, activity);
             Z_count++;
           }
 
-	// reset activity and fill totalConc Z+ with final value from iterative process                                                                                                            
+	// reset activity and fill totalConc Z+ with final value from iterative process                       
         for(int i = 0; i < 3; i++)
           {
             activity[i] = 1.0;
           }
-        totalConc[acidbasemodel::nvars/2 + 1] = Z_hold;
+        totalConc[acidbasemodel::nvars/2] = Z_hold;
 	
 	// get spectator ions from bio components
 	// ML proton-equivalent source from microbe model, stored in Hcell [mol/m3]

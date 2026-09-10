@@ -235,7 +235,7 @@ namespace microbemodel
         double F_a = 1.0 - acid_conc/P_d;
         if (F_a <= 0.0)
         {
-	    return pow(F_a, 1.0);
+	    return 0.0;
         }
 
         return pow(F_a, m_i);
@@ -265,13 +265,14 @@ namespace microbemodel
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s + (solnvec[G] * solnvec[G] / K_i));
-        double F_a = product_inhibition(solnvec[B] + solnvec[A], P_d, m_i);
-        double q_s = q_max*F_s*F_a;
+	double prod_kg = solnvec[B]*mwt_ba + solnvec[A]*mwt_aa;
+        double F_a = product_inhibition(prod_kg, P_d, m_i);
+        double q_s = q_max*F_s*F_a; // 1/h
 
         // calculate final rates
         rhs[X] = q_s*solnvec[X];
-	rhs[B] = alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X];
-	rhs[A] = alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X];
+	rhs[B] = alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]; // alpha_ba = 0
+	rhs[A] = alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]; // beta_aa = 0
         rhs[G] = -(1.0 / Y_x * q_s*solnvec[X] + 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]) + 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) \
 		   + 2.0 * mwt_CO2 / mwt_ba * 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X])		\
 		   + mwt_CO2 / mwt_aa * 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) + m_s*solnvec[X]);
@@ -303,7 +304,8 @@ namespace microbemodel
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s + (solnvec[G] * solnvec[G] / K_i));
-        double F_a = product_inhibition(solnvec[H], P_d, m_i);
+	double prod_kg = solnvec[B]*mwt_ba + solnvec[A]*mwt_aa;
+        double F_a = product_inhibition(prod_kg, P_d, m_i);
         double q_s = q_max*F_s*F_a;
 
 	/*double rglu = -(1.0 / Y_x * q_s*solnvec[X] + 1.0 / Y_ba * (alpha_ba * q_s*solnvec[X] + beta_ba * solnvec[X]) + 1.0 / Y_aa * (alpha_aa * q_s*solnvec[X] + beta_aa * solnvec[X]) \
