@@ -1,0 +1,313 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+
+// 15 unresolved sparger-row source kernels based on the supplied sparger notes.
+// IMPORTANT: coordinates are for the FINAL mesh, after
+//     transformPoints "rotate=((0 0 1)(0 1 0))"
+// so vessel vertical is +y.
+//
+// Physical notes represented here:
+//   1.0 in OD tube
+//   centreline 7.9 in above the lowest rounded-bottom point
+//   15 rows, approximately 0.86 in spacing, 23 total 3/32-in holes
+//   alternating 2-hole / 1-hole rows (8 double + 7 single)
+//   holes face upward toward the lower Rushton
+//   sparger entry azimuth 280 deg relative to the physical baffles
+//
+// Model choices:
+//   - full solid tube and 3/32-in holes are NOT resolved
+//   - each physical row is represented by a non-overlapping rotated box
+//     extending from the top of the 1-in tube upward 4 in and 3 in wide
+//   - OpenFOAM rotatedBoxToCell requires the (i,j,k) vertex ordering to form
+//     a right-handed hex; k is oriented accordingly so face normals point out
+//   - row source flow is prescribed independently in constant/fvModels
+//   - drawing baffles are 30 deg offset from this generated mesh; the source
+//     is rotated by the same offset so relative sparger/baffle angle is kept
+
+actions
+(
+    // Row 01: 2 physical hole(s), axial coordinate -4.04 in from vessel centre
+    {
+        name    spargerRow01;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (-0.093498226 -0.029041836 -0.074575745);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 02: 1 physical hole(s), axial coordinate -3.18 in from vessel centre
+    {
+        name    spargerRow02;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (-0.072971581 -0.029041836 -0.067104657);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 03: 2 physical hole(s), axial coordinate -2.32 in from vessel centre
+    {
+        name    spargerRow03;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (-0.052444935 -0.029041836 -0.059633569);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 04: 1 physical hole(s), axial coordinate -1.46 in from vessel centre
+    {
+        name    spargerRow04;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (-0.031918289 -0.029041836 -0.052162481);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 05: 2 physical hole(s), axial coordinate -0.60 in from vessel centre
+    {
+        name    spargerRow05;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (-0.011391644 -0.029041836 -0.044691393);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 06: 1 physical hole(s), axial coordinate 0.26 in from vessel centre
+    {
+        name    spargerRow06;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.009135002 -0.029041836 -0.037220305);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 07: 2 physical hole(s), axial coordinate 1.12 in from vessel centre
+    {
+        name    spargerRow07;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.029661648 -0.029041836 -0.029749217);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 08: 1 physical hole(s), axial coordinate 1.98 in from vessel centre
+    {
+        name    spargerRow08;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.050188293 -0.029041836 -0.022278129);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 09: 2 physical hole(s), axial coordinate 2.84 in from vessel centre
+    {
+        name    spargerRow09;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.070714939 -0.029041836 -0.014807041);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 10: 1 physical hole(s), axial coordinate 3.70 in from vessel centre
+    {
+        name    spargerRow10;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.091241584 -0.029041836 -0.007335953);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 11: 2 physical hole(s), axial coordinate 4.56 in from vessel centre
+    {
+        name    spargerRow11;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.111768230 -0.029041836 0.000135135);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 12: 1 physical hole(s), axial coordinate 5.42 in from vessel centre
+    {
+        name    spargerRow12;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.132294876 -0.029041836 0.007606223);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 13: 2 physical hole(s), axial coordinate 6.28 in from vessel centre
+    {
+        name    spargerRow13;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.152821521 -0.029041836 0.015077311);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 14: 1 physical hole(s), axial coordinate 7.14 in from vessel centre
+    {
+        name    spargerRow14;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.173348167 -0.029041836 0.022548399);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+    // Row 15: 2 physical hole(s), axial coordinate 8.00 in from vessel centre
+    {
+        name    spargerRow15;
+        type    cellZoneSet;
+        action  new;
+        source  rotatedBoxToCell;
+        sourceInfo
+        {
+            origin (0.193874812 -0.029041836 0.030019487);
+            i      (0.020203391 0.000000000 0.007353433);
+            j      (0.000000000 0.101600000 0.000000000);
+            k      (-0.026061935 -0.000000000 0.071604578);
+        }
+    }
+
+
+    // Diagnostic zone: cells above the calibrated nominal liquid level.
+    {
+        name    nominalHeadspace;
+        type    cellZoneSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (-1.0 1.01848 -1.0) (1.0 2.0 1.0);
+        }
+    }
+
+    {
+        name    headspaceAbove1p10;
+        type    cellZoneSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (-1.0 1.10 -1.0) (1.0 2.0 1.0);
+        }
+    }
+
+    {
+        name    headspaceAbove1p20;
+        type    cellZoneSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (-1.0 1.20 -1.0) (1.0 2.0 1.0);
+        }
+    }
+
+    {
+        name    headspaceAbove1p30;
+        type    cellZoneSet;
+        action  new;
+        source  boxToCell;
+        sourceInfo
+        {
+            box (-1.0 1.30 -1.0) (1.0 2.0 1.0);
+        }
+    }
+
+);
+
+// ************************************************************************* //

@@ -202,6 +202,28 @@ def main():
         case / "log.topoSet.mrf",
     )
 
+    # Optional reactor-specific auxiliary zones, e.g. sparger injection
+    # rows and diagnostic liquid-level regions. These are intentionally
+    # separate from MRF-zone generation.
+    auxiliary_toposet = case / "system" / "topoSetDict.auxiliaryZones"
+
+    if auxiliary_toposet.is_file():
+        run_command(
+            (
+                "topoSet",
+                "-case",
+                case,
+                "-dict",
+                "system/topoSetDict.auxiliaryZones",
+            ),
+            case / "log.topoSet.auxiliaryZones",
+        )
+    else:
+        print(
+            "No system/topoSetDict.auxiliaryZones found; "
+            "skipping auxiliary cell-zone generation."
+        )
+
     if not args.skip_check:
         run_command(
             (
