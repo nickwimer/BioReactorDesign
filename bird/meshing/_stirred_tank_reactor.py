@@ -38,7 +38,8 @@ class StirredTankReactor:
         target_volume_L,
         round_bottom,
         bottom_inlet,
-        mrf_vertical_buffer_cells=0,
+        mrf_mesh_vertical_buffer_cells=None,
+        mrf_vertical_buffer_cells=None,
         mrf_radial_buffer_cells=0,
     ):
         # Loop through params and setattr v to self.k
@@ -91,6 +92,32 @@ class StirredTankReactor:
         self.n_fins_per_impeller = _per_impeller_values(
             self.n_fins_per_impeller, "n_fins_per_impeller", dtype=int
         ).tolist()
+
+        # Separate the broad mesh envelope from the active MRF extent.
+        #
+        # mrf_mesh_vertical_buffer_cells is the preferred mesh-topology control.
+        # mrf_vertical_buffer_cells is retained only as a legacy alias so old
+        # YAML files continue to generate the same broad rotor envelope.
+        if self.mrf_mesh_vertical_buffer_cells is None:
+            if self.mrf_vertical_buffer_cells is None:
+                self.mrf_mesh_vertical_buffer_cells = 0
+            else:
+                self.mrf_mesh_vertical_buffer_cells = self.mrf_vertical_buffer_cells
+        elif self.mrf_vertical_buffer_cells is not None:
+            if int(self.mrf_mesh_vertical_buffer_cells) != int(
+                self.mrf_vertical_buffer_cells
+            ):
+                raise ValueError(
+                    "mrf_mesh_vertical_buffer_cells and legacy "
+                    "mrf_vertical_buffer_cells disagree"
+                )
+
+        self.mrf_mesh_vertical_buffer_cells = int(
+            self.mrf_mesh_vertical_buffer_cells
+        )
+
+        if self.mrf_mesh_vertical_buffer_cells < 0:
+            raise ValueError("mrf_mesh_vertical_buffer_cells must be >= 0")
 
         # Convert degrees to radians for blade pitch
         self.blade_pitch = blade_pitch_deg * np.pi / 180.0
@@ -285,8 +312,9 @@ class StirredTankReactor:
         count = 1
         self.angle_offsets = [0.0]
 
-        # Buffer cells for MRF region above and below impeller (vertical direction)
-        nbuf = int(self.mrf_vertical_buffer_cells)
+        # Broad mesh-envelope buffer above and below each impeller.
+        # The active rotating zone is selected later by mrf_zone_from_yaml.py.
+        nbuf = int(self.mrf_mesh_vertical_buffer_cells)
         buffer_ht = nbuf / float(nz) if nbuf > 0 else 0.0
 
         for n_imp in range(self.nimpellers):
@@ -466,9 +494,17 @@ class StirredTankReactor:
 
         if "mrf_buffer_cells" in react_dict:
             react_dict.setdefault(
-                "mrf_vertical_buffer_cells", react_dict["mrf_buffer_cells"]
+                "mrf_mesh_vertical_buffer_cells",
+                react_dict["mrf_buffer_cells"],
             )
             del react_dict["mrf_buffer_cells"]
+
+        # Backward compatibility: the old key controlled the mesh envelope.
+        if "mrf_vertical_buffer_cells" in react_dict:
+            react_dict.setdefault(
+                "mrf_mesh_vertical_buffer_cells",
+                react_dict["mrf_vertical_buffer_cells"],
+            )
         return cls(**react_dict)
 
     @staticmethod
