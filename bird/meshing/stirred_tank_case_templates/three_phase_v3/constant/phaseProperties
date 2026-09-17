@@ -1,0 +1,380 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      phaseProperties;
+}
+
+#include "$FOAM_CASE/constant/globalVars"
+
+// Three-role gas treatment:
+//   bubbleGas    = dispersed PBM gas injected by the sparger
+//   headspaceGas = continuous resolved headspace, used as the reference phase
+//   liquid       = conserved liquid inventory
+//
+// headspaceGas is the reference phase so alpha.liquid and alpha.bubbleGas are
+// transported explicitly and alpha.headspaceGas = 1 - alpha.liquid - alpha.bubbleGas.
+// The PBM is attached only to bubbleGas.  Interface compression is attached only
+// to liquid/headspaceGas, so it does not act on the dispersed bubble population.
+
+type interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem;
+
+phases (bubbleGas headspaceGas liquid);
+referencePhase headspaceGas;
+
+populationBalances (bubbles);
+
+bubbleGas
+{
+    type            multiComponentIsothermalPhaseModel;
+    diameterModel   velocityGroup;
+
+    velocityGroupCoeffs
+    {
+        populationBalance    bubbles;
+        shapeModel           spherical;
+
+        sizeGroups
+        (
+            f1  { dSph 1e-3;   value 0.0; }
+            f2  { dSph 1.5e-3; value 0.0; }
+            f3  { dSph 2e-3;   value 1.0; }
+            f4  { dSph 2.5e-3; value 0.0; }
+            f5  { dSph 3e-3;   value 0.0; }
+            f6  { dSph 3.5e-3; value 0.0; }
+            f7  { dSph 4e-3;   value 0.0; }
+            f8  { dSph 4.5e-3; value 0.0; }
+            f9  { dSph 5e-3;   value 0.0; }
+            f10 { dSph 5.5e-3; value 0.0; }
+            f11 { dSph 6e-3;   value 0.0; }
+        );
+    }
+
+    residualAlpha   1e-6;
+}
+
+headspaceGas
+{
+    type            multiComponentIsothermalPhaseModel;
+
+    // This diameter is a numerical length scale used by the built-in deposition
+    // phase-transfer model below.  headspaceGas is not treated as a dispersed
+    // bubble phase and has no PBM.
+    diameterModel   constant;
+    constantCoeffs
+    {
+        d           1e-2;
+    }
+
+    residualAlpha   1e-6;
+}
+
+liquid
+{
+    type            multiComponentIsothermalPhaseModel;
+    diameterModel   constant;
+    constantCoeffs
+    {
+        d           1e-3;
+    }
+
+    residualAlpha   1e-6;
+}
+
+populationBalanceCoeffs
+{
+    bubbles
+    {
+        continuousPhase liquid;
+
+        coalescenceModels
+        (
+            LehrMilliesMewes
+            {
+                efficiency 2.0;
+                uCrit 0.08;
+                alphaMax 0.6;
+            }
+        );
+
+        binaryBreakupModels
+        (
+//            LehrMilliesMewes{}
+        );
+
+        breakupModels
+        (
+            Laakkonen
+            {
+                efficiency 12.0;
+                daughterSizeDistributionModel Laakkonen;
+                height_lim $LiqHt_limit;
+                height_dir 1;
+            }
+        );
+
+        driftModels
+        (
+//            densityChange{}
+        );
+
+        nucleationModels
+        ();
+    }
+}
+
+blending
+{
+    default
+    {
+        type            linear;
+        minFullyContinuousAlpha.bubbleGas    0.7;
+        minPartlyContinuousAlpha.bubbleGas   0.3;
+        minFullyContinuousAlpha.headspaceGas 0.7;
+        minPartlyContinuousAlpha.headspaceGas 0.3;
+        minFullyContinuousAlpha.liquid       0.7;
+        minPartlyContinuousAlpha.liquid      0.3;
+    }
+
+    heatTransfer
+    {
+        type            linear;
+        minFullyContinuousAlpha.bubbleGas    1;
+        minPartlyContinuousAlpha.bubbleGas   0;
+        minFullyContinuousAlpha.headspaceGas 1;
+        minPartlyContinuousAlpha.headspaceGas 0;
+        minFullyContinuousAlpha.liquid       1;
+        minPartlyContinuousAlpha.liquid      0;
+    }
+
+    massTransfer
+    {
+        $heatTransfer;
+    }
+}
+
+surfaceTension
+(
+    // Bubble surface tension required by the PBM breakup/coalescence models.
+    (bubbleGas and liquid)
+    {
+        type            constant;
+        sigma           $sigmaLiq;
+    }
+
+    // Macroscopic liquid/headspace interface.
+    (headspaceGas and liquid)
+    {
+        type            constant;
+        sigma           $sigmaLiq;
+    }
+);
+
+// Apply VOF-like interface sharpening ONLY to the resolved headspace interface.
+// The bubbleGas/liquid pair is intentionally omitted so the PBM remains dispersed.
+interfaceCompression
+(
+    (headspaceGas and liquid) 1.0
+);
+
+aspectRatio
+(
+    (bubbleGas in liquid)
+    {
+        type            constant;
+        E0              1.0;
+    }
+
+    (liquid in bubbleGas)
+    {
+        type            constant;
+        E0              1.0;
+    }
+);
+
+drag
+(
+    // Dispersed bubble-liquid momentum coupling.
+    (bubbleGas in liquid)
+    {
+        type            Grace;
+        residualRe      1e-3;
+        swarmCorrection { type none; }
+    }
+
+    (liquid in bubbleGas)
+    {
+        type            SchillerNaumann;
+        residualRe      1e-3;
+        swarmCorrection { type none; }
+    }
+
+    // Segregated drag is designed for a resolved interface with no obvious
+    // dispersed phase.  These are standard OpenFOAM coefficients.
+    (headspaceGas and liquid)
+    {
+        type            segregated;
+        m               0.5;
+        n               8;
+    }
+);
+
+virtualMass
+(
+    (bubbleGas in liquid)
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+
+    (liquid in bubbleGas)
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+);
+
+// Two-resistance heat transfer is retained for the dispersed bubble/liquid pair.
+// Bulk liquid/headspace heat transfer is omitted in this first hydrodynamic test.
+heatTransfer.bubbleGas
+(
+    (bubbleGas in liquid)
+    {
+        type spherical;
+        residualAlpha 1e-4;
+    }
+
+    (liquid in bubbleGas)
+    {
+        type RanzMarshall;
+        residualAlpha 1e-4;
+    }
+);
+
+heatTransfer.headspaceGas
+();
+
+heatTransfer.liquid
+(
+    (bubbleGas in liquid)
+    {
+        type RanzMarshall;
+        residualAlpha 1e-4;
+    }
+
+    (liquid in bubbleGas)
+    {
+        type spherical;
+        residualAlpha 1e-4;
+    }
+);
+
+// Gas-side water evaporation remains disabled for this diagnostic model.
+interfaceComposition.bubbleGas
+();
+
+interfaceComposition.headspaceGas
+();
+
+// Dissolved O2 transfer comes from the dispersed sparger bubbles, not from the
+// resolved headspace phase in this first test.
+interfaceComposition.liquid
+(
+    (liquid and bubbleGas)
+    {
+        type Henry;
+        species ( O2 );
+        k ( $He_O2 );
+        Le $LeLiqMix;
+    }
+);
+
+diffusiveMassTransfer.bubbleGas
+();
+
+diffusiveMassTransfer.headspaceGas
+();
+
+diffusiveMassTransfer.liquid
+(
+    (bubbleGas in liquid)
+    {
+        type Higbie;
+        Le $LeLiqMix;
+    }
+
+    (liquid in bubbleGas)
+    {
+        type spherical;
+        Le 1.0;
+    }
+);
+
+// Input-only bubble release model.  OpenFOAM's deposition model transfers the
+// specified dispersed phase to the other member of the pair in proportion to
+// overlap with a designated surface phase and relative velocity.  Here the
+// target phase itself is used as the surface indicator: no transfer in the
+// bubbly liquid where alpha.headspaceGas ~= 0; rapid bubbleGas -> headspaceGas
+// conversion once bubbles enter the resolved headspace/interface region.
+phaseTransfer
+(
+    // Ordered pair is required here.  phaseTransfer rates are signed, and an
+    // unordered "and" pair is rejected by BlendedInterfacialModel when the
+    // signed dmdt is evaluated.  bubbleGas is the dispersed/losing phase and
+    // headspaceGas is the receiving continuous phase.
+    (bubbleGas in headspaceGas)
+    {
+        type            deposition;
+        droplet         bubbleGas;
+        surface         headspaceGas;
+        efficiency      1.0;
+    }
+);
+
+lift
+(
+    (bubbleGas in liquid)
+    {
+        type            wallDamped;
+
+        wallDamping
+        {
+            type        cosine;
+            Cd          3.0;
+        }
+
+        lift
+        {
+            type        Tomiyama;
+            swarmCorrection { type none; }
+        }
+    }
+);
+
+wallLubrication
+(
+    (bubbleGas in liquid)
+    {
+        type            Antal;
+        Cw1             -0.01;
+        Cw2             0.05;
+    }
+);
+
+turbulentDispersion
+(
+    (bubbleGas in liquid)
+    {
+        type            Burns;
+        sigma           0.9;
+    }
+);
+
+// ************************************************************************* //

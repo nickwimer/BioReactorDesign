@@ -1,0 +1,82 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      fvConstraints;
+}
+
+limitp
+{
+    type       limitPressure;
+    min        1e4;
+}
+
+limitUliq
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.liquid;
+    selectionMode   all;
+    max             1e1;
+}
+
+limitUbubble
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.bubbleGas;
+    selectionMode   all;
+    max             1e1;
+}
+
+limitUheadspace
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.headspaceGas;
+    selectionMode   all;
+    max             1e1;
+}
+
+
+// Residual-phase velocity stabilization.
+// multiphaseEulerFoam includes every phase's raw phi in the global Courant
+// number, even where that phase is effectively absent.  Limit only those
+// numerically meaningless low-alpha velocities; occupied-phase velocities are
+// untouched.  The threshold is 100x residualAlpha (1e-6) and still only 0.01%.
+limitUheadspaceLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.headspaceGas;
+    alpha           alpha.headspaceGas;
+    alphaThreshold 1e-2;
+    max             0.5;
+}
+
+limitUliquidLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.liquid;
+    alpha           alpha.liquid;
+    alphaThreshold  1e-4;
+    max             0.5;
+}
+
+limitUbubbleLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.bubbleGas;
+    alpha           alpha.bubbleGas;
+    alphaThreshold  1e-4;
+    max             0.5;
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,249 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     birdmultiphaseEulerFoam;
+
+libs            ( "libalphaLimitVelocity.so" );
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         9.9;
+
+deltaT          5e-05;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.05;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.3;
+
+maxDeltaT       5e-05;
+
+functions
+{
+    CoLiquid
+    {
+        type            CourantNo;
+        libs            ( "libfieldFunctionObjects.so" );
+        field           phi.liquid;
+        result          Co.liquid;
+        executeControl  timeStep;
+        executeInterval 100;
+        writeControl    writeTime;
+    }
+    CoBubble
+    {
+        type            CourantNo;
+        libs            ( "libfieldFunctionObjects.so" );
+        field           phi.bubbleGas;
+        result          Co.bubbleGas;
+        executeControl  timeStep;
+        executeInterval 100;
+        writeControl    writeTime;
+    }
+    CoHeadspace
+    {
+        type            CourantNo;
+        libs            ( "libfieldFunctionObjects.so" );
+        field           phi.headspaceGas;
+        result          Co.headspaceGas;
+        executeControl  timeStep;
+        executeInterval 100;
+        writeControl    writeTime;
+    }
+    #includeFunc    writeObjects(d.bubbleGas)
+    bubbleGasVolume
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      all;
+        operation       volIntegrate;
+        fields          ( alpha.bubbleGas );
+    }
+    headspaceGasVolume
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      all;
+        operation       volIntegrate;
+        fields          ( alpha.headspaceGas );
+    }
+    liquidVolume
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      all;
+        operation       volIntegrate;
+        fields          ( alpha.liquid );
+    }
+    liquidAboveNominalLevel
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      cellZone;
+        name            nominalHeadspace;
+        operation       volIntegrate;
+        fields          ( alpha.liquid );
+    }
+    liquidAbove1p10
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      cellZone;
+        name            headspaceAbove1p10;
+        operation       volIntegrate;
+        fields          ( alpha.liquid );
+    }
+    liquidAbove1p20
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      cellZone;
+        name            headspaceAbove1p20;
+        operation       volIntegrate;
+        fields          ( alpha.liquid );
+    }
+    liquidAbove1p30
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeControl    writeTime;
+        regionType      cellZone;
+        name            headspaceAbove1p30;
+        operation       volIntegrate;
+        fields          ( alpha.liquid );
+    }
+    CoMixture
+    {
+        type            CourantNo;
+        libs            ( "libfieldFunctionObjects.so" );
+        field           phi;
+        result          Co.mixture;
+        executeControl  timeStep;
+        executeInterval 100;
+        writeControl    none;
+    }
+    CoMaxima
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeLocation   true;
+        regionType      all;
+        operation       max;
+        fields          ( Co.mixture Co.liquid Co.bubbleGas Co.headspaceGas );
+        writeControl    timeStep;
+        writeInterval   100;
+    }
+    UMaxima
+    {
+        type            volFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        log             true;
+        writeFields     false;
+        writeLocation   true;
+        regionType      all;
+        operation       maxMag;
+        fields          ( U.liquid U.bubbleGas U.headspaceGas );
+        writeControl    timeStep;
+        writeInterval   100;
+    }
+    cflHotspotProbes
+    {
+        type            probes;
+        libs            ( "libsampling.so" );
+        writeControl    timeStep;
+        writeInterval   100;
+        fields          ( alpha.headspaceGas alpha.bubbleGas alpha.liquid U.headspaceGas U.bubbleGas U.liquid );
+        probeLocations  ( ( 0.00405502 0.893139 0.325292 ) ( -0.313743 0.893132 0.0148126 ) ( 0.313743 0.893132 -0.0148126 ) );
+    }
+}
+
+
+
+
+
+// ************************************************************************* //
+
+// Optional alpha-aware phase Courant control.
+//
+// Set enabled false, or remove this dictionary entirely, to recover the
+// standard multiphaseEulerFoam Courant-number calculation.
+phaseCourantControl
+{
+    enabled             true;
+    includeMixture      true;
+
+    // Set true when detailed ACTIVE_CFL_OWNER diagnostics are required.
+    diagnostics         false;
+
+    phases
+    (
+        bubbleGas
+        headspaceGas
+        liquid
+    );
+
+    defaultAlphaCutoff  1e-10;
+
+    alphaCutoff
+    {
+        bubbleGas       1e-10;
+        headspaceGas    1e-2;
+        liquid          1e-10;
+    }
+}
