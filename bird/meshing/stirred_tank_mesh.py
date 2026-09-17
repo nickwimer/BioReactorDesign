@@ -734,7 +734,7 @@ def write_patches(outfile, react):
     outfile.write("\t)\n")
 
     # stitch faces patches
-    outfile.write("\n\tempty inside_to_hub\n\t(\n")
+    outfile.write("\n\tpatch inside_to_hub\n\t(\n")
 
     zi_pairs = []
     for vols in nonbaff_volumes:
@@ -760,7 +760,7 @@ def write_patches(outfile, react):
 
     outfile.write("\t)\n")
 
-    outfile.write("\n\tempty inside_to_hub_copy\n\t(\n")
+    outfile.write("\n\tpatch inside_to_hub_copy\n\t(\n")
 
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
@@ -783,7 +783,7 @@ def write_patches(outfile, react):
     outfile.write("\t)\n")
 
     # stitch faces patches
-    outfile.write("\n\tempty hub_to_rotor\n\t(\n")
+    outfile.write("\n\tpatch hub_to_rotor\n\t(\n")
 
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
@@ -804,7 +804,7 @@ def write_patches(outfile, react):
             outfile.write(str(get_baffle_point_of(i, rot_ci, zi_above, react)) + ")\n")
 
     outfile.write("\t)\n")
-    outfile.write("\n\tempty hub_to_rotor_copy\n\t(\n")
+    outfile.write("\n\tpatch hub_to_rotor_copy\n\t(\n")
 
     for zi_pair in zi_pairs:
         zi_below = zi_pair[0]
