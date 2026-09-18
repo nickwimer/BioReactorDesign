@@ -137,3 +137,7 @@ dmypy.json
 
 *.swp
 .vim
+
+# OpenFOAM wmake-generated source-tree artifacts
+OFsolvers/**/lnInclude/
+OFsolvers/**/Make/linux*/
