@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CONTROL="$CASE/system/controlDict"
+CONSTRAINTS="$CASE/system/fvConstraints"
+DECOMP="$CASE/system/decomposeParDict"
+
+NPROCS="${NPROCS:-52}"
+SOLVER="${BIRD_SOLVER:-birdmultiphaseEulerFoam}"
+
+if [[ -z "${WM_PROJECT_DIR:-}" ]]; then
+    echo "ERROR: OpenFOAM environment is not loaded."
+    echo "Source /home/nwimer/OpenFOAM-9/etc/bashrc first."
+    exit 2
+fi
+
+for cmd in foamDictionary setFields decomposePar srun
+do
+    command -v "$cmd" >/dev/null 2>&1 || {
+        echo "ERROR: required command not found: $cmd"
+        exit 2
+    }
+done
+
+if [[ "$SOLVER" == */* ]]; then
+    [[ -x "$SOLVER" ]] || {
+        echo "ERROR: solver is not executable: $SOLVER"
+        exit 2
+    }
+else
+    command -v "$SOLVER" >/dev/null 2>&1 || {
+        echo "ERROR: solver not found in PATH: $SOLVER"
+        exit 2
+    }
+fi
+
+if [[ ! -d "$CASE/constant/polyMesh" ]]; then
+    echo "ERROR: missing mesh: $CASE/constant/polyMesh"
+    exit 2
+fi
+
+if compgen -G "$CASE/processor*" >/dev/null; then
+    echo "ERROR: processor directories already exist."
+    echo "This startup workflow is intentionally fresh-start only."
+    exit 2
+fi
+
+FINAL_END_TIME="$(
+    foamDictionary "$CONTROL" -entry endTime -value
+)"
+
+FINAL_WRITE_CONTROL="$(
+    foamDictionary "$CONTROL" -entry writeControl -value
+)"
+
+FINAL_WRITE_INTERVAL="$(
+    foamDictionary "$CONTROL" -entry writeInterval -value
+)"
+
+set_entry()
+{
+    foamDictionary "$1" -entry "$2" -set "$3" >/dev/null
+}
+
+run_stage()
+{
+    local label="$1"
+    local end_time="$2"
+
+    set_entry "$CONTROL" stopAt endTime
+    set_entry "$CONTROL" endTime "$end_time"
+
+    echo
+    echo "===== $label : endTime=$end_time ====="
+
+    /usr/bin/time -p \
+    srun -n "$NPROCS" \
+    "$SOLVER" \
+    -case "$CASE" \
+    -parallel \
+    -fileHandler uncollated \
+    2>&1 | tee "$CASE/log.birdmultiphaseEulerFoam.$label"
+}
+
+require_time()
+{
+    local time_name="$1"
+    local count
+
+    count="$(
+        find "$CASE"/processor* \
+            -maxdepth 1 \
+            -mindepth 1 \
+            -type d \
+            -name "$time_name" \
+        | wc -l
+    )"
+
+    if [[ "$count" -ne "$NPROCS" ]]; then
+        echo "ERROR: expected $NPROCS processor copies of time $time_name; found $count"
+        exit 2
+    fi
+}
+
+echo "===== THREE-PHASE V3 STAGED STARTUP ====="
+echo "case:    $CASE"
+echo "solver:  $SOLVER"
+echo "nProcs:  $NPROCS"
+echo
+echo "Stage 1: 0.00 -> 0.05 s"
+echo "  headspace Co cutoff     = 1e-3"
+echo "  headspace U threshold   = 1e-3"
+echo "  maxDeltaT               = 1e-4"
+echo
+echo "Stage 2: 0.05 -> 0.13 s"
+echo "  headspace Co cutoff     = 1e-3"
+echo "  headspace U threshold   = 1e-3"
+echo "  maxDeltaT               = 5e-5"
+echo
+echo "After 0.13 s:"
+echo "  headspace Co cutoff     = 1e-2"
+echo "  headspace U threshold   = 1e-2"
+echo "  maxDeltaT               = 5e-5"
+
+# Common adaptive-timestep settings.
+set_entry "$CONTROL" application birdmultiphaseEulerFoam
+set_entry "$CONTROL" adjustTimeStep yes
+set_entry "$CONTROL" maxCo 0.3
+
+# During startup, write exact 0.01 s checkpoints so 0.05 and 0.13
+# are guaranteed restart times.
+set_entry "$CONTROL" writeControl adjustableRunTime
+set_entry "$CONTROL" writeInterval 0.01
+
+# Stage 1.
+set_entry "$CONTROL" startFrom startTime
+set_entry "$CONTROL" startTime 0
+set_entry "$CONTROL" maxDeltaT 1e-4
+
+set_entry \
+    "$CONTROL" \
+    phaseCourantControl/alphaCutoff/headspaceGas \
+    1e-3
+
+set_entry \
+    "$CONSTRAINTS" \
+    limitUheadspaceLowAlpha/alphaThreshold \
+    1e-3
+
+set_entry "$DECOMP" numberOfSubdomains "$NPROCS"
+
+echo
+echo "===== INITIALIZE FIELDS ====="
+
+setFields \
+-case "$CASE" \
+2>&1 | tee "$CASE/log.setFields"
+
+echo
+echo "===== DECOMPOSE ====="
+
+decomposePar \
+-case "$CASE" \
+-fileHandler uncollated \
+2>&1 | tee "$CASE/log.decomposePar"
+
+run_stage startup.0-0p05 0.05
+require_time 0.05
+
+# Stage 2.
+set_entry "$CONTROL" startFrom latestTime
+set_entry "$CONTROL" maxDeltaT 5e-5
+
+run_stage startup.0p05-0p13 0.13
+require_time 0.13
+
+# Install the validated production settings.
+set_entry "$CONTROL" startFrom latestTime
+set_entry "$CONTROL" maxDeltaT 5e-5
+
+set_entry \
+    "$CONTROL" \
+    phaseCourantControl/alphaCutoff/headspaceGas \
+    1e-2
+
+set_entry \
+    "$CONSTRAINTS" \
+    limitUheadspaceLowAlpha/alphaThreshold \
+    1e-2
+
+# Restore normal production output configuration and requested end time.
+set_entry "$CONTROL" endTime "$FINAL_END_TIME"
+set_entry "$CONTROL" writeControl "$FINAL_WRITE_CONTROL"
+set_entry "$CONTROL" writeInterval "$FINAL_WRITE_INTERVAL"
+
+echo
+echo "===== STARTUP COMPLETE ====="
+echo "Validated startup checkpoint: 0.13 s"
+echo "Final headspace Co cutoff:    1e-2"
+echo "Final headspace U threshold:  1e-2"
+echo "Final maxDeltaT:              5e-5"
+echo "Production endTime restored:  $FINAL_END_TIME"
+echo
+echo "Continue with birdmultiphaseEulerFoam from latestTime."

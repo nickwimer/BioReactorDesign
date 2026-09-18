@@ -50,7 +50,7 @@ adjustTimeStep  yes;
 
 maxCo           0.3;
 
-maxDeltaT       5e-05;
+maxDeltaT       0.0001;
 
 functions
 {
@@ -213,37 +213,20 @@ functions
     }
 }
 
-
-
-
-
-// ************************************************************************* //
-
-// Optional alpha-aware phase Courant control.
-//
-// Set enabled false, or remove this dictionary entirely, to recover the
-// standard multiphaseEulerFoam Courant-number calculation.
 phaseCourantControl
 {
-    enabled             true;
-    includeMixture      true;
-
-    // Set true when detailed ACTIVE_CFL_OWNER diagnostics are required.
-    diagnostics         false;
-
-    phases
-    (
-        bubbleGas
-        headspaceGas
-        liquid
-    );
-
-    defaultAlphaCutoff  1e-10;
-
+    enabled         true;
+    includeMixture  true;
+    diagnostics     false;
+    phases          ( bubbleGas headspaceGas liquid );
+    defaultAlphaCutoff 1e-10;
     alphaCutoff
     {
         bubbleGas       1e-10;
-        headspaceGas    1e-2;
+        headspaceGas    0.001;
         liquid          1e-10;
     }
 }
+
+
+// ************************************************************************* //
