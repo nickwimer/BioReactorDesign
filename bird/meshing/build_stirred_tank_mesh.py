@@ -167,6 +167,7 @@ def main():
                 "-case",
                 case,
                 "-overwrite",
+                "-noFields",
                 "-perfect",
                 master,
                 slave,
