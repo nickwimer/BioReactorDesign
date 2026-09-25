@@ -26,12 +26,16 @@ if (!liquidPtr)
 phaseModel& liquid = *liquidPtr;
 const volScalarField& alphaLiquid = liquid;
 const surfaceScalarField& alphaPhiLiquid = liquid.alphaPhi();
+const dimensionedScalar& residualAlpha = liquid.residualAlpha();
 
 fvScalarMatrix HcellEqn
 (
     fvm::ddt(alphaLiquid, Hcell)
   + fvm::div(alphaPhiLiquid, Hcell)
   - fvm::laplacian(alphaLiquid*DHcell, Hcell)
+ ==
+  - fvm::ddt(residualAlpha, Hcell)
+  + fvc::ddt(residualAlpha, Hcell)
 );
 
 HcellEqn.relax();
