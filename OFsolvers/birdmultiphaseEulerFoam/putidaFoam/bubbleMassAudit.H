@@ -23,6 +23,12 @@
     const volScalarField& auditDep = auditDepTmp();
     const PtrList<volScalarField> auditActualSources(fluid.dmdts());
 
+    const tmp<volScalarField> auditUnorderedDepTmp
+    (
+        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))
+    );
+    const volScalarField& auditUnorderedDep = auditUnorderedDepTmp();
+
     const tmp<volScalarField> auditO2Tmp
     (
         fluid.dmdtf(phasePairKey("bubbleGas", "liquid"))
@@ -31,7 +37,11 @@
 
     scalar auditBubbleMass = 0;
     scalar auditDepositionLoss = 0;
+    scalar auditUnorderedDepLoss = 0;
+    scalar auditBubblePhaseSource = 0;
     scalar auditDissolutionLoss = 0;
+    const bool auditHasBubbleSource =
+        auditActualSources.set(auditBubble.index());
 
     forAll(auditV, celli)
     {
@@ -40,11 +50,20 @@
 
         // The signed pair source is negative for bubbleGas mass loss.
         auditDepositionLoss -= auditDep[celli]*auditV[celli];
+        auditUnorderedDepLoss -=
+            auditUnorderedDep[celli]*auditV[celli];
+        if (auditHasBubbleSource)
+        {
+            auditBubblePhaseSource +=
+                auditActualSources[auditBubble.index()][celli]*auditV[celli];
+        }
         auditDissolutionLoss -= auditO2[celli]*auditV[celli];
     }
 
     reduce(auditBubbleMass, sumOp<scalar>());
     reduce(auditDepositionLoss, sumOp<scalar>());
+    reduce(auditUnorderedDepLoss, sumOp<scalar>());
+    reduce(auditBubblePhaseSource, sumOp<scalar>());
     reduce(auditDissolutionLoss, sumOp<scalar>());
 
     // Re-evaluate the fvModels source to the bubbleGas density equation.
@@ -160,6 +179,9 @@
             << " inventory_kg=" << auditBubbleMass
             << " injection_kg_s=" << auditInjection
             << " depositionLoss_kg_s=" << auditDepositionLoss
+            << " unorderedDepLoss_kg_s=" << auditUnorderedDepLoss
+            << " assembledBubbleDmdt_kg_s=" << auditBubblePhaseSource
+            << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
             << " oxygenDissolutionLoss_kg_s=" << auditDissolutionLoss
             << " bubbleBoundaryOut_kg_s=" << auditBubbleBoundaryOut
             << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut
