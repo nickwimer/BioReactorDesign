@@ -124,6 +124,22 @@ This links already built shared-library header trees only; it does not
 modify the production case. Any subsequent C++ build errors should be
 examined independently rather than ignored.
 
+### Ordered deposition key fix (2026-10-29)
+
+The SC1 deposition model is keyed by the ordered pair
+`(bubbleGas in headspaceGas)`. The phase-pair equality operator
+distinguishes ordered `in` from unordered `and` keys.
+An earlier draft used the unordered
+`phasePairKey("bubbleGas", "headspaceGas")` in the diagnostic;
+that lookup would omit the deposition model.
+The corrected diagnostic now uses
+`phasePairKey("bubbleGas", "headspaceGas", true)`.
+
+Existing scratch copies and binaries made before this fix require the
+**copied** `bubbleMassAudit.H` to be updated and `wmake` rerun.
+Do not modify the production solver or merge the draft PR before
+checking the mass-budget output.
+
 ## 2. Build the diagnostic executable on Kestrel
 
 This branch changes `putidaFoam.C` only to include
