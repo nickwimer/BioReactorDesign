@@ -41,6 +41,59 @@ done
 For legacy EMM and MAX-OUR SC1, substitute `U.gas` and `alpha.gas`.
 Take care that headspace and bubbleGas are distinct phases only in the new case.
 
+## 1a. Observed MEML outlet velocity flux at t=25–30 s
+
+OpenFOAM `surfaceFieldValue` on the `outlet` patch reported the following
+**phase velocity** fluxes, with units m^3/s. These are **not** weighted by
+phase fraction or gas density, and **must not** be interpreted as true phase
+mass flow:
+
+| t (s) | headspace phi out | headspace phi in | headspace phi net |
+|---|---:|---:|---:|
+| 25 | 1.00346 | 0.99617 | 0.00730 |
+| 27.5 | 0.81044 | 0.80429 | 0.00615 |
+| 30 | 0.92693 | 0.91964 | 0.00729 |
+
+The corresponding `phi.bubbleGas` net at 30 s was +17.05 m^3/s but
+`alpha.bubbleGas` at the top outlet is nearly zero. Therefore `phi.bubbleGas`
+cannot be used as a physical bubble-flow balance. The audit below instead
+uses `alphaRhoPhi` for the signed mass flow and separates inflow from outflow.
+
+These results expose substantial simultaneous headspace inflow and outflow,
+not necessarily an incorrect pressure boundary. The saved MEML, EMM, and
+MAX-OUR SC1 outlet `p_rgh` conditions all use `prghPressure` with
+`p=101325` Pa, while MEML `alpha.liquid` uses `zeroGradient` at the
+outlet compared with `inletOutlet` (zero backflow liquid) in the historical
+two-phase cases.
+
+## 1b. Building the cloned solver with local includes
+
+The local RHEL9 `putidaFoam/Make/options` references `../include`,
+`../phaseSystems/lnInclude`, `../interfacialModels/lnInclude` and
+`../interfacialCompositionModels/lnInclude`. The initial preparation
+script copied only `putidaFoam`, causing
+`fatal error: phaseSystem.H: No such file or directory`.
+The preparation script now symlinks these existing source-dependency trees
+into scratch; the already prepared case can be repaired with:
+
+```bash
+SRCROOT="$HOME/OpenFOAM9_RHEL9/BiRD/birdmultiphaseEulerFoam"
+DEST=/scratch/nwimer/sc1_bubble_audit_20261029
+for d in include phaseSystems interfacialModels \
+         interfacialCompositionModels multiphaseCompressibleMomentumTransportModels; do
+    if [[ -d "$SRCROOT/$d" && ! -e "$DEST/$d" && ! -L "$DEST/$d" ]]; then
+        ln -s "$SRCROOT/$d" "$DEST/$d"
+    fi
+done
+test -f "$DEST/phaseSystems/lnInclude/phaseSystem.H"
+test -f "$DEST/include/createRDeltaTf.H"
+(cd "$DEST/solver" && wmake > build.bubbleAudit.log 2>&1)
+```
+
+This links already built shared-library header trees only; it does not
+modify the production case. Any subsequent C++ build errors should be
+examined independently rather than ignored.
+
 ## 2. Build the diagnostic executable on Kestrel
 
 This branch changes `putidaFoam.C` only to include
