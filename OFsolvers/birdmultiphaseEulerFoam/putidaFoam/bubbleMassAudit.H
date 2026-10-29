@@ -175,6 +175,7 @@
     const scalar auditTime = runTime.value();
     scalar auditDMdt = 0;
     scalar auditClosure = 0;
+    scalar auditAssembledClosure = 0;
 
     if (auditHavePrevious && auditTime > auditPreviousTime)
     {
@@ -189,6 +190,15 @@
                 auditInjection
               - auditDepositionLoss
               - auditDissolutionLoss
+              - auditBubbleBoundaryOut
+            );
+        // This uses the actual sum of all the phase-system's
+        // interphase transfer terms, bypassing pair-key lookup errors.
+        auditAssembledClosure =
+            auditDMdt
+          - (
+                auditInjection
+              + auditBubblePhaseSource
               - auditBubbleBoundaryOut
             );
     }
@@ -215,7 +225,9 @@
         if (auditHavePrevious && auditTime > auditPreviousTime)
         {
             Info<< " inventoryRate_kg_s=" << auditDMdt
-                << " endpointClosure_kg_s=" << auditClosure;
+                << " endpointClosure_kg_s=" << auditClosure
+                << " assembledEndpointClosure_kg_s="
+                << auditAssembledClosure;
         }
         else
         {
