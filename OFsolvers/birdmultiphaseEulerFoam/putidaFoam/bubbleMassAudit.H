@@ -18,7 +18,7 @@
 
     const tmp<volScalarField> auditDepTmp
     (
-        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))
+        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas", true))
     );
     const volScalarField& auditDep = auditDepTmp();
 
