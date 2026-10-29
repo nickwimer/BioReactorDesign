@@ -202,6 +202,40 @@ mass-conservation bug. In particular, the snapshot-derived **32 L/s**
 deposition is a density-normalized rate, whereas the audit uses kg/s.
 These must not be compared as though they have the same units.
 
+## 3a. Choosing a chemistry restart after model corrections
+
+The diagnostic-only branch **does not change physics**, so it may continue
+from the saved 30 s reacting state. Do not confuse this with a validation
+restart following changes to pressure/outlet BCs, deposition efficiency,
+bubble transport, sparger, initial headspace or mesh.
+
+- For chemistry-only changes, start from a **validated** non-reacting
+  9.9 s state with all required reacting fields initialized consistently.
+- For any changed hydrodynamics, start from 0 s for a defensible new
+  non-reacting spin-up; alternatively use a 9.9 s **non-reacting warm
+  start** with the new physics and demonstrate a converged interface,
+  liquid volume, bubble inventory, oxygen transfer, and outlet mass flow
+  before turning on biology. A 0.1 s re-equilibration is not sufficient
+  evidence.
+- The original reactor biology model deliberately advances **four hours
+  of biology per event** and holds OUR between CFD events; preserve that
+  intended cadence when diagnosing hydrodynamics.
+
+**Important code-specific scheduling hazard:** In `putidaFoam.C`, the
+initial `prvs_react_update_time` is reconstructed from
+`floor(startTime)/fluid_update_time`, and `bioReact.H` is entered
+only when `time - prvs_react_update_time >= fluid_update_time`. The
+`fluid_update_time` value is read at startup in `createFields.H`.
+Therefore starting at 9.9 s with `fluid_update_time = 200` **does
+not trigger biology at 10 s**; the first trigger would be 200 s.
+To trigger once at 10 s and then freeze OUR, the previously staged
+setup must restart *before* 10 s with the initial interval of 10 s,
+save a checkpoint immediately after the first event (e.g. 10.1 s),
+then restart with the long hold interval (e.g. 200 s). Do not run the
+first stage long enough to trigger another biology event at 20 s.
+Confirm the actual Kestrel `microbeUpdateProperties` and log rather
+than relying on historical repository templates.
+
 ## 4. Safety and validation
 
 - Retain the original 30-second checkpoint and all production case files.
