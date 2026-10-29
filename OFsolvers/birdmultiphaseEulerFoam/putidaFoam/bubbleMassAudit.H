@@ -11,6 +11,7 @@
     const phaseModel& auditHeadspace = phases["headspaceGas"];
     const phaseModel& auditLiquid = phases["liquid"];
     const volScalarField& auditAlphaB = auditBubble;
+    const volScalarField& auditAlphaH = auditHeadspace;
 
     const tmp<volScalarField> auditRhoBTmp = auditBubble.rho();
     const volScalarField& auditRhoB = auditRhoBTmp();
@@ -29,6 +30,15 @@
     );
     const volScalarField& auditUnorderedDep = auditUnorderedDepTmp();
 
+    // Independent evaluation of the configured SC1 deposition law
+    // (efficiency = 1); this is NOT the solver's assembled source.
+    const tmp<volScalarField> auditHeadDiameterTmp = auditHeadspace.d();
+    const volScalarField& auditHeadDiameter = auditHeadDiameterTmp();
+    const tmp<volVectorField> auditBubbleUTmp = auditBubble.U();
+    const tmp<volVectorField> auditHeadUTmp = auditHeadspace.U();
+    const volVectorField& auditBubbleVel = auditBubbleUTmp();
+    const volVectorField& auditHeadVel = auditHeadUTmp();
+
     const tmp<volScalarField> auditO2Tmp
     (
         fluid.dmdtf(phasePairKey("bubbleGas", "liquid"))
@@ -39,6 +49,7 @@
     scalar auditDepositionLoss = 0;
     scalar auditUnorderedDepLoss = 0;
     scalar auditBubblePhaseSource = 0;
+    scalar auditCalculatedDepLoss = 0;
     scalar auditDissolutionLoss = 0;
     const bool auditHasBubbleSource =
         auditActualSources.set(auditBubble.index());
@@ -57,6 +68,15 @@
             auditBubblePhaseSource +=
                 auditActualSources[auditBubble.index()][celli]*auditV[celli];
         }
+        if (auditHeadDiameter[celli] > SMALL)
+        {
+            auditCalculatedDepLoss +=
+                1.5*auditRhoB[celli]*auditAlphaB[celli]
+               *auditAlphaH[celli]
+               *mag(auditBubbleVel[celli] - auditHeadVel[celli])
+               /auditHeadDiameter[celli]*auditV[celli];
+        }
+
         auditDissolutionLoss -= auditO2[celli]*auditV[celli];
     }
 
@@ -64,6 +84,7 @@
     reduce(auditDepositionLoss, sumOp<scalar>());
     reduce(auditUnorderedDepLoss, sumOp<scalar>());
     reduce(auditBubblePhaseSource, sumOp<scalar>());
+    reduce(auditCalculatedDepLoss, sumOp<scalar>());
     reduce(auditDissolutionLoss, sumOp<scalar>());
 
     // Re-evaluate the fvModels source to the bubbleGas density equation.
@@ -182,6 +203,7 @@
             << " unorderedDepLoss_kg_s=" << auditUnorderedDepLoss
             << " assembledBubbleDmdt_kg_s=" << auditBubblePhaseSource
             << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
+            << " correlationDepLoss_kg_s=" << auditCalculatedDepLoss
             << " oxygenDissolutionLoss_kg_s=" << auditDissolutionLoss
             << " bubbleBoundaryOut_kg_s=" << auditBubbleBoundaryOut
             << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut
