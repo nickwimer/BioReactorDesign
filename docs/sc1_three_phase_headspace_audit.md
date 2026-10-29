@@ -168,6 +168,49 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2a. First diagnostic runtime result and follow-up
+
+A 52-rank RHEL9 diagnostic-only continuation from 30.0 to 30.3 s
+completed successfully. Its first audit showed:
+- Bubble mass inventory approximately 0.0093 kg.
+- Total injected bubble mass 0.00874277 kg/s.
+- O2 dissolution mass loss approximately 0.000086 kg/s.
+- Net bubble outflow at the vent negligible (less than 2e-9 kg/s).
+- Net headspace gas outflow 0.0080–0.0088 kg/s.
+- Gross inward headspace mass flow approximately 1.07–1.12 kg/s,
+  with comparably large gross outward flow.
+- Outlet static pressure exactly 101325 Pa; liquid and bubble
+  area fractions at the vent very small, liquid vent mass flux zero.
+- The original **ordered pair diagnostic** reported a zero deposition
+  loss, leaving an approximately 0.008–0.010 kg/s endpoint residual.
+
+**Do not equate zero in this diagnostic with zero applied deposition.**
+The phase-pair lookup, actual phase-system transfer-source assembly and
+deposition correlation must be cross-checked before interpreting
+conservation. In particular the instantaneous correlation estimate
+(roughly 32 L/s density-normalized) is not a mass-flow budget.
+
+The updated header now additionally emits:
+- `unorderedDepLoss_kg_s`: the same transfer query with an unordered
+  phase pair.
+- `assembledBubbleDmdt_kg_s`: complete phase-system interphase mass
+  source for bubbleGas from `fluid.dmdts()`. Negative values indicate
+  net interphase mass removal from bubbleGas.
+- `assembledBubbleDmdtPresent`: whether that field exists.
+- `correlationDepLoss_kg_s`: independent density-based evaluation of
+  SC1's deposition correlation using saved velocity and phase fields;
+  **assumes efficiency 1**.
+- `assembledEndpointClosure_kg_s`: inventory-rate residual using the
+  summed phase-system source instead of the pair-specific O2 and
+  deposition fields.
+
+To apply the update, fast-forward the diagnostic Git checkout, copy
+the updated audit header to the **already copied** scratch solver,
+recompile the separate executable, and extend the **scratch** case
+end time to 30.6 s. Never alter the production checkpoints or the
+original RHEL9 executable; never paste top-level `exit` or shell-fatal
+settings into an interactive Kestrel allocation.
+
 ## 3. Recorded quantities
 
 `BUBBLE_MASS_AUDIT` contains:
