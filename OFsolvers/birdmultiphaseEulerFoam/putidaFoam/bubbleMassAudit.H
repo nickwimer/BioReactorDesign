@@ -21,6 +21,7 @@
         fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas", true))
     );
     const volScalarField& auditDep = auditDepTmp();
+    const PtrList<volScalarField> auditActualSources(fluid.dmdts());
 
     const tmp<volScalarField> auditO2Tmp
     (
