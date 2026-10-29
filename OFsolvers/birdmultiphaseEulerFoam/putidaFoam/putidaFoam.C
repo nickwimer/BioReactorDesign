@@ -279,6 +279,22 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Optional diagnostic: budget the bubbleGas phase at saved time steps.
+        // Disabled by default; enable PIMPLE/bubbleMassAudit in fvSolution
+        // only in a cloned diagnostic case, not the reference run.
+        if
+        (
+            pimple.dict().lookupOrDefault<Switch>
+            (
+                "bubbleMassAudit",
+                false
+            )
+         && runTime.writeTime()
+        )
+        {
+            #include "bubbleMassAudit.H"
+        }
+
         runTime.write();
 
         Info<< "ExecutionTime = "
