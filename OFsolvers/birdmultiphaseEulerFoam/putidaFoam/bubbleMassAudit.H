@@ -9,6 +9,7 @@
 {
     const phaseModel& auditBubble = phases["bubbleGas"];
     const phaseModel& auditHeadspace = phases["headspaceGas"];
+    const phaseModel& auditLiquid = phases["liquid"];
     const volScalarField& auditAlphaB = auditBubble;
 
     const tmp<volScalarField> auditRhoBTmp = auditBubble.rho();
@@ -78,8 +79,18 @@
     );
     const surfaceScalarField& auditHeadFlux = auditHeadFluxTmp();
 
+    const tmp<surfaceScalarField> auditLiquidFluxTmp
+    (
+        auditLiquid.alphaRhoPhi()
+    );
+    const surfaceScalarField& auditLiquidFlux = auditLiquidFluxTmp();
+
     scalar auditBubbleBoundaryOut = 0;
     scalar auditHeadBoundaryOut = 0;
+    scalar auditLiquidBoundaryOut = 0;
+    scalar auditBubbleBoundaryIn = 0;
+    scalar auditHeadBoundaryIn = 0;
+    scalar auditLiquidBoundaryIn = 0;
 
     forAll(auditBubbleFlux.boundaryField(), patchi)
     {
@@ -87,6 +98,8 @@
             auditBubbleFlux.boundaryField()[patchi];
         const fvsPatchScalarField& headPatch =
             auditHeadFlux.boundaryField()[patchi];
+        const fvsPatchScalarField& liquidPatch =
+            auditLiquidFlux.boundaryField()[patchi];
 
         if (bubblePatch.coupled())
         {
@@ -97,11 +110,20 @@
         {
             auditBubbleBoundaryOut += bubblePatch[facei];
             auditHeadBoundaryOut += headPatch[facei];
+            auditLiquidBoundaryOut += liquidPatch[facei];
+
+            auditBubbleBoundaryIn += min(bubblePatch[facei], scalar(0));
+            auditHeadBoundaryIn += min(headPatch[facei], scalar(0));
+            auditLiquidBoundaryIn += min(liquidPatch[facei], scalar(0));
         }
     }
 
     reduce(auditBubbleBoundaryOut, sumOp<scalar>());
     reduce(auditHeadBoundaryOut, sumOp<scalar>());
+    reduce(auditLiquidBoundaryOut, sumOp<scalar>());
+    reduce(auditBubbleBoundaryIn, sumOp<scalar>());
+    reduce(auditHeadBoundaryIn, sumOp<scalar>());
+    reduce(auditLiquidBoundaryIn, sumOp<scalar>());
 
     // Preserve a history across included calls, so the inventory rate
     // is the finite difference between consecutive audit write times.
@@ -139,7 +161,11 @@
             << " depositionLoss_kg_s=" << auditDepositionLoss
             << " oxygenDissolutionLoss_kg_s=" << auditDissolutionLoss
             << " bubbleBoundaryOut_kg_s=" << auditBubbleBoundaryOut
-            << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut;
+            << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut
+            << " liquidBoundaryOut_kg_s=" << auditLiquidBoundaryOut
+            << " bubbleBoundaryIn_kg_s=" << auditBubbleBoundaryIn
+            << " headspaceBoundaryIn_kg_s=" << auditHeadBoundaryIn
+            << " liquidBoundaryIn_kg_s=" << auditLiquidBoundaryIn;
 
         if (auditHavePrevious && auditTime > auditPreviousTime)
         {
@@ -159,6 +185,8 @@
     // assuming that the top pressure patch is called "outlet".
     const volVectorField& auditHeadU =
         mesh.lookupObject<volVectorField>("U.headspaceGas");
+    const volVectorField& auditBubbleU =
+        mesh.lookupObject<volVectorField>("U.bubbleGas");
 
     forAll(mesh.boundary(), patchi)
     {
@@ -180,12 +208,28 @@
             auditBubbleFlux.boundaryField()[patchi];
         const fvsPatchScalarField& auditHFluxPatch =
             auditHeadFlux.boundaryField()[patchi];
+        const fvsPatchScalarField& auditLFluxPatch =
+            auditLiquidFlux.boundaryField()[patchi];
+
+        const fvPatchScalarField& auditLAlphaPatch =
+            auditLiquid.boundaryField()[patchi];
+        const fvPatchScalarField& auditBAlphaPatch =
+            auditBubble.boundaryField()[patchi];
+        const fvPatchScalarField& auditHAlphaPatch =
+            auditHeadspace.boundaryField()[patchi];
 
         scalar auditPatchArea = 0;
         scalar auditPressureAreaSum = 0;
         scalar auditPrghAreaSum = 0;
         scalar auditPatchBubbleOut = 0;
         scalar auditPatchHeadOut = 0;
+        scalar auditPatchLiquidOut = 0;
+        scalar auditPatchBubbleIn = 0;
+        scalar auditPatchHeadIn = 0;
+        scalar auditPatchLiquidIn = 0;
+        scalar auditPatchLiquidAlphaArea = 0;
+        scalar auditPatchBubbleAlphaArea = 0;
+        scalar auditPatchHeadAlphaArea = 0;
 
         forAll(auditAreas, facei)
         {
@@ -196,6 +240,16 @@
                 auditAreas[facei]*auditPrghPatch[facei];
             auditPatchBubbleOut += auditBFluxPatch[facei];
             auditPatchHeadOut += auditHFluxPatch[facei];
+            auditPatchLiquidOut += auditLFluxPatch[facei];
+            auditPatchBubbleIn += min(auditBFluxPatch[facei], scalar(0));
+            auditPatchHeadIn += min(auditHFluxPatch[facei], scalar(0));
+            auditPatchLiquidIn += min(auditLFluxPatch[facei], scalar(0));
+            auditPatchLiquidAlphaArea +=
+                auditAreas[facei]*auditLAlphaPatch[facei];
+            auditPatchBubbleAlphaArea +=
+                auditAreas[facei]*auditBAlphaPatch[facei];
+            auditPatchHeadAlphaArea +=
+                auditAreas[facei]*auditHAlphaPatch[facei];
         }
 
         reduce(auditPatchArea, sumOp<scalar>());
@@ -203,6 +257,13 @@
         reduce(auditPrghAreaSum, sumOp<scalar>());
         reduce(auditPatchBubbleOut, sumOp<scalar>());
         reduce(auditPatchHeadOut, sumOp<scalar>());
+        reduce(auditPatchLiquidOut, sumOp<scalar>());
+        reduce(auditPatchBubbleIn, sumOp<scalar>());
+        reduce(auditPatchHeadIn, sumOp<scalar>());
+        reduce(auditPatchLiquidIn, sumOp<scalar>());
+        reduce(auditPatchLiquidAlphaArea, sumOp<scalar>());
+        reduce(auditPatchBubbleAlphaArea, sumOp<scalar>());
+        reduce(auditPatchHeadAlphaArea, sumOp<scalar>());
 
         if (Pstream::master() && auditPatchArea > SMALL)
         {
@@ -212,13 +273,28 @@
                 << " pRghBC=" << auditPrghPatch.type()
                 << " headspaceUBC="
                 << auditHeadU.boundaryField()[patchi].type()
+                << " bubbleUBC="
+                << auditBubbleU.boundaryField()[patchi].type()
+                << " liquidAlphaBC=" << auditLAlphaPatch.type()
+                << " bubbleAlphaBC=" << auditBAlphaPatch.type()
+                << " headspaceAlphaBC=" << auditHAlphaPatch.type()
                 << " area_m2=" << auditPatchArea
                 << " meanP_Pa="
                 << auditPressureAreaSum/auditPatchArea
                 << " meanPrgh_Pa="
                 << auditPrghAreaSum/auditPatchArea
+                << " meanAlphaLiquid="
+                << auditPatchLiquidAlphaArea/auditPatchArea
+                << " meanAlphaBubble="
+                << auditPatchBubbleAlphaArea/auditPatchArea
+                << " meanAlphaHeadspace="
+                << auditPatchHeadAlphaArea/auditPatchArea
                 << " bubbleOut_kg_s=" << auditPatchBubbleOut
                 << " headspaceOut_kg_s=" << auditPatchHeadOut
+                << " liquidOut_kg_s=" << auditPatchLiquidOut
+                << " bubbleIn_kg_s=" << auditPatchBubbleIn
+                << " headspaceIn_kg_s=" << auditPatchHeadIn
+                << " liquidIn_kg_s=" << auditPatchLiquidIn
                 << endl;
         }
     }
