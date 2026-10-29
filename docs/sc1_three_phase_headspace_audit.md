@@ -1,5 +1,35 @@
 # SC1 three-phase headspace pressure and bubble-mass audit
 
+## Interactive Kestrel allocation safety
+
+**Never paste a top-level `exit`, `logout`, `exec`, `set -e` or
+`set -euo pipefail` into the interactive `salloc` shell.** A top-level
+`exit` in the user command examples previously relinquished an allocation.
+Use non-fatal `if` / `else` checks and print warnings instead. An executable
+script invoked via `bash script.sh` is a separate process, but copy-paste
+interactive commands must not contain exit-on-failure logic.
+
+Kestrel canonicalizes `/scratch/nwimer` to `/kfs3/scratch/nwimer`.
+To verify cloned files, canonicalize **both** the run directory and each
+checked file before comparing prefixes:
+
+```bash
+RUN=/scratch/nwimer/sc1_bubble_audit_20261029/run
+RUN_REAL=$(readlink -f "$RUN")
+for f in system/controlDict system/fvSolution constant/phaseProperties \
+         processors52/30/alpha.bubbleGas; do
+    p=$(readlink -f "$RUN/$f")
+    if [[ -f "$RUN/$f" && "$p" == "$RUN_REAL/"* ]]; then
+        printf 'OK: %s\n' "$f"
+    else
+        printf 'CHECK: %s resolves to %s\n' "$f" "$p"
+    fi
+done
+```
+
+No `exit` commands or fatal shell settings appear in this interactive
+preflight.
+
 **Scope:** Diagnostic-only continuation of the MEML SC1 case using the existing
 `putidaFoam` source with `PIMPLE/bubbleMassAudit true`. This is **not** a
 change to deposition, oxygen uptake, sparger, phase-fraction transport or pressure
