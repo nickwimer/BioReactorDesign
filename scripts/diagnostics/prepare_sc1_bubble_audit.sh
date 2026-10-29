@@ -57,6 +57,35 @@ cp -a "$CASE/system" "$CASE/constant" "$DEST/run/"
 cp -a "$CASE/processors52/constant" "$CASE/processors52/30" "$DEST/run/processors52/"
 cp "$HEADER" "$DEST/solver/bubbleMassAudit.H"
 
+# OpenFOAM's Make/options uses paths relative to the original solver:
+# ../include, ../phaseSystems/lnInclude, ../interfacialModels/lnInclude, ...
+# Link those *existing* dependency trees into the scratch layout; never
+# regenerate lnInclude or rebuild the shared libraries in the source tree.
+SRCROOT=$(dirname "$SRC")
+for sibling in \
+    include \
+    phaseSystems \
+    interfacialModels \
+    interfacialCompositionModels \
+    multiphaseCompressibleMomentumTransportModels
+do
+    if [[ -d "$SRCROOT/$sibling" ]]; then
+        ln -s "$SRCROOT/$sibling" "$DEST/$sibling"
+    fi
+done
+
+for header in \
+    include/createRDeltaTf.H \
+    include/setRDeltaTf.H \
+    phaseSystems/lnInclude/phaseSystem.H
+do
+    if [[ ! -f "$DEST/$header" ]]; then
+        echo "Required OpenFOAM header missing: $DEST/$header" >&2
+        echo "Check the local RHEL9 source tree's lnInclude links." >&2
+        exit 2
+    fi
+done
+
 for a in scripted_model_biomass_h_muconate.pt \
          scaler_x_mean.txt scaler_x_scale.txt scaler_y_mean.txt scaler_y_scale.txt \
          tri_points.txt tri_simplices.txt
