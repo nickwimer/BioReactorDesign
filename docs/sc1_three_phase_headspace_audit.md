@@ -168,6 +168,48 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2b. Results of revised 30.0–30.6 s audit
+
+RHEL9 run completed with status 0. The configured deposition model
+`(bubbleGas in headspaceGas)` was selected, but the **unordered**
+`fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))` returned the
+active deposited source while the **ordered** query returned zero.
+The aggregate `fluid.dmdts()` bubble source agreed with the sum of
+deposition and O2 dissolution. The diagnostic has therefore been
+corrected to label the active unordered lookup as `depositionLoss_kg_s`
+and retain `orderedDepLoss_kg_s` as a control.
+
+Representative observed values (kg/s):
+
+| Time | Bubble injection | Phase-system deposition loss | Bubble O2 dissolution loss | Correlation evaluated at write-time |
+|---|---:|---:|---:|---:|
+| 30.1 | 0.00874277 | 0.00764868 | 0.00008521 | 0.0342497 |
+| 30.3 | 0.00874277 | 0.00937106 | 0.0000868895 | 0.0393078 |
+| 30.5 | 0.00874277 | 0.00650396 | 0.0000890494 | 0.0280942 |
+| 30.6 | 0.00874277 | 0.0110743 | 0.0000901002 | 0.0388874 |
+
+The outlet carried essentially zero bubble mass and no liquid flux;
+net headspace outflow was of the same order as sparger input. However,
+gross headspace outflow and inflow through the open outlet each exceeded
+1 kg/s, despite net headspace outflow of ~0.008 kg/s.
+
+The stage-sensitive issue is that the independently recomputed
+deposition correlation is approximately **3.5–4.5 times larger** than
+the phase-system deposited source. This could reflect the correlation
+being evaluated after the final pressure/velocity correction while
+the saved phase transfer field was generated earlier in PIMPLE.
+It could also reflect a local RHEL9 deposition model differing from
+the checked-in source. It is not yet justified to claim a physical
+conversion coefficient defect or perfect mass conservation.
+
+A non-mutating `bubbleMassTransferStageAudit.H` is now optionally
+included immediately after each `fluid.correct()` call. Its
+`BUBBLE_STAGE_AUDIT` output compares both rates at the same
+solver state. In an existing scratch-copy solver, copy this new header,
+insert the guarded include after the two `fluid.correct()` calls,
+and recompile the separate audit executable. No new non-reacting
+or reacting baseline simulations are needed for this audit.
+
 ## 2a. First diagnostic runtime result and follow-up
 
 A 52-rank RHEL9 diagnostic-only continuation from 30.0 to 30.3 s
