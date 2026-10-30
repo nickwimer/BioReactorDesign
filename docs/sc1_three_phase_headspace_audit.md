@@ -168,6 +168,37 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2c. Same-PIMPLE-stage diagnostic at 30.7–30.9 s
+
+The scratch audit executable was rebuilt with
+`bubbleMassTransferStageAudit.H` and ran successfully to 30.9 s,
+producing two nearly identical PIMPLE-stage measurements per output time.
+
+| t (s) | phase-system deposition (kg/s) | same-state formula (kg/s) | formula / phase-system |
+|---|---:|---:|---:|
+| 30.7 | 0.0122922 | 0.0408206 | 3.32 |
+| 30.8 | 0.00938401 | 0.0367572 | 3.92 |
+| 30.9 | 0.0103014 | 0.0398872 | 3.87 |
+
+Both PIMPLE stages agree closely at a given time, so the originally
+hypothesized **post-pressure-correction evaluation-time mismatch
+cannot explain the 3–4x discrepancy**.
+
+The baseline GitHub `deposition.C` computes
+`1.5*sign*efficiency_*droplet.rho()*droplet*surface/surface.d()
+ *mag(droplet.U()-surface.U())`.
+The stage-audit independent calculation is algebraically the same for
+the SC1 configuration with efficiency 1. The next diagnostic should
+therefore inspect the **actual** RHEL9 local
+`interfacialModels/phaseTransferModels/deposition/deposition.C`
+and the loaded `libbirdeulerianInterfacialModels.so`. A locally modified
+or stale library is possible; do not assert that until source and
+linker output are compared.
+
+Use read-only `diff -u`, `sed`, `stat` and `ldd` commands.
+**Do not rebuild, reconfigure, or rerun CFD until inspecting this.**
+This is a diagnostic-only branch; no physics changes have been made.
+
 ## 2b. Results of revised 30.0–30.6 s audit
 
 RHEL9 run completed with status 0. The configured deposition model
