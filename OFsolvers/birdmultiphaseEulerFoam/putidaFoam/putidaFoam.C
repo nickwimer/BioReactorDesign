@@ -165,6 +165,19 @@ int main(int argc, char *argv[])
                 {
                     fluid.solve(rAUs, rAUfs);
                     fluid.correct();
+                    // Sample deposition at the same PIMPLE state as fluid.correct().
+                    if
+                    (
+                        pimple.dict().lookupOrDefault<Switch>
+                        (
+                            "bubbleMassAudit",
+                            false
+                        )
+                     && runTime.writeTime()
+                    )
+                    {
+                        #include "bubbleMassTransferStageAudit.H"
+                    }
                     fluid.correctContinuityError();
 
                     #include "YEqns.H"
@@ -238,6 +251,19 @@ int main(int argc, char *argv[])
 
                 fluid.solve(rAUs, rAUfs);
                 fluid.correct();
+                // Sample deposition at the same PIMPLE state as fluid.correct().
+                if
+                (
+                    pimple.dict().lookupOrDefault<Switch>
+                    (
+                        "bubbleMassAudit",
+                        false
+                    )
+                 && runTime.writeTime()
+                )
+                {
+                    #include "bubbleMassTransferStageAudit.H"
+                }
                 fluid.correctContinuityError();
 
                 if (pimple.thermophysics())
@@ -277,6 +303,22 @@ int main(int argc, char *argv[])
                     fluid.correctTurbulence();
                 }
             }
+        }
+
+        // Optional diagnostic: budget the bubbleGas phase at saved time steps.
+        // Disabled by default; enable PIMPLE/bubbleMassAudit in fvSolution
+        // only in a cloned diagnostic case, not the reference run.
+        if
+        (
+            pimple.dict().lookupOrDefault<Switch>
+            (
+                "bubbleMassAudit",
+                false
+            )
+         && runTime.writeTime()
+        )
+        {
+            #include "bubbleMassAudit.H"
         }
 
         runTime.write();

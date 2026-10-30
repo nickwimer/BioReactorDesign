@@ -1,0 +1,370 @@
+# SC1 three-phase headspace pressure and bubble-mass audit
+
+## Interactive Kestrel allocation safety
+
+**Never paste a top-level `exit`, `logout`, `exec`, `set -e` or
+`set -euo pipefail` into the interactive `salloc` shell.** A top-level
+`exit` in the user command examples previously relinquished an allocation.
+Use non-fatal `if` / `else` checks and print warnings instead. An executable
+script invoked via `bash script.sh` is a separate process, but copy-paste
+interactive commands must not contain exit-on-failure logic.
+
+Kestrel canonicalizes `/scratch/nwimer` to `/kfs3/scratch/nwimer`.
+To verify cloned files, canonicalize **both** the run directory and each
+checked file before comparing prefixes:
+
+```bash
+RUN=/scratch/nwimer/sc1_bubble_audit_20261029/run
+RUN_REAL=$(readlink -f "$RUN")
+for f in system/controlDict system/fvSolution constant/phaseProperties \
+         processors52/30/alpha.bubbleGas; do
+    p=$(readlink -f "$RUN/$f")
+    if [[ -f "$RUN/$f" && "$p" == "$RUN_REAL/"* ]]; then
+        printf 'OK: %s\n' "$f"
+    else
+        printf 'CHECK: %s resolves to %s\n' "$f" "$p"
+    fi
+done
+```
+
+No `exit` commands or fatal shell settings appear in this interactive
+preflight.
+
+**Scope:** Diagnostic-only continuation of the MEML SC1 case using the existing
+`putidaFoam` source with `PIMPLE/bubbleMassAudit true`. This is **not** a
+change to deposition, oxygen uptake, sparger, phase-fraction transport or pressure
+boundary conditions.
+
+## 1. Compare the real case boundary conditions before continuing
+
+The production Kestrel cases are not part of this repository. Compare their
+**saved** 30-second patch definitions; do not assume that older templates
+match the simulations. Pay particular attention to the top outlet/vent patch:
+
+- `p_rgh`: `prghPressure`, `fixedFluxPressure`, `totalPressure`,
+  `fixedValue` and their values, as applicable;
+- `p`: physical static-pressure boundary (generally `calculated`
+  with the `p_rgh` pressure solution);
+- `U.headspaceGas`, `U.bubbleGas`: outflow and backflow behavior;
+- `alpha.headspaceGas`, `alpha.bubbleGas`, `alpha.liquid`: backflow
+  composition and whether a phase is artificially fixed at the outlet;
+- `O2.headspaceGas`, `O2.bubbleGas`, `O2.liquid` as relevant;
+- pressure reference in `system/fvSolution` and any `pMin`, `pMax`
+  settings.
+
+For OpenFOAM, `p_rgh = p - rho*gh`; a static-pressure outlet must be
+checked in combination with local hydrostatic head, not in isolation.
+Do not confuse an impeller-depressed *physical interface* with a fixed top
+boundary. Also inspect the outlet patch identity in `constant/polyMesh/boundary`.
+
+A minimally invasive way to inspect a reconstructed snapshot:
+
+```bash
+for f in p p_rgh U.headspaceGas U.bubbleGas \
+         alpha.headspaceGas alpha.bubbleGas alpha.liquid; do
+    [ -f "30/$f" ] || continue
+    echo "=== $f"
+    foamDictionary "30/$f" -entry boundaryField -value
+done
+```
+
+For legacy EMM and MAX-OUR SC1, substitute `U.gas` and `alpha.gas`.
+Take care that headspace and bubbleGas are distinct phases only in the new case.
+
+## 1a. Observed MEML outlet velocity flux at t=25–30 s
+
+OpenFOAM `surfaceFieldValue` on the `outlet` patch reported the following
+**phase velocity** fluxes, with units m^3/s. These are **not** weighted by
+phase fraction or gas density, and **must not** be interpreted as true phase
+mass flow:
+
+| t (s) | headspace phi out | headspace phi in | headspace phi net |
+|---|---:|---:|---:|
+| 25 | 1.00346 | 0.99617 | 0.00730 |
+| 27.5 | 0.81044 | 0.80429 | 0.00615 |
+| 30 | 0.92693 | 0.91964 | 0.00729 |
+
+The corresponding `phi.bubbleGas` net at 30 s was +17.05 m^3/s but
+`alpha.bubbleGas` at the top outlet is nearly zero. Therefore `phi.bubbleGas`
+cannot be used as a physical bubble-flow balance. The audit below instead
+uses `alphaRhoPhi` for the signed mass flow and separates inflow from outflow.
+
+These results expose substantial simultaneous headspace inflow and outflow,
+not necessarily an incorrect pressure boundary. The saved MEML, EMM, and
+MAX-OUR SC1 outlet `p_rgh` conditions all use `prghPressure` with
+`p=101325` Pa, while MEML `alpha.liquid` uses `zeroGradient` at the
+outlet compared with `inletOutlet` (zero backflow liquid) in the historical
+two-phase cases.
+
+## 1b. Building the cloned solver with local includes
+
+The local RHEL9 `putidaFoam/Make/options` references `../include`,
+`../phaseSystems/lnInclude`, `../interfacialModels/lnInclude` and
+`../interfacialCompositionModels/lnInclude`. The initial preparation
+script copied only `putidaFoam`, causing
+`fatal error: phaseSystem.H: No such file or directory`.
+The preparation script now symlinks these existing source-dependency trees
+into scratch; the already prepared case can be repaired with:
+
+```bash
+SRCROOT="$HOME/OpenFOAM9_RHEL9/BiRD/birdmultiphaseEulerFoam"
+DEST=/scratch/nwimer/sc1_bubble_audit_20261029
+for d in include phaseSystems interfacialModels \
+         interfacialCompositionModels multiphaseCompressibleMomentumTransportModels; do
+    if [[ -d "$SRCROOT/$d" && ! -e "$DEST/$d" && ! -L "$DEST/$d" ]]; then
+        ln -s "$SRCROOT/$d" "$DEST/$d"
+    fi
+done
+test -f "$DEST/phaseSystems/lnInclude/phaseSystem.H"
+test -f "$DEST/include/createRDeltaTf.H"
+(cd "$DEST/solver" && wmake > build.bubbleAudit.log 2>&1)
+```
+
+This links already built shared-library header trees only; it does not
+modify the production case. Any subsequent C++ build errors should be
+examined independently rather than ignored.
+
+### Ordered deposition key fix (2026-10-29)
+
+The SC1 deposition model is keyed by the ordered pair
+`(bubbleGas in headspaceGas)`. The phase-pair equality operator
+distinguishes ordered `in` from unordered `and` keys.
+An earlier draft used the unordered
+`phasePairKey("bubbleGas", "headspaceGas")` in the diagnostic;
+that lookup would omit the deposition model.
+The corrected diagnostic now uses
+`phasePairKey("bubbleGas", "headspaceGas", true)`.
+
+Existing scratch copies and binaries made before this fix require the
+**copied** `bubbleMassAudit.H` to be updated and `wmake` rerun.
+Do not modify the production solver or merge the draft PR before
+checking the mass-budget output.
+
+## 2. Build the diagnostic executable on Kestrel
+
+This branch changes `putidaFoam.C` only to include
+`bubbleMassAudit.H` **when explicitly enabled**, at an ordinary
+write time, after the final PIMPLE iteration. Copy the working solver source
+into a separate worktree (or build a dedicated executable); do not overwrite
+the production `putidaFoamMask01` binary.
+
+Suggested configuration in **only the cloned diagnostic case**:
+
+```
+PIMPLE
+{
+    // Preserve existing settings here.
+    bubbleMassAudit true;
+}
+```
+
+Start from the 30-second checkpoint and continue over a short, explicitly
+limited time interval with the same hydrodynamic boundary conditions and
+`fvModels`. Set a sufficiently frequent `writeInterval` so that the
+finite-difference inventory derivative is meaningful.
+
+**Do not infer that this diagnostic compiles against the separate RHEL9
+`putidaFoamMask01` source without building and testing on Kestrel.**
+The GitHub code is the baseline implementation, not proof of the final
+RHEL9 binary's source history.
+
+## 2c. Same-PIMPLE-stage diagnostic at 30.7–30.9 s
+
+The scratch audit executable was rebuilt with
+`bubbleMassTransferStageAudit.H` and ran successfully to 30.9 s,
+producing two nearly identical PIMPLE-stage measurements per output time.
+
+| t (s) | phase-system deposition (kg/s) | same-state formula (kg/s) | formula / phase-system |
+|---|---:|---:|---:|
+| 30.7 | 0.0122922 | 0.0408206 | 3.32 |
+| 30.8 | 0.00938401 | 0.0367572 | 3.92 |
+| 30.9 | 0.0103014 | 0.0398872 | 3.87 |
+
+Both PIMPLE stages agree closely at a given time, so the originally
+hypothesized **post-pressure-correction evaluation-time mismatch
+cannot explain the 3–4x discrepancy**.
+
+The baseline GitHub `deposition.C` computes
+`1.5*sign*efficiency_*droplet.rho()*droplet*surface/surface.d()
+ *mag(droplet.U()-surface.U())`.
+The stage-audit independent calculation is algebraically the same for
+the SC1 configuration with efficiency 1. The next diagnostic should
+therefore inspect the **actual** RHEL9 local
+`interfacialModels/phaseTransferModels/deposition/deposition.C`
+and the loaded `libbirdeulerianInterfacialModels.so`. A locally modified
+or stale library is possible; do not assert that until source and
+linker output are compared.
+
+Use read-only `diff -u`, `sed`, `stat` and `ldd` commands.
+**Do not rebuild, reconfigure, or rerun CFD until inspecting this.**
+This is a diagnostic-only branch; no physics changes have been made.
+
+## 2b. Results of revised 30.0–30.6 s audit
+
+RHEL9 run completed with status 0. The configured deposition model
+`(bubbleGas in headspaceGas)` was selected, but the **unordered**
+`fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))` returned the
+active deposited source while the **ordered** query returned zero.
+The aggregate `fluid.dmdts()` bubble source agreed with the sum of
+deposition and O2 dissolution. The diagnostic has therefore been
+corrected to label the active unordered lookup as `depositionLoss_kg_s`
+and retain `orderedDepLoss_kg_s` as a control.
+
+Representative observed values (kg/s):
+
+| Time | Bubble injection | Phase-system deposition loss | Bubble O2 dissolution loss | Correlation evaluated at write-time |
+|---|---:|---:|---:|---:|
+| 30.1 | 0.00874277 | 0.00764868 | 0.00008521 | 0.0342497 |
+| 30.3 | 0.00874277 | 0.00937106 | 0.0000868895 | 0.0393078 |
+| 30.5 | 0.00874277 | 0.00650396 | 0.0000890494 | 0.0280942 |
+| 30.6 | 0.00874277 | 0.0110743 | 0.0000901002 | 0.0388874 |
+
+The outlet carried essentially zero bubble mass and no liquid flux;
+net headspace outflow was of the same order as sparger input. However,
+gross headspace outflow and inflow through the open outlet each exceeded
+1 kg/s, despite net headspace outflow of ~0.008 kg/s.
+
+The stage-sensitive issue is that the independently recomputed
+deposition correlation is approximately **3.5–4.5 times larger** than
+the phase-system deposited source. This could reflect the correlation
+being evaluated after the final pressure/velocity correction while
+the saved phase transfer field was generated earlier in PIMPLE.
+It could also reflect a local RHEL9 deposition model differing from
+the checked-in source. It is not yet justified to claim a physical
+conversion coefficient defect or perfect mass conservation.
+
+A non-mutating `bubbleMassTransferStageAudit.H` is now optionally
+included immediately after each `fluid.correct()` call. Its
+`BUBBLE_STAGE_AUDIT` output compares both rates at the same
+solver state. In an existing scratch-copy solver, copy this new header,
+insert the guarded include after the two `fluid.correct()` calls,
+and recompile the separate audit executable. No new non-reacting
+or reacting baseline simulations are needed for this audit.
+
+## 2a. First diagnostic runtime result and follow-up
+
+A 52-rank RHEL9 diagnostic-only continuation from 30.0 to 30.3 s
+completed successfully. Its first audit showed:
+- Bubble mass inventory approximately 0.0093 kg.
+- Total injected bubble mass 0.00874277 kg/s.
+- O2 dissolution mass loss approximately 0.000086 kg/s.
+- Net bubble outflow at the vent negligible (less than 2e-9 kg/s).
+- Net headspace gas outflow 0.0080–0.0088 kg/s.
+- Gross inward headspace mass flow approximately 1.07–1.12 kg/s,
+  with comparably large gross outward flow.
+- Outlet static pressure exactly 101325 Pa; liquid and bubble
+  area fractions at the vent very small, liquid vent mass flux zero.
+- The original **ordered pair diagnostic** reported a zero deposition
+  loss, leaving an approximately 0.008–0.010 kg/s endpoint residual.
+
+**Do not equate zero in this diagnostic with zero applied deposition.**
+The phase-pair lookup, actual phase-system transfer-source assembly and
+deposition correlation must be cross-checked before interpreting
+conservation. In particular the instantaneous correlation estimate
+(roughly 32 L/s density-normalized) is not a mass-flow budget.
+
+The updated header now additionally emits:
+- `unorderedDepLoss_kg_s`: the same transfer query with an unordered
+  phase pair.
+- `assembledBubbleDmdt_kg_s`: complete phase-system interphase mass
+  source for bubbleGas from `fluid.dmdts()`. Negative values indicate
+  net interphase mass removal from bubbleGas.
+- `assembledBubbleDmdtPresent`: whether that field exists.
+- `correlationDepLoss_kg_s`: independent density-based evaluation of
+  SC1's deposition correlation using saved velocity and phase fields;
+  **assumes efficiency 1**.
+- `assembledEndpointClosure_kg_s`: inventory-rate residual using the
+  summed phase-system source instead of the pair-specific O2 and
+  deposition fields.
+
+To apply the update, fast-forward the diagnostic Git checkout, copy
+the updated audit header to the **already copied** scratch solver,
+recompile the separate executable, and extend the **scratch** case
+end time to 30.6 s. Never alter the production checkpoints or the
+original RHEL9 executable; never paste top-level `exit` or shell-fatal
+settings into an interactive Kestrel allocation.
+
+## 3. Recorded quantities
+
+`BUBBLE_MASS_AUDIT` contains:
+
+- `inventory_kg` — instantaneous `sum(alpha.bubbleGas*rho.bubbleGas*V)`;
+- `injection_kg_s` — recomputed total instantaneous `fvModels`
+  density-equation source for bubbleGas, expected to be the 15 sparger
+  sources if no other density source is configured;
+- `depositionLoss_kg_s` — positive loss from bubbleGas based on the
+  **signed phase-system `dmdtf`** for `(bubbleGas in headspaceGas)`;
+- `oxygenDissolutionLoss_kg_s` — positive bubble-phase loss computed from
+  the signed `(bubbleGas and liquid)` mass transfer;
+- `bubbleBoundaryOut_kg_s` — sum of outward `alphaRhoPhi.bubbleGas`
+  across non-coupled physical boundary faces;
+- `headspaceBoundaryOut_kg_s` — corresponding headspace phase mass flux;
+- `inventoryRate_kg_s` — difference in inventory between audit write
+  times; and
+- `endpointClosure_kg_s` — approximate residual between the inventory
+  derivative and the contemporaneous source/flux terms.
+
+`HEADSPACE_PRESSURE_AUDIT` logs *every* non-coupled patch:
+pressure and `p_rgh` area means, their runtime boundary-condition types,
+the headspace-gas velocity condition, and bubble/headspace mass outflows.
+
+**Important limitations.** The audit samples endpoint source terms, not
+time-averaged or time-integrated values. The closure is not an exact discrete
+finite-volume residual, especially with moving meshes, subcycling, source
+updates at PIMPLE iterations, nonconservative boundary discretizations,
+species normalization and phase clipping. A large residual identifies a need
+for a finer, equation-level budget; it does not by itself prove an OpenFOAM
+mass-conservation bug. In particular, the snapshot-derived **32 L/s**
+deposition is a density-normalized rate, whereas the audit uses kg/s.
+These must not be compared as though they have the same units.
+
+## 3a. Choosing a chemistry restart after model corrections
+
+The diagnostic-only branch **does not change physics**, so it may continue
+from the saved 30 s reacting state. Do not confuse this with a validation
+restart following changes to pressure/outlet BCs, deposition efficiency,
+bubble transport, sparger, initial headspace or mesh.
+
+- For chemistry-only changes, start from a **validated** non-reacting
+  9.9 s state with all required reacting fields initialized consistently.
+- For any changed hydrodynamics, start from 0 s for a defensible new
+  non-reacting spin-up; alternatively use a 9.9 s **non-reacting warm
+  start** with the new physics and demonstrate a converged interface,
+  liquid volume, bubble inventory, oxygen transfer, and outlet mass flow
+  before turning on biology. A 0.1 s re-equilibration is not sufficient
+  evidence.
+- The original reactor biology model deliberately advances **four hours
+  of biology per event** and holds OUR between CFD events; preserve that
+  intended cadence when diagnosing hydrodynamics.
+
+**Important code-specific scheduling hazard:** In `putidaFoam.C`, the
+initial `prvs_react_update_time` is reconstructed from
+`floor(startTime)/fluid_update_time`, and `bioReact.H` is entered
+only when `time - prvs_react_update_time >= fluid_update_time`. The
+`fluid_update_time` value is read at startup in `createFields.H`.
+Therefore starting at 9.9 s with `fluid_update_time = 200` **does
+not trigger biology at 10 s**; the first trigger would be 200 s.
+To trigger once at 10 s and then freeze OUR, the previously staged
+setup must restart *before* 10 s with the initial interval of 10 s,
+save a checkpoint immediately after the first event (e.g. 10.1 s),
+then restart with the long hold interval (e.g. 200 s). Do not run the
+first stage long enough to trigger another biology event at 20 s.
+Confirm the actual Kestrel `microbeUpdateProperties` and log rather
+than relying on historical repository templates.
+
+## 4. Safety and validation
+
+- Retain the original 30-second checkpoint and all production case files.
+- Build/run only in a cloned scratch case and under a separate executable
+  name.
+- Keep the 200-second frozen OUR update interval and all source definitions
+  unchanged.
+- First check no diagnostic output when `bubbleMassAudit` is absent.
+- Verify MPI reductions by comparing bubble inventory at a checkpoint with
+  the existing OpenFOAM `volFieldValue` result.
+- Check the numerical budget at multiple write times, not from one instant.
+
+The workflow's primary purpose is to determine whether the very large
+bubble-to-headspace deposition predicted by the source law is consistent with
+the actual gas-phase inventory and boundary flux; a separate pressure/BC
+comparison tests whether a top-outlet condition is influencing that result.
