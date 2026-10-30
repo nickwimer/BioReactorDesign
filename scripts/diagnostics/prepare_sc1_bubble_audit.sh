@@ -48,7 +48,9 @@ done
 
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 HEADER="$REPO/OFsolvers/birdmultiphaseEulerFoam/putidaFoam/bubbleMassAudit.H"
+STAGE="$REPO/OFsolvers/birdmultiphaseEulerFoam/putidaFoam/bubbleMassTransferStageAudit.H"
 test -f "$HEADER" || { echo "Missing diagnostic header $HEADER" >&2; exit 2; }
+test -f "$STAGE" || { echo "Missing stage audit header $STAGE" >&2; exit 2; }
 
 mkdir -p "$DEST"
 mkdir -p "$DEST/run/processors52"
@@ -56,6 +58,7 @@ cp -a "$SRC" "$DEST/solver"
 cp -a "$CASE/system" "$CASE/constant" "$DEST/run/"
 cp -a "$CASE/processors52/constant" "$CASE/processors52/30" "$DEST/run/processors52/"
 cp "$HEADER" "$DEST/solver/bubbleMassAudit.H"
+cp "$STAGE" "$DEST/solver/bubbleMassTransferStageAudit.H"
 
 # OpenFOAM's Make/options uses paths relative to the original solver:
 # ../include, ../phaseSystems/lnInclude, ../interfacialModels/lnInclude, ...
@@ -125,7 +128,33 @@ hook = """        // Opt-in, write-time-only bubble and headspace mass audit.
         }
 
 """
-solver.write_text(src.replace(needle, hook + needle))
+# Instrument the two documented fluid.correct() calls in the local solver.
+# Abort preparation (separate bash process only) if source diverges.
+import re
+src = src.replace(needle, hook + needle)
+pattern = re.compile(r"(?m)^([ \\t]*)fluid\\.correct\\(\\);$")
+def add_stage(match):
+    indent = match.group(1)
+    return match.group(0) + """
+""" + indent + """if
+""" + indent + """(
+""" + indent + """    pimple.dict().lookupOrDefault<Switch>
+""" + indent + """    (
+""" + indent + """        "bubbleMassAudit",
+""" + indent + """        false
+""" + indent + """    )
+""" + indent + """ && runTime.writeTime()
+""" + indent + """)
+""" + indent + """{
+""" + indent + """    #include "bubbleMassTransferStageAudit.H"
+""" + indent + """}"""
+src, nstage = pattern.subn(add_stage, src)
+if nstage != 2:
+    raise RuntimeError(
+        f"Expected two fluid.correct() calls, found {nstage}; "
+        "do not use this script to patch divergent solver source."
+    )
+solver.write_text(src)
 
 cfg = make.read_text()
 new_cfg, n = re.subn(
