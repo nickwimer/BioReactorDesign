@@ -19,16 +19,16 @@
 
     const tmp<volScalarField> auditDepTmp
     (
-        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas", true))
+        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))
     );
     const volScalarField& auditDep = auditDepTmp();
     const PtrList<volScalarField> auditActualSources(fluid.dmdts());
 
-    const tmp<volScalarField> auditUnorderedDepTmp
+    const tmp<volScalarField> auditOrderedDepTmp
     (
-        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))
+        fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas", true))
     );
-    const volScalarField& auditUnorderedDep = auditUnorderedDepTmp();
+    const volScalarField& auditOrderedDep = auditOrderedDepTmp();
 
     // Independent evaluation of the configured SC1 deposition law
     // (efficiency = 1); this is NOT the solver's assembled source.
@@ -47,7 +47,7 @@
 
     scalar auditBubbleMass = 0;
     scalar auditDepositionLoss = 0;
-    scalar auditUnorderedDepLoss = 0;
+    scalar auditOrderedDepLoss = 0;
     scalar auditBubblePhaseSource = 0;
     scalar auditCalculatedDepLoss = 0;
     scalar auditDissolutionLoss = 0;
@@ -61,8 +61,8 @@
 
         // The signed pair source is negative for bubbleGas mass loss.
         auditDepositionLoss -= auditDep[celli]*auditV[celli];
-        auditUnorderedDepLoss -=
-            auditUnorderedDep[celli]*auditV[celli];
+        auditOrderedDepLoss -=
+            auditOrderedDep[celli]*auditV[celli];
         if (auditHasBubbleSource)
         {
             auditBubblePhaseSource +=
@@ -82,7 +82,7 @@
 
     reduce(auditBubbleMass, sumOp<scalar>());
     reduce(auditDepositionLoss, sumOp<scalar>());
-    reduce(auditUnorderedDepLoss, sumOp<scalar>());
+    reduce(auditOrderedDepLoss, sumOp<scalar>());
     reduce(auditBubblePhaseSource, sumOp<scalar>());
     reduce(auditCalculatedDepLoss, sumOp<scalar>());
     reduce(auditDissolutionLoss, sumOp<scalar>());
@@ -210,7 +210,7 @@
             << " inventory_kg=" << auditBubbleMass
             << " injection_kg_s=" << auditInjection
             << " depositionLoss_kg_s=" << auditDepositionLoss
-            << " unorderedDepLoss_kg_s=" << auditUnorderedDepLoss
+            << " orderedDepLoss_kg_s=" << auditOrderedDepLoss
             << " assembledBubbleDmdt_kg_s=" << auditBubblePhaseSource
             << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
             << " correlationDepLoss_kg_s=" << auditCalculatedDepLoss
