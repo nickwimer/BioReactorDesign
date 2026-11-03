@@ -213,6 +213,29 @@ dependencies. This is a linker search-path fix only, not a
 model-physics change. Re-run `wmake` and check `ldd` for
 the expected full paths; do not rebuild the existing BiRD libraries.
 
+### Third Kestrel build check: standalone library successfully linked
+
+On 2026-11-03 the user rebuilt the dedicated
+`libsc1HeadspaceFilmModels.so` successfully after adding
+`-L$(FOAM_USER_LIBBIN)`. `ldd` confirmed the new library
+resolves both
+`libbirdeulerianInterfacialCompositionModels.so` and
+`libbirdphaseSystem.so` to
+`$HOME/OpenFOAM9_RHEL9/user-9/platforms/linux64GccDPInt32Opt/lib/`.
+
+The C++ **build and link are now verified on Kestrel**. There has
+still been **no test of the case dictionary additions or the new
+headspace-to-liquid source at runtime**. The next action is
+preparing the isolated short `31.2-to-31.4 s` trial; validate
+`controlDict`, both heat-transfer sides, and new phase pairs before
+launching 52-rank MPI.
+
+The trial preparer now returns nonzero exit status on a failed
+preflight (as opposed to printing an error and returning success).
+It refuses an existing destination; never delete scratch or production
+checkpoint directories to work around that guard. Choose a fresh
+`--out` in scratch if an earlier candidate already exists.
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
