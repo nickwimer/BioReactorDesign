@@ -168,6 +168,41 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2f. Spatial distribution of the *blended* deposition at 30 s
+
+The existing MEML 30 s VTK fields were reanalyzed with the exact
+`phaseTransfer` default linear factor,
+`clamp((alpha.headspaceGas - 0.3)/0.4, 0, 1)`.
+
+| Height (m) | Bubble inventory (L) | Raw deposition (L/s equiv.) | Blended deposition (L/s equiv.) |
+|---|---:|---:|---:|
+| <0.2 | 1.788 | ~0 | ~0 |
+| 0.2–0.4 | 2.333 | 2.727 | 0.178 |
+| 0.4–0.6 | 2.352 | 2.207 | ~0 |
+| 0.6–0.8 | 1.063 | 23.880 | 5.722 |
+| 0.8–1.0 | 0.057 | 3.616 | 1.734 |
+| >=1.0 | 0.002 | 0.104 | 0.091 |
+| **Total** | **7.595** | **32.5339** | **7.7244** |
+
+Approximately **76.38%** of blended deposition occurs below 0.8 m,
+and **74.1%** occurs within the 0.6–0.8 m band. The strong deep
+deposition therefore persists after correcting for blending.
+Earlier connectivity tests showed the upper headspace connects to
+a central depressed cavity reaching approximately 0.6 m; this
+does not by itself show the vortex depth is physically correct.
+
+All deposition numbers in this table are **density-normalized local
+volumetric equivalents**; do not directly compare their absolute
+magnitudes to the nominal inlet volume flow at reference conditions.
+The actual applied mass deposition is approximately 7–12 g/s
+near 30–31 s, comparable to 8.743 g/s inlet gas mass.
+
+The most informative follow-up is to bin blended deposition radially,
+especially the 0.6–0.8 m band near the shaft, and then validate
+the free-surface cavity geometry against physical reference data
+before considering changes to the hydrodynamics or redoing the
+nonreacting 9.9-second checkpoint.
+
 ## 2e. Confirmed blending/source equivalence at 31.0–31.2 s (2026-11-03)
 
 The user ran the diagnostic-only RHEL9 continuation successfully with a
