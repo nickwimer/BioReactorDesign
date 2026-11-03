@@ -259,6 +259,31 @@ recompile either already successful shared library or diagnostic
 solver. Do not launch CFD until verifying the new
 `phaseProperties` and `controlDict` entries.
 
+### Fifth Kestrel trial-preparation failure: nested function-object controls
+
+The user ran the revised preparation. The Python model preflight
+passed, but the installer stopped before creating the scratch trial,
+reporting `Expected exactly one writeControl in controlDict, found 15`.
+These matches are from the source controlDict's nested function-object
+settings; the previous regular expression searched all levels.
+
+**Fix:** the installer now lexes the OpenFOAM controlDict and filters
+entries to the dictionary root, respecting nested curly/round brackets,
+comments, and quoted strings. A missing root `writeControl`
+is inserted in the **scratch copy** even if 15 function objects each
+declare `writeControl`. Root `writeInterval`, `startFrom`
+and `endTime` are updated without editing nested function-object
+settings. The same scope-aware handling applies to `libs`, which
+may also be declared separately inside multiple function objects.
+Both root `libs`-present and -missing cases have regression tests,
+including a fixture with 15 nested function objects.
+
+Re-run only the **pure Python preflight and scratch case preparation**.
+The headspace film shared library and scratch diagnostic solver have
+already compiled successfully. No new CFD continuation has been run.
+Do not delete existing directories or manually edit production cases
+to work around an installer failure.
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
