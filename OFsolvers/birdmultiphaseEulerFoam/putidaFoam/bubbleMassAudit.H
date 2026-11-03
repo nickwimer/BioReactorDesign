@@ -47,12 +47,21 @@
     );
     const volScalarField& auditBubbleLiquid = auditBubbleLiquidTmp();
 
+    // In the legacy case this pair has no species model and returns zero.
+    // In the headspace-O2 trial it reports the NEW gas-liquid channel.
+    const tmp<volScalarField> auditHeadspaceLiquidTmp
+    (
+        fluid.dmdtf(phasePairKey("headspaceGas", "liquid"))
+    );
+    const volScalarField& auditHeadspaceLiquid = auditHeadspaceLiquidTmp();
+
     scalar auditBubbleMass = 0;
     scalar auditDepositionLoss = 0;
     scalar auditOrderedDepLoss = 0;
     scalar auditBubblePhaseSource = 0;
     scalar auditCalculatedDepLoss = 0;
     scalar auditNetBubbleLiquidLoss = 0;
+    scalar auditNetHeadspaceLiquidLoss = 0;
     const bool auditHasBubbleSource =
         auditActualSources.set(auditBubble.index());
 
@@ -80,6 +89,8 @@
         }
 
         auditNetBubbleLiquidLoss -= auditBubbleLiquid[celli]*auditV[celli];
+        auditNetHeadspaceLiquidLoss -=
+            auditHeadspaceLiquid[celli]*auditV[celli];
     }
 
     reduce(auditBubbleMass, sumOp<scalar>());
@@ -88,6 +99,7 @@
     reduce(auditBubblePhaseSource, sumOp<scalar>());
     reduce(auditCalculatedDepLoss, sumOp<scalar>());
     reduce(auditNetBubbleLiquidLoss, sumOp<scalar>());
+    reduce(auditNetHeadspaceLiquidLoss, sumOp<scalar>());
 
     // Re-evaluate the fvModels source to the bubbleGas density equation.
     // For the SC1 case this should be the sum of 15 sparger mass sources.
@@ -217,6 +229,8 @@
             << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
             << " correlationDepLoss_kg_s=" << auditCalculatedDepLoss
             << " netBubbleLiquidMassLoss_kg_s=" << auditNetBubbleLiquidLoss
+            << " netHeadspaceLiquidMassLoss_kg_s="
+            << auditNetHeadspaceLiquidLoss
             << " bubbleBoundaryOut_kg_s=" << auditBubbleBoundaryOut
             << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut
             << " liquidBoundaryOut_kg_s=" << auditLiquidBoundaryOut
