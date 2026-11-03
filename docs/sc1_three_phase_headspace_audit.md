@@ -168,6 +168,48 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2h. Annularly averaged MEML free-surface profile at 30 s
+
+The height where annular mean `alpha.headspaceGas` crosses its
+`0.3`, `0.5` and `0.7` thresholds was measured using height
+bins of 0.025 m. The uppermost low-to-high crossing was chosen;
+the method is an **annular average, not a reconstructed sharp interface**.
+
+| Radial range from axis (m) | alphaH=0.3 height (m) | alphaH=0.5 (m) | alphaH=0.7 (m) |
+|---|---:|---:|---:|
+| 0.00–0.05 | 0.632 | 0.687 | 0.720 |
+| 0.05–0.10 | 0.704 | 0.743 | 0.761 |
+| 0.10–0.20 | 0.776 | 0.788 | 0.800 |
+| 0.20–0.35 | 0.832 | 0.849 | 0.864 |
+| 0.35–0.53 | 1.162 | 1.190 | 1.218 |
+
+At the 0.5 contour, the interface is approximately **0.333 m below
+the nominal 1.02 m level near the shaft** and approximately
+**0.170 m above nominal near the outer wall**, giving an approximate
+**0.503 m central-to-wall elevation difference**. The central
+0.3-to-0.7 transition is ~0.088 m thick in the vertical coordinate;
+the outer annulus transition is ~0.056 m.
+
+**Physical interpretation is provisional.** The 3-phase mixture
+contains distinct `bubbleGas` and `headspaceGas`, so an
+`alpha.headspaceGas=0.5` contour is not necessarily the same as
+`alpha.liquid=0.5` in the bubble-rich core. The old EMM and
+MAX-OUR versions had known liquid-wall climbing and interface
+penetration problems; the MEML outer-annulus elevation shows
+that free-surface distortion might still be present under the new
+formulation. The elevated liquid volume above the nominal height
+(~82 L in MEML vs ~164 L in EMM) must be interpreted together with
+total conserved liquid volume (~1.00 m3 vs 1.137 m3 respectively).
+A surface rise does **not** by itself prove an overall mass gain,
+since central depression can offset elevation elsewhere.
+
+**Next test:** compare EMM vs MEML
+`alpha.liquid=0.5` crossings in identical radial and height bins,
+and volume-integrate `alpha.liquid` above 1.02 m per radial band.
+This tests both models with a common liquid-phase definition,
+rather than comparing EMM's combined `gas` with MEML's
+separate `headspaceGas`.
+
 ## 2g. Radial localization of blended deposition at 30 s
 
 The 30-second MEML VTK blended-deposition field was radially binned
