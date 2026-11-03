@@ -28,6 +28,7 @@
     // efficiency = 1; headspace diameter from the active phase model.
     scalar checkModelDepLoss = 0;
     scalar checkCorrelationDepLoss = 0;
+    scalar checkBlendedDepLoss = 0;
     scalar checkWeightedSlip = 0;
     scalar checkOverlapWeight = 0;
 
@@ -37,11 +38,28 @@
 
         if (checkD[celli] > SMALL)
         {
-            checkCorrelationDepLoss +=
+            const scalar rawLoss =
                 1.5*checkRho[celli]*checkAlphaB[celli]
                *checkAlphaH[celli]
                *mag(checkUb[celli] - checkUh[celli])
                /checkD[celli]*checkV[celli];
+
+            // SC1 phaseProperties/blending/default uses linear
+            // partly/fully continuous headspace alpha = 0.3/0.7.
+            // The phaseTransfer model inherits 'default', not
+            // the separate 'massTransfer' blending dictionary.
+            const scalar headspaceWeight = min
+            (
+                max
+                (
+                    (checkAlphaH[celli] - 0.3)/(0.7 - 0.3 + small),
+                    scalar(0)
+                ),
+                scalar(1)
+            );
+
+            checkCorrelationDepLoss += rawLoss;
+            checkBlendedDepLoss += headspaceWeight*rawLoss;
         }
         const scalar overlap =
             max(checkAlphaB[celli], scalar(0))
@@ -52,6 +70,7 @@
 
     reduce(checkModelDepLoss, sumOp<scalar>());
     reduce(checkCorrelationDepLoss, sumOp<scalar>());
+    reduce(checkBlendedDepLoss, sumOp<scalar>());
     reduce(checkWeightedSlip, sumOp<scalar>());
     reduce(checkOverlapWeight, sumOp<scalar>());
 
@@ -66,6 +85,8 @@
             << " depositionLoss_kg_s=" << checkModelDepLoss
             << " sameStateCorrelationLoss_kg_s="
             << checkCorrelationDepLoss
+            << " blendedCorrelationLoss_kg_s="
+            << checkBlendedDepLoss
             << " overlapSlip_m_s="
             << (checkOverlapWeight > SMALL
                 ? checkWeightedSlip/checkOverlapWeight : 0)
