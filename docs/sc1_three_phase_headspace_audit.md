@@ -168,6 +168,49 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2e. Confirmed blending/source equivalence at 31.0–31.2 s (2026-11-03)
+
+The user ran the diagnostic-only RHEL9 continuation successfully with a
+`blendedCorrelationLoss_kg_s` measurement immediately following each
+`fluid.correct()`. The configured `phaseTransfer` model inherits
+the `default` linear blending with headspace continuous-phase thresholds
+0.3 and 0.7. Its local weight for
+`(bubbleGas in headspaceGas)` is
+
+`f = clamp((alpha.headspaceGas - 0.3)/0.4, 0, 1)`.
+
+| CFD time (s) | raw deposition (g/s) | blended formula (g/s) | phase-system source (g/s) |
+|---|---:|---:|---:|
+| 31.0 | 42.8467 | 11.9344 | 11.9344 |
+| 31.1 | 46.2546 | 11.2587 | 11.2587 |
+| 31.2 | 35.3585 | 7.86237 | 7.86237 |
+
+The blended formula and stored phase-system transfer **agree to the
+displayed precision** at both successive PIMPLE stages. The earlier
+3–4x raw-vs-applied discrepancy is therefore fully explained by
+interfacial blending, not an obvious source-code mismatch, timing
+difference, stale library or incorrect deposition registration.
+
+**Correction of an earlier interpretation:** Height-resolved estimates
+of ~32 L/s raw deposition and ~89% below 0.8 m omitted the blending
+factor. These are *not* actual applied transfer rates or spatial
+deposition fractions. Recalculate a blended height-resolved deposition
+before claiming that most applied deposition occurs below the intended
+surface. Static pressure outlet is 101325 Pa, and the signed net
+headspace exhaust is of the same order as the ~8.743 g/s injected gas
+mass, while bubble and liquid net outlet mass fluxes are negligible.
+The physical adequacy of free-surface depression, bubble inventory and
+interfacial area remains unvalidated.
+
+**Next validation:** recompute spatial distribution of blended
+deposition using the existing 30-second VTK
+`alpha.bubbleGas`, `alpha.headspaceGas`,
+`U.bubbleGas`, `U.headspaceGas`, and cell volumes,
+with the same linear weighting. Since density is unavailable in that
+VTK export, report this as a **density-normalized local volumetric
+equivalent**, not kg/s, and do not compare it directly with the inlet
+reference volume flow without pressure/density conversion.
+
 ## 2d. Critical correction: blended interfacial deposition
 
 The locally installed RHEL9 `deposition.C` and the public GitHub
