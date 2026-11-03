@@ -168,6 +168,45 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2q. Fine-scale 9.9-second upper-propeller liquid/gas exposure
+
+The extended `sc1_upper_impeller_coverage.py --times 9.9`
+postprocessing confirmed the following *patch surface* results:
+
+| Geometric region | MEML area (m2) | MEML mean alphaL | MEML patch area alphaL<0.1 | MEML patch area alphaL<0.5 | EMM mean alphaL |
+|---|---:|---:|---:|---:|---:|
+| Lower MRF y=0.180–0.347 m, r<0.30 | 0.23824 | 0.870 | 0.0% | 2.0% | 0.901 |
+| Upper MRF y=0.708–0.937 m, r<0.30 | 0.38109 | 0.254 | 64.5% | 73.3% | 0.942 |
+| Upper y=0.708–0.780 m, r<0.30 | 0.06407 | 0.744 | 11.4% | 17.3% | 0.948 |
+| Upper y=0.780–0.850 m, r<0.30 | 0.23565 | 0.198 | 69.5% | 79.6% | 0.941 |
+| Upper y=0.850–0.920 m, r<0.30 | 0.07963 | 0.031 | 91.5% | 98.8% | 0.955 |
+| Upper y=0.780–0.850 m, r=0.10–0.175 | 0.09796 | 0.053 | 90.0% | 94.9% | 0.948 |
+| Upper y=0.850–0.920 m, r=0.175–0.30 | 0.04898 | 0.050 | 86.2% | 98.1% | 0.946 |
+
+All reported EMM upper-window samples have **0%** of area below
+`alpha.liquid=0.5`; its lower-window case is also nearly fully
+liquid-contacting. In contrast, MEML's upper window is
+headspace-/bubble-dominated near the likely upper blade-bearing
+locations, even though its lower rotating region is mostly liquid
+contacting. Thus the central cavity intersects the **solid
+propeller-wall environment**, not merely the broader MRF envelope.
+
+**Caveat:** This does not establish which faces are real blades,
+shaft or hub, and the only available exported field in this run was
+`alpha.liquid`. Nonliquid fractions can include both dispersed
+`bubbleGas` and connected `headspaceGas`.
+
+The new scratch-only
+`scripts/diagnostics/sc1_meml_propeller_gas_identity.py` can
+convert all three liquid/headspace/bubble alpha fields at 9.9 s
+on the existing scratch-only MEML mirror, and report per-face
+gas-phase identity in the exact regions above. It additionally
+computes a *face-normal orientation proxy* to distinguish
+likely radial-blade surfaces from hub/shaft surfaces, but this
+is not authoritative geometric identification. Never conclude
+the real impeller is unphysically exposed without matching
+the actual production geometry and operating observations.
+
 ## 2p. Upper impeller-region liquid fraction: MEML vs EMM
 
 The read-only `sc1_upper_impeller_coverage.py` test succeeded
