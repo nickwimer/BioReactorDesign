@@ -6,13 +6,13 @@ only alpha.liquid with foamToVTK, and computes volume-weighted radial profiles.
 Source case data (including checkpoints) are never written or modified.
 Requires foamToVTK in PATH and numpy, pyvista in the Python environment.
 
-Example:
+Examples:
   python3 scripts/diagnostics/sc1_surface_evolution.py
+  python3 scripts/diagnostics/sc1_surface_evolution.py --analyze-only
 """
 
 import argparse
 import os
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -78,14 +78,17 @@ def mirror_case(source: Path, destination: Path, times: list[str]) -> None:
 
 
 def vtk_for_time(vtk_dir: Path, time: str) -> Path | None:
-    candidates = sorted(vtk_dir.rglob("*.vtk"))
-    # -useTimeName normally gives e.g. putida_sc1_9.9.vtk.
-    pattern = re.compile(r"(?:^|[_-])" + re.escape(time) + r"$")
-    matches = [f for f in candidates if pattern.search(f.stem)]
-    if len(matches) == 1:
-        return matches[0]
-    print(f"  Cannot uniquely identify VTK for time {time!r}.")
-    print("  Available:", [str(f) for f in candidates])
+    """Select the main volume mesh, never patch meshes in VTK subdirectories."""
+    expected = vtk_dir / f"{vtk_dir.parent.name}_{time}.vtk"
+    if expected.is_file():
+        return expected
+
+    candidates = sorted(vtk_dir.glob(f"*_{time}.vtk"))
+    if len(candidates) == 1:
+        return candidates[0]
+
+    print(f"  Cannot uniquely identify volume VTK for time {time!r}.")
+    print("  Root-level VTK candidates:", [str(f) for f in candidates])
     return None
 
 
@@ -168,9 +171,13 @@ def main() -> None:
         "--times", nargs="+", default=["9.9", "20"],
         help="Reconstructed root checkpoint times to compare",
     )
+    parser.add_argument(
+        "--analyze-only", action="store_true",
+        help="Read previously converted scratch VTK files; skip conversion",
+    )
     args = parser.parse_args()
 
-    if not shutil.which("foamToVTK"):
+    if not args.analyze_only and not shutil.which("foamToVTK"):
         print("foamToVTK not found: load the RHEL9 OpenFOAM environment.")
         return
 
@@ -182,30 +189,33 @@ def main() -> None:
 
     for name, source in (("MEML_BASE", args.meml), ("EMM", args.emm)):
         destination = out / name
-        print(f"\nPreparing {name}: {source} -> {destination}", flush=True)
-        try:
-            mirror_case(source, destination, args.times)
-        except (FileNotFoundError, RuntimeError, OSError) as exc:
-            print(f"  Could not prepare {name}: {exc}")
-            continue
+        if args.analyze_only:
+            print(f"\nAnalyzing existing {name} VTK: {destination / 'VTK'}", flush=True)
+        else:
+            print(f"\nPreparing {name}: {source} -> {destination}", flush=True)
+            try:
+                mirror_case(source, destination, args.times)
+            except (FileNotFoundError, RuntimeError, OSError) as exc:
+                print(f"  Could not prepare {name}: {exc}")
+                continue
 
-        cmd = [
-            "foamToVTK",
-            "-case", str(destination),
-            "-time", ",".join(args.times),
-            "-fields", "(alpha.liquid)",
-            "-useTimeName",
-        ]
-        result = subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, check=False,
-        )
-        log = destination / "foamToVTK.surface.log"
-        log.write_text(result.stdout)
-        print(f"  foamToVTK return code: {result.returncode}; log: {log}")
-        if result.returncode != 0:
-            print("\n".join(result.stdout.splitlines()[-25:]))
-            continue
+            cmd = [
+                "foamToVTK",
+                "-case", str(destination),
+                "-time", ",".join(args.times),
+                "-fields", "(alpha.liquid)",
+                "-useTimeName",
+            ]
+            result = subprocess.run(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, check=False,
+            )
+            log = destination / "foamToVTK.surface.log"
+            log.write_text(result.stdout)
+            print(f"  foamToVTK return code: {result.returncode}; log: {log}")
+            if result.returncode != 0:
+                print("\n".join(result.stdout.splitlines()[-25:]))
+                continue
 
         for time in args.times:
             vtk = vtk_for_time(destination / "VTK", time)
