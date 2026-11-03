@@ -168,6 +168,73 @@ writeInterval 0.1;
     else:
         raise AssertionError("Duplicate writeControl was not rejected")
 
+    # Actual SC1 failure: 15 nested function-object writeControl entries,
+    # but no top-level writeControl. Do not mistake these for 15 duplicates.
+    nested_blocks = "\n".join(
+        f"""
+    sample{i}
+    {{
+        type volFieldValue;
+        writeControl timeStep;
+        writeInterval 2;
+        // the nested settings must not change
+    }}
+"""
+        for i in range(15)
+    )
+    complex_control = (
+        "application putidaFoam;\n"
+        "startFrom latestTime;\n"
+        "endTime 31.2;\n"
+        "writeInterval 0.1;\n"
+        "functions\n{\n"
+        + nested_blocks
+        + "\n}\n"
+    )
+    assert len(patcher.top_level_control_matches(
+        complex_control, "writeControl"
+    )) == 0
+    assert len(patcher.top_level_control_matches(
+        complex_control, "writeInterval"
+    )) == 1
+    inserted = patcher.set_control_entry(
+        complex_control,
+        "writeControl", "runTime", insert_if_missing=True
+    )
+    assert len(patcher.top_level_control_matches(
+        inserted, "writeControl"
+    )) == 1
+    assert inserted.count("writeControl timeStep;") == 15
+    assert inserted.count("writeControl    runTime;") == 1
+    assert inserted.count("writeInterval 2;") == 15
+    updated_interval = patcher.set_control_entry(
+        inserted, "writeInterval", "0.1"
+    )
+    assert updated_interval.count("writeInterval 2;") == 15
+    assert len(patcher.top_level_control_matches(
+        updated_interval, "writeInterval"
+    )) == 1
+
+    # Changing a root entry must not overwrite nested entries or a
+    # commented-out root entry.
+    with_root = "writeControl adjustableRunTime;\n" + complex_control
+    updated_root = patcher.set_control_entry(
+        with_root, "writeControl", "runTime", insert_if_missing=True
+    )
+    assert len(patcher.top_level_control_matches(
+        updated_root, "writeControl"
+    )) == 1
+    assert updated_root.count("writeControl timeStep;") == 15
+    assert updated_root.count("writeControl    runTime;") == 1
+
+    commented = "/*\nwriteControl badSetting;\n*/\n" + complex_control
+    assert len(patcher.top_level_control_matches(
+        commented, "writeControl"
+    )) == 0
+    assert patcher.set_control_entry(
+        commented, "writeControl", "runTime", insert_if_missing=True
+    ).count("writeControl    runTime;") == 1
+
     # Other critical settings must remain required.
     try:
         patcher.set_control_entry(
