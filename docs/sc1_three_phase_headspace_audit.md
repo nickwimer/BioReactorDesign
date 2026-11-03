@@ -1,5 +1,15 @@
 # SC1 three-phase headspace pressure and bubble-mass audit
 
+> **New headspace-to-liquid oxygen fix (2026-11-03):**
+> The production MEML case has **no** headspaceGas-liquid Henry/film
+> oxygen-transfer pair. A separate, optional `resolvedHeadspaceFilm`
+> transfer model, non-destructive scratch-case installer, and an isolated
+> validation procedure have been committed to this branch.
+> See [SC1 headspace oxygen-transfer design](sc1_headspace_oxygen_transfer_design.md).
+> These additions have **not yet been compiled or run on Kestrel** and
+> do not change any production solver or case.
+
+
 ## Interactive Kestrel allocation safety
 
 **Never paste a top-level `exit`, `logout`, `exec`, `set -e` or
