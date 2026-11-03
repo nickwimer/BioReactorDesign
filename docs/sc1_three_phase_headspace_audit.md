@@ -168,6 +168,56 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2m. 9.9/20-second transient surface and liquid-volume results (2026-11-03)
+
+The corrected `sc1_surface_evolution.py --analyze-only` completed
+successfully using the scratch VTK exports. These are actual measured
+quantities in reconstructed 9.9/20 s root fields.
+
+| Metric | MEML original 9.9 s | MEML original 20 s | MEML RHEL9 30 s | EMM 9.9 s | EMM 20 s | EMM 30 s |
+|---|---:|---:|---:|---:|---:|---:|
+| Liquid volume (L) | 999.812 | 999.824 | 999.478 | 1151.077 | 1142.971 | 1137.119 |
+| Liquid volume above y=1.02 m (L) | 82.304 | 81.614 | 82.191 | 175.650 | 169.998 | 164.149 |
+| alpha.liquid=0.5 at r=0–0.05 m (m) | 0.693* | 0.729* | 0.674* | 1.205 | 1.194 | 1.193 |
+| alpha.liquid=0.5 at r=0.45–0.53 m (m) | 1.194 | 1.193 | 1.198 | 1.292 | 1.255 | 1.242 |
+
+Asterisk: multiple annularly averaged crossings were detected;
+the highest downward crossing was used.
+
+MEML contains an established depressed central free surface **already
+at 9.9 s**, before the scheduled biology update at 10 s. Its liquid
+volume changes just +0.012 L from 9.9 to 20 s, with no meaningful
+change in elevated liquid inventory (82.304 to 81.614 L).
+The outer annulus stays around 1.19 m, and the central annulus
+varies by a few centimeters. Therefore the deep-vortex morphology
+predates the biological continuation and is intrinsic to the
+pre-9.9 hydrodynamic state/configuration; evidence does not yet
+show its physical validity.
+
+EMM has **151.077 L liquid above 1000 L already at 9.9 s**;
+the excess declines to 142.971 L at 20 s and 137.119 L at 30 s.
+EMM's integrated liquid inventory drops 13.958 L between 9.9
+and 30 s. This is a significant inventory anomaly, but to
+diagnose its *cause*, compare against t=0 inventory and
+integrated liquid boundary fluxes (do not silently assume a
+zero-flux baseline or attribute everything to solver mass error).
+
+The 30 s MEML point derives from a **different RHEL9 continuation**
+than the original 9.9/20 s time points. Identical
+`constant/phaseProperties` files do not independently verify
+identical mesh, rotation, phase transport controls or runtime
+boundary configurations between these cases.
+
+**Priority before changing the solver:** identify the actual
+impeller/MRF rotation rate and geometry/baffle configuration;
+compare predicted vortex depth (central alphaL crossing 0.67–0.73 m,
+outer around 1.19 m) to reference operating measurements.
+A new 9.9 s checkpoint under unchanged physics would simply
+inherit a comparable hydrodynamic condition and is not a
+remedy for the deep vortex. If hydrodynamics are changed, a new
+nonreacting spin-up or a validated equilibration from warm start
+is required before triggering chemistry.
+
 ## 2l. VTK selector fix: boundary-patch exports were mistakenly included
 
 The first run of `sc1_surface_evolution.py` successfully converted
