@@ -420,6 +420,120 @@ followed by checking new `headspaceGasAndLiquid` transfer output
 against the existing `bubbleGasAndLiquid` transfer and solver
 audit. No production CFD case or shared library was changed.
 
+## 5a. First 52-rank runtime result: resolved interface alone insufficient (2026-11-03)
+
+The first isolated trial **completed successfully (solver exit status 0)**,
+from collated `31.199982372783058` with
+`foamAreaMultiplier=0`. The checkpoint directory
+`processors52/31.299982372786378` contains
+`interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`.
+
+The `HEADSPACE_O2_AREA_AUDIT` at reported `t_s=31.3` was:
+
+```text
+geometricArea_m2=1.72563
+foamCandidateArea_m2=0
+effectiveArea_m2=1.72563
+filmThickness_m=1e-05
+```
+
+The `BUBBLE_MASS_AUDIT` at the same reported time was:
+
+| Endpoint quantity | kg/s | g/s |
+|---|---:|---:|
+| Bubble-liquid O2 dissolution (net loss from bubbleGas) | `9.35802e-05` | 0.0935802 |
+| **Headspace-liquid O2 dissolution (net loss from headspaceGas)** | **`3.65347e-06`** | **0.00365347** |
+| **Combined modeled O2 transfer** | **`9.723367e-05`** | **0.09723367** |
+| Frozen biological OUR (earlier audit, approximate) | 0.000498 | 0.498 |
+
+At this instant, modeled supply is **19.5%** of the biological
+sink, leaving approximately **0.40077 g/s** shortfall.
+The restored headspace route contributes about **3.8% of
+combined OTR**, and only about **0.7% of OUR**. These
+are instantaneous endpoint estimates, not a time-averaged
+OTR or steady biological mass balance.
+
+The new headspace rate divided by the resolved interface area
+is `0.00365347 / 1.72563 = 0.002117 g/(m2 s)`.
+If film thickness, local oxygen driving force and density were
+unchanged everywhere, the extra ~0.4044 g/s required to match
+OUR beyond bubble transfer would imply approximately
+**191 m2 total effective headspace contact area** versus
+the current **1.73 m2**. This ratio is only a
+**nonlinear-sensitivity scale**, NOT an endorsed foam area,
+film thickness, fitted parameter or evidence that such
+contact physically exists. Actual foam liquid films, dissolved
+O2 and gas O2 partial pressure can differ spatially.
+
+Other signals to investigate before calibration:
+
+- Bubble inventory `0.00933447 kg`, sparger injection
+  `0.00874277 kg/s`, deposition loss `0.00728772 kg/s`;
+  assembled bubble phase-transfer source
+  `-0.0073813 kg/s` equals deposition plus bubble-liquid
+  mass loss to within printed precision.
+- `orderedDepLoss_kg_s=0` is the historical diagnostic
+  **ordered-key** lookup, not evidence deposition vanished;
+  the unordered `depositionLoss` and assembled mass source
+  are nonzero and agree.
+- `headspaceBoundaryOut_kg_s=0.00774726` is a
+  **signed NET** sum, despite the name; simultaneously
+  `headspaceBoundaryIn_kg_s=-1.14072` is the
+  *gross inward* mass rate. Gross outward must then be
+  approximately `1.14847 kg/s`. Such large counterflow
+  is not by itself proof of error, but requires patch-by-patch
+  inspection via the existing `HEADSPACE_PRESSURE_AUDIT`
+  log lines. This diagnostic includes physical
+  non-coupled patches and must not be confused with net
+  sparger throughput.
+- `inventoryRate_kg_s=NA` and
+  `endpointClosure_kg_s=NA` are expected at the
+  **first audit write**; there is no second in-process
+  write interval yet. It is premature to assert
+  inventory conservation under the new closure.
+- Only one saved transfer-field write was reported
+  before `End`, despite nominal `endTime=31.4`.
+  Check `Time =` / final `End` lines and use a longer
+  isolated trial from the same source checkpoint to obtain
+  at least two audit writes for closure testing.
+
+### Next controlled tests
+
+1. **Read-only patch diagnosis:** print existing
+   `HEADSPACE_PRESSURE_AUDIT` lines from
+   `log.headspaceO2.smoke`, especially patch identities
+   and gross `headspaceIn_kg_s`/net
+   `headspaceOut_kg_s`. No recompilation needed.
+2. **Independent geometric/foam comparison:** keep the
+   baseline completed trial intact. Use the already
+   implemented `prepare_sc1_headspace_o2_trial.py`
+   with `--source /scratch/nwimer/sc1_bubble_audit_20261029/run`,
+   `--out` a **fresh** scratch path,
+   `--foam-multiplier 1` and `--duration 0.5` for a
+   strictly exploratory upper-impeller foam-area case.
+   Existing `filmThickness`, `foamDiameter` and
+   geometry bounds remain unchanged. Compare
+   `effectiveArea_m2`, headspace O2 rate, bubble O2
+   rate, gas/liquid inventory, and pressure-patch flows
+   at common output times; check solver stability.
+3. **Longer zero-foam control** from the same
+   `31.199982...` source checkpoint and with
+   `--duration 0.5`, so both trials have multiple
+   writes for bubble inventory derivatives. A
+   single 0.1 s endpoint is not a steady-state result.
+4. If the full candidate foam area still cannot
+   supply oxygen on physically plausible `k_L`
+   and geometry, investigate the distinct missing
+   `headspaceGas -> bubbleGas` re-entrainment
+   process before forcing `foamAreaMultiplier`
+   beyond defensible values. Validate with
+   experimental hydrodynamics and OTR data.
+
+**No production CFD/kinetic code or 9.9 s reference checkpoint
+has been altered.** Runtime success validates that the
+new mass-transfer pair can be assembled, not its physical
+parameterization or eventual oxygen supply.
+
 ## 6. Acceptance criteria before any 9.9 s common checkpoint
 
 1. The new `interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`
