@@ -196,6 +196,41 @@ correlation is NOT the full applied phase-transfer model.**
   0.301, 0.255 and 0.258 at 30.7, 30.8 and 30.9 s respectively
   are qualitatively consistent with this factor.
 
+The actual case `phaseProperties` blending dictionary (reported by
+Kestrel, 2026-11-03) is:
+
+```
+default {
+    type linear;
+    minPartlyContinuousAlpha.headspaceGas 0.3;
+    minFullyContinuousAlpha.headspaceGas 0.7;
+    // Identical 0.3/0.7 thresholds for liquid and bubbleGas.
+}
+heatTransfer {
+    type linear;
+    minPartlyContinuousAlpha.headspaceGas 0;
+    minFullyContinuousAlpha.headspaceGas 1;
+    // Identical 0/1 thresholds for other phases.
+}
+massTransfer { $heatTransfer; }
+```
+
+Since `phaseTransfer` has no dedicated `blending` entry, BiRD
+selects `default`, **not** `massTransfer`. For the ordered
+`(bubbleGas in headspaceGas)` model, the local deposition factor is
+`clamp((alpha.headspaceGas - 0.3)/0.4, 0, 1)`. This can reduce
+the integrated applied/raw ratio to around 0.25–0.30 in the diffuse
+headspace interface. The raw-to-applied difference is **expected
+from interfacial blending**, rather than evidence that the deposition
+library was compiled incorrectly.
+
+The `bubbleMassTransferStageAudit.H` test has now been extended to
+print `blendedCorrelationLoss_kg_s` alongside the raw formula and
+the phase-system `depositionLoss_kg_s` at the same PIMPLE stage.
+For the SC1 thresholds those should agree to numerical precision
+if the blending interpretation is complete. Only the separate scratch
+audit executable needs recompilation.
+
 To quantitatively confirm the explanation, read the actual SC1
 `constant/phaseProperties` `blending` dictionary (read-only):
 
