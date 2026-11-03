@@ -39,18 +39,20 @@
     const volVectorField& auditBubbleVel = auditBubbleUTmp();
     const volVectorField& auditHeadVel = auditHeadUTmp();
 
-    const tmp<volScalarField> auditO2Tmp
+    // Net mass transfer across bubbleGas-liquid, which may include multiple
+    // interface-composition species. Do not label this as O2 dissolution.
+    const tmp<volScalarField> auditBubbleLiquidTmp
     (
         fluid.dmdtf(phasePairKey("bubbleGas", "liquid"))
     );
-    const volScalarField& auditO2 = auditO2Tmp();
+    const volScalarField& auditBubbleLiquid = auditBubbleLiquidTmp();
 
     scalar auditBubbleMass = 0;
     scalar auditDepositionLoss = 0;
     scalar auditOrderedDepLoss = 0;
     scalar auditBubblePhaseSource = 0;
     scalar auditCalculatedDepLoss = 0;
-    scalar auditDissolutionLoss = 0;
+    scalar auditNetBubbleLiquidLoss = 0;
     const bool auditHasBubbleSource =
         auditActualSources.set(auditBubble.index());
 
@@ -77,7 +79,7 @@
                /auditHeadDiameter[celli]*auditV[celli];
         }
 
-        auditDissolutionLoss -= auditO2[celli]*auditV[celli];
+        auditNetBubbleLiquidLoss -= auditBubbleLiquid[celli]*auditV[celli];
     }
 
     reduce(auditBubbleMass, sumOp<scalar>());
@@ -85,7 +87,7 @@
     reduce(auditOrderedDepLoss, sumOp<scalar>());
     reduce(auditBubblePhaseSource, sumOp<scalar>());
     reduce(auditCalculatedDepLoss, sumOp<scalar>());
-    reduce(auditDissolutionLoss, sumOp<scalar>());
+    reduce(auditNetBubbleLiquidLoss, sumOp<scalar>());
 
     // Re-evaluate the fvModels source to the bubbleGas density equation.
     // For the SC1 case this should be the sum of 15 sparger mass sources.
@@ -189,7 +191,7 @@
           - (
                 auditInjection
               - auditDepositionLoss
-              - auditDissolutionLoss
+              - auditNetBubbleLiquidLoss
               - auditBubbleBoundaryOut
             );
         // This uses the actual sum of all the phase-system's
@@ -214,7 +216,7 @@
             << " assembledBubbleDmdt_kg_s=" << auditBubblePhaseSource
             << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
             << " correlationDepLoss_kg_s=" << auditCalculatedDepLoss
-            << " oxygenDissolutionLoss_kg_s=" << auditDissolutionLoss
+            << " netBubbleLiquidMassLoss_kg_s=" << auditNetBubbleLiquidLoss
             << " bubbleBoundaryOut_kg_s=" << auditBubbleBoundaryOut
             << " headspaceBoundaryOut_kg_s=" << auditHeadBoundaryOut
             << " liquidBoundaryOut_kg_s=" << auditLiquidBoundaryOut
