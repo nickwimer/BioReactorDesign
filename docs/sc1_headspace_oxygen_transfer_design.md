@@ -390,6 +390,36 @@ final baseline must be regenerated from nonreacting spin-up
 or re-equilibrated sufficiently with the new physics and shown
 to reach stable interfacial area, phase inventory and DO.
 
+### Scratch trial successfully prepared; ready for runtime smoke test (2026-11-03)
+
+The user pulled commit `f6655a7` and reran
+`test_sc1_headspace_o2_trial.py`: dictionary, bounding and planar
+area regression tests all **passed**. The new scratch case
+`/scratch/nwimer/sc1_headspace_o2_trial_20261103/run` was
+prepared successfully from collated
+`processors52/31.199982372783058`, with configured end time
+approximately 31.4 s and `writeControl runTime`,
+`writeInterval 0.1`. `controlDict` loads the existing
+`libalphaLimitVelocity.so` and the new scratch
+`libsc1HeadspaceFilmModels.so` using its canonical `/kfs3/scratch`
+path.
+
+The `constant/phaseProperties` trial file has:
+- added `(liquid and headspaceGas)` Henry O2 entry;
+- ordered `(headspaceGas in liquid)` and
+  `(liquid in headspaceGas)` mass-transfer models with
+  `type resolvedHeadspaceFilm`;
+- `foamAreaMultiplier 0` on both added transfer orientations;
+- matching heat-transfer entries; and the original bubble-liquid
+  Henry and bubble-to-headspace deposition entries retained.
+
+The upgraded scratch `putidaFoamMask01BubbleAudit` has also compiled
+successfully. **Runtime behavior has NOT yet been tested**. Next
+is a short 52-rank collated `srun` with the experimental scratch case,
+followed by checking new `headspaceGasAndLiquid` transfer output
+against the existing `bubbleGasAndLiquid` transfer and solver
+audit. No production CFD case or shared library was changed.
+
 ## 6. Acceptance criteria before any 9.9 s common checkpoint
 
 1. The new `interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`
