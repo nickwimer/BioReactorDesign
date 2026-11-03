@@ -170,6 +170,15 @@ run folder, patches only the new scratch `phaseProperties`
 and `controlDict`, and refuses an existing destination.
 It does **not** silently edit any production checkpoint.
 
+The installer now accepts `--foam-multiplier X` (0 to 10) to create
+different explicit foam-area scenarios from the **same original scratch
+checkpoint**, with `--out` pointing at a new, previously nonexistent
+scratch case directory. Start with `--foam-multiplier 0`, and only
+consider a bounded nonzero sweep **after** the baseline source field,
+gas/liquid inventory balance and effective area have been validated.
+Do not use such a coefficient to fit DO without independent physical
+evidence for the foam area.
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
