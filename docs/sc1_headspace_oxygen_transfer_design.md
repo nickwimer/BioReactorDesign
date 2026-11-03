@@ -236,6 +236,29 @@ It refuses an existing destination; never delete scratch or production
 checkpoint directories to work around that guard. Choose a fresh
 `--out` in scratch if an earlier candidate already exists.
 
+### Fourth Kestrel gate: trial preparer now accepts omitted writeControl
+
+The user successfully compiled the updated scratch-only
+`putidaFoamMask01BubbleAudit` executable with the
+`netHeadspaceLiquidMassLoss_kg_s` diagnostic. The installed
+headspace film library also compiled and linked successfully.
+
+The first attempted trial preparation stopped **before creating the
+destination run directory**, reporting
+`Expected exactly one writeControl in controlDict`.
+The existing scratch source case simply omits the optional
+`writeControl` keyword. The installer now inserts
+`writeControl runTime;` into the **new scratch case only** if
+absent, replaces it when explicitly present, rejects duplicate
+entries, and retains strict validation of required entries.
+Regression tests cover all three cases. The production and
+original scratch case `controlDict` remain unchanged.
+
+Re-run the pure-Python preflight and trial preparer; do **not**
+recompile either already successful shared library or diagnostic
+solver. Do not launch CFD until verifying the new
+`phaseProperties` and `controlDict` entries.
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
