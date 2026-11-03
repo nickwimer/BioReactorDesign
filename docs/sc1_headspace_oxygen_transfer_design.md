@@ -194,6 +194,25 @@ errors at `resolvedHeadspaceFilm.C` lines 100, 102, 144, 146 and
 is no physics/configuration change and no need to rerun the
 Python checks unless the installer changes.**
 
+### Second Kestrel linking check (2026-11-03)
+
+After fixing the missing C++ `phaseSystem.H` include, the experimental
+library's source **compiled successfully**, but the final `ld.bfd`
+link failed with:
+
+```text
+cannot find -lbirdeulerianInterfacialCompositionModels
+cannot find -lbirdphaseSystem
+```
+
+The libraries **exist** under `$FOAM_USER_LIBBIN`. The failed link
+command had only `-L$FOAM_LIBBIN`, omitting the user library
+directory. The branch now adds `-L$(FOAM_USER_LIBBIN)` to
+`sc1HeadspaceFilmModels/Make/options` before the `-l`
+dependencies. This is a linker search-path fix only, not a
+model-physics change. Re-run `wmake` and check `ldd` for
+the expected full paths; do not rebuild the existing BiRD libraries.
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
