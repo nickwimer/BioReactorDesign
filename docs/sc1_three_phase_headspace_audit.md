@@ -168,6 +168,52 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2r. Three-phase identification confirms HEADSPACE GAS at MEML upper impeller (9.9 s)
+
+The scratch-only three-field `foamToVTK` conversion returned status
+zero. `sc1_meml_propeller_gas_identity.py --convert` then evaluated
+`alpha.liquid`, `alpha.headspaceGas`, and `alpha.bubbleGas` on
+the 9.9 s `propeller` patch. The **maximum per-face phase-sum error
+was 1.03e-6**. Area-weighted values:
+
+| Patch region | Face area m2 | alpha liquid | alpha headspace | alpha bubble | Area with headspace fraction >0.5 |
+|---|---:|---:|---:|---:|---:|
+| Lower window, y=0.180–0.347 m, r<0.30 | 0.23824 | 0.870 | 0.000 | 0.130 | 0.0% |
+| Upper window, y=0.708–0.937 m, r<0.30 | 0.38109 | 0.254 | **0.744** | 0.002 | **73.2%** |
+| Upper y=0.708–0.780 m | 0.06407 | 0.744 | 0.248 | 0.008 | 17.1% |
+| Upper y=0.780–0.850 m | 0.23565 | 0.198 | **0.801** | 0.001 | **79.6%** |
+| Upper y=0.850–0.920 m | 0.07963 | 0.031 | **0.969** | ~0 | **98.8%** |
+| Upper r=0.10–0.175 m, y=0.780–0.850 m | 0.09796 | 0.053 | **0.946** | 0.001 | **94.9%** |
+| Upper r=0.175–0.30 m, y=0.850–0.920 m | 0.04898 | 0.050 | **0.950** | ~0 | **98.1%** |
+| Upper |n dot e_theta|>=0.8 face-normal proxy, r=0.10–0.30 m | 0.14091 | 0.311 | **0.686** | 0.003 | **66.2%** |
+| Lower equivalent normal-orientation proxy | 0.12960 | 0.883 | **0.000** | 0.117 | **0.0%** |
+
+**Key conclusion:** MEML's nonliquid upper-propeller environment is
+overwhelmingly continuous headspace phase, **not dispersed bubble gas**.
+The lower propeller is predominantly liquid-dominated with some
+dispersed bubbles and no headspace contact. The upper impeller's
+gas-contacting state is present already at the 9.9 s nonreacting
+checkpoint; 20 s liquid-only diagnostics showed similar exposure.
+
+The circumferential-normal subset is an *approximate blade-face
+orientation proxy*, not an authoritative classification of blade
+faces. The `propeller` patch may combine shaft, hub and blades.
+Neither a wall-cell phase fraction nor `alpha.headspaceGas>0.5`
+proves physical dewetting, ventilation, or an incorrect real reactor
+free surface. The EMM case is also not an independent physical
+reference, because its liquid volume is ~151 L too high at 9.9 s.
+
+**Go/no-go implication for biological baselines:** Until the
+intended upper blade elevation and submerged operation are compared
+with the actual mesh and expected free surface, treat the existing
+9.9 s MEML state as *hydrodynamically unvalidated* for a
+scientifically controlled MM/EMM/MEML comparison. Do not
+compensate by changing deposition efficiency, biology timing or OUR.
+If the design requires both impellers submerged and the CFD
+upper blades are in headspace, investigate MRF/mesh/phase-transport
+and interface dynamics, then re-equilibrate a common nonreacting
+checkpoint under any verified physics corrections.
+
 ## 2q. Fine-scale 9.9-second upper-propeller liquid/gas exposure
 
 The extended `sc1_upper_impeller_coverage.py --times 9.9`
