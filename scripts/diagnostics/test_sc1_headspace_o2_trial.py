@@ -177,6 +177,7 @@ writeInterval 0.1;
         type volFieldValue;
         writeControl timeStep;
         writeInterval 2;
+        libs ("libfieldFunctionObjects.so");
         // the nested settings must not change
     }}
 """
@@ -207,6 +208,31 @@ writeInterval 0.1;
     assert inserted.count("writeControl timeStep;") == 15
     assert inserted.count("writeControl    runTime;") == 1
     assert inserted.count("writeInterval 2;") == 15
+    # Function objects also have nested libs lists. They must remain
+    # untouched and must not be mistaken for a root-level libs setting.
+    assert inserted.count('libs ("libfieldFunctionObjects.so");') == 15
+    assert patcher.top_level_list_bounds(inserted, "libs") is None
+    trial_lib = Path("/scratch/nwimer/libsc1HeadspaceFilm.so")
+    with_lib = patcher.add_library_to_control(inserted, trial_lib)
+    assert with_lib.count('libs ("libfieldFunctionObjects.so");') == 15
+    assert with_lib.count("libsc1HeadspaceFilm.so") == 1
+    root_libs = patcher.top_level_list_bounds(with_lib, "libs")
+    assert root_libs is not None
+    assert "libsc1HeadspaceFilm.so" in with_lib[root_libs[0]:root_libs[1]]
+
+    # When a root libs list already exists, extend it rather than adding
+    # a duplicate, while all 15 nested function-object lists stay unchanged.
+    with_root_libs = 'libs ("libbirdphaseSystem.so");\n' + inserted
+    modified_root_libs = patcher.add_library_to_control(
+        with_root_libs, trial_lib
+    )
+    assert modified_root_libs.count('libs ("libfieldFunctionObjects.so");') == 15
+    assert len(patcher.root_dictionary_matches(
+        modified_root_libs,
+        __import__("re").compile(r"(?m)^[ \t]*libs[ \t]*\("),
+    )) == 1
+    assert "libbirdphaseSystem.so" in modified_root_libs
+    assert "libsc1HeadspaceFilm.so" in modified_root_libs
     updated_interval = patcher.set_control_entry(
         inserted, "writeInterval", "0.1"
     )
