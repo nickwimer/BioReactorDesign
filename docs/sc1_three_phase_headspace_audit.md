@@ -168,6 +168,36 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2k. Availability and safe conversion of 9.9/20-second snapshots
+
+Read-only Kestrel preflight confirmed:
+- Original MEML `putida_sc1_final`: reconstructed root
+  `alpha.liquid`, `alpha.headspaceGas` and `alpha.bubbleGas`
+  at 9.9, 10 and 20 s; no 25.5 or 30 s root time.
+- RHEL9 MEML `putida_sc1_final_RHEL9_mask01_to25p5`:
+  25.5 s fields in collated `processors52`; 30 s includes
+  reconstructed root `alpha.liquid` and collated gas fractions.
+- EMM `putida_sc1`: reconstructed `alpha.liquid`
+  at 9.9, 10, 20, 25.5 and 30 s.
+- Original and RHEL9 MEML `constant/phaseProperties`
+  are byte-identical, but that does **not** demonstrate unchanged
+  solver binaries, model setup, or hydrodynamic history.
+
+Use `scripts/diagnostics/sc1_surface_evolution.py` for
+a read-only 9.9 and 20 s MEML_BASE-versus-EMM comparison.
+It creates a real scratch directory with symlinks pointing to
+production case input fields, converts only `alpha.liquid`
+via serial `foamToVTK`, stores VTK/logs exclusively in
+scratch, and reports total liquid inventory, above-1.02 m
+liquid, and annular `alpha.liquid=0.5` crossings.
+No production time directories or checkpoint fields are modified.
+
+Do **not** combine 9.9/20 s original MEML and 25.5/30 s RHEL9
+trends without explicitly recognizing the continuation boundary.
+Later, if needed, read collated 25.5 s fields using a separate
+scratch parallel conversion; do not launch `foamToVTK` with
+`-case` pointing at production unless its output is redirected.
+
 ## 2i. EMM vs MEML using the same alpha.liquid=0.5 criterion
 
 At t=30 s, use matched radial annuli and the highest
