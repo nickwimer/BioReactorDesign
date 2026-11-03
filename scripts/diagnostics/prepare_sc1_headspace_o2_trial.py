@@ -232,6 +232,86 @@ def install_phase_models(original: str, foam_multiplier: float = 0.0) -> str:
     return updated
 
 
+def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
+    """Match only root-scope OpenFOAM dictionary statements.
+
+    An SC1 controlDict can contain function objects with their own
+    writeControl/writeInterval settings. A multiline regular expression
+    alone must never treat these nested settings as solver controls.
+    Track quoted strings, line/block comments, and {}/() nesting before
+    examining each beginning-of-line keyword.
+    """
+    statement = re.compile(
+        r"^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;"
+    )
+    matches: list[tuple[int, int]] = []
+    braces = 0
+    parentheses = 0
+    state = "plain"
+    offset = 0
+
+    for line in text.splitlines(keepends=True):
+        if state == "plain" and braces == 0 and parentheses == 0:
+            found = statement.match(line)
+            if found:
+                matches.append(
+                    (offset + found.start(), offset + found.end())
+                )
+
+        pos = 0
+        while pos < len(line):
+            char = line[pos]
+            next_char = line[pos + 1] if pos + 1 < len(line) else ""
+
+            if state == "line_comment":
+                if char == "\n":
+                    state = "plain"
+            elif state == "block_comment":
+                if char == "*" and next_char == "/":
+                    state = "plain"
+                    pos += 1
+            elif state == "quote":
+                if char == "\\":
+                    pos += 1
+                elif char == '"':
+                    state = "plain"
+            else:
+                if char == "/" and next_char == "/":
+                    state = "line_comment"
+                    pos += 1
+                elif char == "/" and next_char == "*":
+                    state = "block_comment"
+                    pos += 1
+                elif char == '"':
+                    state = "quote"
+                elif char == "{":
+                    braces += 1
+                elif char == "}":
+                    braces -= 1
+                elif char == "(":
+                    parentheses += 1
+                elif char == ")":
+                    parentheses -= 1
+
+                if braces < 0 or parentheses < 0:
+                    raise ValueError(
+                        "Unbalanced top-level controlDict delimiters."
+                    )
+            pos += 1
+
+        # splitlines(keepends=True) can return a final line without \n.
+        if state == "line_comment":
+            state = "plain"
+        offset += len(line)
+
+    if braces != 0 or parentheses != 0 or state in ("quote", "block_comment"):
+        raise ValueError(
+            "Unbalanced or unterminated controlDict blocks/quotes/comments."
+        )
+
+    return matches
+
+
 def set_control_entry(
     text: str,
     key: str,
@@ -239,22 +319,20 @@ def set_control_entry(
     *,
     insert_if_missing: bool = False,
 ) -> str:
-    """Replace one setting or add an explicitly optional setting.
+    """Replace a root solver setting, or explicitly add an optional one."""
+    matches = top_level_control_matches(text, key)
 
-    The SC1 source controlDict may omit writeControl, in which case
-    OpenFOAM uses its default. The trial needs runTime writes so we
-    insert it only into the scratch copy. Missing required entries
-    and duplicate entries remain errors.
-    """
-    pat = re.compile(r"(?m)^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;")
-    matches = list(pat.finditer(text))
     if not matches and insert_if_missing:
+        # Only this newly generated scratch file gets an added setting.
         return text.rstrip() + f"\n\n{key}    {value};\n"
     if len(matches) != 1:
         raise ValueError(
-            f"Expected exactly one {key} in controlDict, found {len(matches)}"
+            f"Expected exactly one TOP-LEVEL {key} in controlDict, "
+            f"found {len(matches)}"
         )
-    return pat.sub(f"{key}    {value};", text, count=1)
+
+    start, end = matches[0]
+    return text[:start] + f"{key}    {value};" + text[end:]
 
 
 def add_library_to_control(text: str, library: Path) -> str:
