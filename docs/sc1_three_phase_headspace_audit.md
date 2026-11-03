@@ -168,6 +168,67 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2p. Upper impeller-region liquid fraction: MEML vs EMM
+
+The read-only `sc1_upper_impeller_coverage.py` test succeeded
+for both original MEML and EMM at 9.9 and 20 s, using scratch VTK.
+
+**Upper MRF window**: y=0.70802753–0.93662247 m; r=0–0.30 m.
+This is a **geometric envelope**, not an exact list of cells
+assigned to the active `rotor` zone, nor a component classification
+of the `propeller` patch faces.
+
+| Case, CFD time | Volume-weighted alpha.liquid (62 L window approx.) | Propeller patch area (m2) | Area-weighted propeller alpha.liquid |
+|---|---:|---:|---:|
+| Original MEML, 9.9 s | 0.459 | 0.38108 | **0.254** |
+| Original MEML, 20 s | 0.465 | 0.38108 | **0.256** |
+| EMM, 9.9 s | 0.945 | 0.39520 | **0.942** |
+| EMM, 20 s | 0.940 | 0.39520 | **0.937** |
+
+At 9.9 s, mean MEML liquid fractions inside the window
+y=0.85–0.92 m are approximately **0** at radius 0.1–0.175 m,
+and **0.024** at r=0.175–0.30 m; the EMM equivalents are
+**0.960** and **0.947**. The MEML upper impeller-region fluid
+is **predominantly not liquid**, while EMM is liquid-dominated
+at equivalent coordinates. This condition is persistent to 20 s
+and therefore predates the reacting continuation.
+
+For propeller-patch faces in this upper window at 9.9 s,
+MEML area-weighted alphaL ranges from **0.003** at
+r=0.05–0.10 m to **0.439** at r=0.175–0.30 m, versus
+**0.931–0.952** across those bands in EMM. The sum of all
+reported patch areas is 0.38108 m2 in MEML and 0.39520 m2 in EMM;
+hence the area-weighted averages above.
+
+**Major interpretative caveats:**
+1. The exported `propeller` patch combines shaft/hub/blade
+   surfaces; its area-weighted mean is not literal blade wetted area.
+   `1-alpha.liquid` includes both `headspaceGas` and
+   `bubbleGas` in MEML, not solely headspace.
+2. The meshes are not identical. The MEML propeller patch
+   contains **9064 faces** and spans y=**0.218–1.741 m**;
+   the EMM patch has **7928 faces** spanning
+   y=**0.208–1.397 m**. These different extents
+   warrant verification of actual shaft and blade geometry.
+3. EMM contains ~151 L excess liquid already at 9.9 s;
+   its upper-impeller liquid dominance is **not a sound
+   independent validation** of the true reactor condition.
+
+The previous question of whether the upper impeller is exposed
+has progressed substantially: gas-dominated **fluid** and
+**propeller wall-adjacent phase fractions** are directly measured
+in MEML's upper rotating-region heights. Next, establish
+which patch faces are actual blade surfaces and distinguish
+connected headspace from dispersed bubbles there. The diagnostic
+script now emits finer axial and radial propeller-patch liquid
+coverage, plus the lower-impeller span as an internal control.
+It uses only already converted VTKs and can be run at
+`--times 9.9` without any CFD or VTK conversion.
+
+This **does not** by itself prove that the free-surface vortex
+is too deep; compare impeller blade geometry and experimental
+surface observations before changing MRF masks or chemistry.
+
 ## 2o. Exact MEML MRF axial spans and propeller-coverage follow-up
 
 A Kestrel inspection of the production `constant/polyMesh/cellZones`,
