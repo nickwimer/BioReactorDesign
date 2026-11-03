@@ -168,6 +168,33 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2l. VTK selector fix: boundary-patch exports were mistakenly included
+
+The first run of `sc1_surface_evolution.py` successfully converted
+the original MEML and EMM 9.9 and 20 s snapshots (both `foamToVTK`
+return codes were **0**), producing the four main volume files
+`VTK/MEML_BASE_9.9.vtk`, `VTK/MEML_BASE_20.vtk`,
+`VTK/EMM_9.9.vtk`, and `VTK/EMM_20.vtk`.
+
+The script then mistakenly searched `VTK/**/*.vtk` and matched
+the exported boundary patches as well as the volume mesh, so no
+liquid-interface results were calculated. This was a **postprocessing
+selection bug**, not a failed conversion or a CFD problem.
+
+The fixed script selects `VTK/<case_name>_<time>.vtk` directly
+(or exactly one root-level fallback) and supports
+`--analyze-only` to reuse the existing VTK files without a new
+conversion. Invoke in Kestrel:
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+if git -C "$REPO" pull --ff-only; then
+    /scratch/nwimer/.conda-envs/of-post/bin/python \
+        "$REPO/scripts/diagnostics/sc1_surface_evolution.py" \
+        --analyze-only
+fi
+```
+
 ## 2k. Availability and safe conversion of 9.9/20-second snapshots
 
 Read-only Kestrel preflight confirmed:
