@@ -265,7 +265,7 @@ def latest_collated_time(root: Path) -> tuple[str, float]:
     return max(times, key=lambda pair: pair[1])
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=SOURCE)
     parser.add_argument("--out", type=Path, default=TRIAL)
@@ -345,11 +345,13 @@ def main() -> None:
             " (0 = geometric-area baseline)."
         )
         print("  Production case and source scratch continuation untouched.")
-        print("  NOT YET compiled or runtime verified on Kestrel.")
+        print("  Library compiled separately; trial runtime remains unverified.")
+        return 0
     except (OSError, ValueError, FileNotFoundError) as err:
         print(f"Trial preparation stopped: {err}")
         print("No production case was modified.")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
