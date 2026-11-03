@@ -199,8 +199,13 @@ Foam::diffusiveMassTransferModels::resolvedHeadspaceFilm::K() const
             continue;
         }
 
+        // For a planar 0-to-1 interface, the two smooth alpha gates
+        // would otherwise discard an area fraction minAlpha+fullAlpha.
+        // Normalize the resolved area to integrate to the actual plane
+        // area (when alphaH+alphaL=1 and there is no bubble phase).
         const scalar geometricAreaDensity =
-            gate*mag(gradAlphaH[celli]);
+            gate*mag(gradAlphaH[celli])
+           /(scalar(1) - minInterfaceAlpha_ - fullInterfaceAlpha_);
 
         // Optional extra sub-grid gas-liquid contact inside the bounded
         // impeller foam zone; does NOT operate in the entire headspace.
