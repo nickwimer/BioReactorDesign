@@ -10,6 +10,7 @@ Run after compiling the separate libsc1HeadspaceFilmModels.so in scratch.
 """
 
 import argparse
+import math
 import re
 import shutil
 from pathlib import Path
@@ -106,7 +107,7 @@ def pair_exists(section: str, phase1: str, direction: str, phase2: str) -> bool:
     )
 
 
-def model_dictionary(model: str, report: bool) -> str:
+def model_dictionary(report: bool, foam_multiplier: float) -> str:
     return """    {
         type resolvedHeadspaceFilm;
         headspacePhase headspaceGas;
@@ -118,7 +119,7 @@ def model_dictionary(model: str, report: bool) -> str:
 
         // Geometrically resolved macro-interface only by default.
         // Explore bounded foam enhancement after baseline smoke test.
-        foamAreaMultiplier 0;
+        foamAreaMultiplier %.8g;
         foamDiameter 0.003;
         foamYMin 0.65;
         foamYMax 1.05;
@@ -131,10 +132,13 @@ def model_dictionary(model: str, report: bool) -> str:
         maxBubbleAlpha 0.10;
         maxAreaDensity 2000;
         reportArea %s;
-    }""" % ("true" if report else "false")
+    }""" % (foam_multiplier, "true" if report else "false")
 
 
-def install_phase_models(original: str) -> str:
+def install_phase_models(original: str, foam_multiplier: float = 0.0) -> str:
+    if not math.isfinite(foam_multiplier) or not 0 <= foam_multiplier <= 10:
+        raise ValueError("foam_multiplier must be between 0 and 10.")
+
     phase_system = re.search(
         r"(?m)^\s*type\s+([^;]+);", original
     )
@@ -198,7 +202,7 @@ def install_phase_models(original: str) -> str:
             )
         entry = (
             f"    ({dispersed} in {continuous})\n"
-            + model_dictionary("resolvedHeadspaceFilm", report)
+            + model_dictionary(report, foam_multiplier)
         )
         updated = append_list_entry(updated, mass_key, entry)
 
@@ -267,6 +271,10 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=TRIAL)
     parser.add_argument("--library", type=Path, default=LIBRARY)
     parser.add_argument(
+        "--foam-multiplier", type=float, default=0,
+        help="Optional bounded subgrid foam area (0 = geometric only).",
+    )
+    parser.add_argument(
         "--duration", type=float, default=0.2,
         help="Very short diagnostic-only CFD advance (s), not equilibrium.",
     )
@@ -292,7 +300,7 @@ def main() -> None:
                 )
 
         original = (src / "constant/phaseProperties").read_text()
-        updated_phase = install_phase_models(original)
+        updated_phase = install_phase_models(original, args.foam_multiplier)
 
         original_control = (src / "system/controlDict").read_text()
         control = set_control_entry(
@@ -332,7 +340,10 @@ def main() -> None:
         print(f"  Experimental dynamic library: {lib}")
         print("  Existing bubble-liquid Henry/transfer retained unchanged.")
         print("  Headspace-liquid Henry + two film orientations added.")
-        print("  Foam area multiplier: zero (geometric-area baseline).")
+        print(
+            f"  Foam area multiplier: {args.foam_multiplier:g}"
+            " (0 = geometric-area baseline)."
+        )
         print("  Production case and source scratch continuation untouched.")
         print("  NOT YET compiled or runtime verified on Kestrel.")
     except (OSError, ValueError, FileNotFoundError) as err:
