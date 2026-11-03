@@ -1,0 +1,12 @@
+EXE_INC = \
+    -I$(SC1_BIRD_ROOT)/phaseSystems/lnInclude \
+    -I$(SC1_BIRD_ROOT)/interfacialCompositionModels/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/transportModels/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude
+
+LIB_LIBS = \
+    -lbirdeulerianInterfacialCompositionModels \
+    -lbirdphaseSystem \
+    -lfiniteVolume
