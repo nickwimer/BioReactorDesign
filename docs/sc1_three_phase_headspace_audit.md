@@ -168,6 +168,49 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2d. Critical correction: blended interfacial deposition
+
+The locally installed RHEL9 `deposition.C` and the public GitHub
+`deposition.C` were compared and found **byte-for-byte identical**.
+The audit binary resolves
+`libbirdeulerianInterfacialModels.so` from the expected local
+RHEL9 user library, built October 21, 2026, newer than the source
+timestamp March 23, 2026. Timestamps do not prove binary identity.
+
+**The more important discovery is that the raw `deposition::dmdtf()`
+correlation is NOT the full applied phase-transfer model.**
+
+- `PhaseTransferPhaseSystem.H` defines its model table as
+  `BlendedInterfacialModel<phaseTransferModel>`.
+- `PhaseTransferPhaseSystem.C` invokes
+  `generatePairsAndSubModels("phaseTransfer", ...)`, and its
+  `correct()` calls the BLENDED `dmdtf()`.
+- `BlendedInterfacialModel.C` computes
+  `f1 * model1In2_->dmdtf()` for the ordered
+  `(bubbleGas in headspaceGas)` model (with corresponding other-model
+  terms if configured). The local blending method is read from
+  `phaseProperties/blending` and chosen by `phaseTransfer` or
+  `default` if no specific one exists.
+- The independent audit evaluated the **raw** deposition law, missing
+  the spatial blending factor. The observed applied/raw ratios of
+  0.301, 0.255 and 0.258 at 30.7, 30.8 and 30.9 s respectively
+  are qualitatively consistent with this factor.
+
+To quantitatively confirm the explanation, read the actual SC1
+`constant/phaseProperties` `blending` dictionary (read-only):
+
+```bash
+RUN=/scratch/nwimer/sc1_bubble_audit_20261029/run
+foamDictionary "$RUN/constant/phaseProperties" -entry blending -value
+```
+
+Do not edit `efficiency`, rebuild libraries, or claim a deposition
+implementation defect based solely on the raw/blended discrepancy.
+The actual applied deposition is ~7–12 g/s near 30 s and is of the
+same order as the ~8.74 g/s sparger mass feed. The unblended
+30–40 g/s diagnostic estimate must not be interpreted as the
+simulated mass loss.
+
 ## 2c. Same-PIMPLE-stage diagnostic at 30.7–30.9 s
 
 The scratch audit executable was rebuilt with
