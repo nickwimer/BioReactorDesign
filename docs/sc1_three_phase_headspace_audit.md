@@ -168,6 +168,36 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2n. MRF rotation preflight across cases
+
+Kestrel confirmed that all three simulations use an MRF `cellZone
+rotor`, an origin `(0 0 0)`, an axis `(0 1 0)`, and the
+same target angular velocity **17.38 rad/s (~166 rpm)**.
+
+- Original MEML and the RHEL9 MEML continuation use
+  `omega table ((0 0) (0.1 17.38) (10 17.38) (1000 17.38))`;
+  they reach target speed by 0.1 s.
+- Historical EMM uses constant `omega 17.38`, with no specified ramp.
+- MEML includes `system/topoSetDict.mrfFromYaml`, which
+  selects an active `rotor` cell zone from a broader
+  `rotorEnvelope` with exclusions. The diagnostic has **not
+  yet examined that file's full selections**, nor compared the
+  resulting mesh `constant/polyMesh/cellZones` to EMM.
+
+The impeller rotation **setpoint is not different after 0.1 s**,
+but MRF cell-zone geometry, nonrotating patch declarations,
+phase treatment, pressure field and spin-up initialization can
+differ. Since the deep MEML vortex already exists at 9.9 s,
+the important next diagnostic is whether its active MRF
+cell zone overlaps the depressed core/headspace cavity and
+whether the EMM zone is geometrically different.
+
+Do not assume that the `rotor` name denotes an identical
+physical volume in both meshes. Read the full MRFProperties
+and MEML topoSetDict, and inspect the generated cellZones.
+Changing the omega value now would not address the
+underlying case-to-case geometry/phase differences.
+
 ## 2m. 9.9/20-second transient surface and liquid-volume results (2026-11-03)
 
 The corrected `sc1_surface_evolution.py --analyze-only` completed
