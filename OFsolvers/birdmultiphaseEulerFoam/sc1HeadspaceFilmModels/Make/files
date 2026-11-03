@@ -1,0 +1,4 @@
+resolvedHeadspaceFilm.C
+
+# Set SC1_HEADSPACE_LIB_DIR to a scratch path before wmake.
+LIB = $(SC1_HEADSPACE_LIB_DIR)/libsc1HeadspaceFilmModels
