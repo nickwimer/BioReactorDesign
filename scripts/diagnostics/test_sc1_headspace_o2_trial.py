@@ -116,7 +116,7 @@ writeInterval 10;
 libs ("libbirdphaseSystem.so");
 """
     modified = patcher.add_library_to_control(
-        before, Path("/scratch/nwimer/sc1HeadspaceFilm.so")
+        before, Path("/scratch/nwimer/libsc1HeadspaceFilm.so")
     )
     assert modified.count("libsc1HeadspaceFilm.so") == 1
     assert modified.count("libbirdphaseSystem.so") == 1
