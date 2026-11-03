@@ -168,6 +168,48 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2i. EMM vs MEML using the same alpha.liquid=0.5 criterion
+
+At t=30 s, use matched radial annuli and the highest
+liquid-fraction crossing from above to compare the historical 2-phase
+EMM and 3-phase MEML directly. The results are **annular averages**;
+the old local wall climbing or deep interface filaments may be hidden
+by azimuthal averaging.
+
+| Radius (m) | EMM alphaL 0.5 height (m) | MEML alphaL 0.5 height (m) | EMM liquid above 1.02 m (L) | MEML liquid above 1.02 m (L) |
+|---|---:|---:|---:|---:|
+| 0–0.05 | 1.193 | 0.674 (multiple crossings) | 1.425 | 0 |
+| 0.05–0.10 | 1.198 | 0.741 | 2.609 | 0 |
+| 0.10–0.20 | 1.199 | 0.788 | 15.358 | 0 |
+| 0.20–0.35 | 1.201 | 0.849 | 44.688 | 0.570 |
+| 0.35–0.45 | 1.214 | 1.180 | 50.198 | 36.060 |
+| 0.45–0.53 | 1.242 | 1.198 | 49.871 | 45.562 |
+
+Integrated liquid inventory: EMM **1137.119 L** versus MEML
+**999.478 L**. Liquid above nominal 1.02 m: **164.149 L** vs
+**82.191 L**. EMM has approximately **137.64 L** extra liquid
+relative to MEML, equivalent to about **0.158 m** of depth in a
+uniform unobstructed vessel of radius 0.526 m (illustrative only;
+actual mesh has internals).
+
+The annularly averaged EMM interface is relatively uniform at
+1.193–1.242 m (0.049 m range), while MEML's 0.5
+liquid fraction rises from 0.674 m in the core to 1.198 m
+near the wall (0.524 m range). EMM's near-wall interface
+is only 0.044 m above MEML's. Therefore the old case's
+excess inventory is not simply an exaggeration of the near-wall
+rise; it also lacks the deep central cavity resolved in MEML.
+Both simulations may have different physical-model errors:
+old volume conservation / gas distribution, versus new central
+vortex depth / bubble residence time.
+
+**Next validation:** resolve azimuthal variation of
+`alpha.liquid=0.5` crossings in wall-side annuli, because an
+annular average can conceal the historical local penetration
+and wall-climbing patterns. Do not declare the EMM interface
+truly flat from annular means, nor diagnose the MEML cavity as
+unphysical without physical operating-condition evidence.
+
 ## 2h. Annularly averaged MEML free-surface profile at 30 s
 
 The height where annular mean `alpha.headspaceGas` crosses its
