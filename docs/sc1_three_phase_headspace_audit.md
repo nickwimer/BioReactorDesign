@@ -168,6 +168,52 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2s. Physical validation caveat: experimental video shows froth at upper impeller
+
+The user reports that the **upper impeller is liquid-submerged at
+startup**, and that the **experimental video shows abundant foamy
+bubbles around the upper impeller during operation**. The video itself
+has **not yet been inspected** here, and there is no measured vortex
+height or upper-blade liquid coverage from the experiment.
+
+**Correct interpretation:** gas-dominated MEML wall cells near the
+upper impeller (`alpha.headspaceGas~0.744`, `alpha.liquid~0.254`
+in the y=0.708–0.937 m patch envelope) are **not, by themselves,
+evidence that the blades are dry or improperly unsubmerged**.
+A churned froth or gas-ingesting upper impeller can have a high
+local gas volume fraction while remaining wetted by liquid films.
+Published gas-dispersion literature distinguishes impeller
+*flooding*, *loading*, and *complete dispersion* and discusses
+gas-filled blade cavities; these phenomena are not synonymous
+with a completely dry exposed impeller.
+
+For this case the right model-validation question is not
+"should the impeller stay fully submerged?", but:
+**Does the experimental video show a persistent, connected,
+relatively clear headspace cavity down to the upper blade region,
+or an aerated, liquid-continuous froth with many distinct bubbles?**
+The optical appearance can be ambiguous and video footage alone
+will not quantify local gas fractions.
+
+**New priority physics check:** verify whether the MEML case
+provides interfacial oxygen mass transfer for both
+`(bubbleGas and liquid)` and `(headspaceGas and liquid)`.
+The previous oxygen audit measured the former, but the
+phase fraction near the upper impeller is overwhelmingly
+`headspaceGas`. If the `headspaceGas-liquid` species
+transfer is absent, the model could undercount oxygen transfer
+in a real **gas-rich froth**, even though the bubble-deposition
+law is implemented correctly. This is a hypothesis, not an
+established missing source; inspect the actual active
+`constant/phaseProperties` and resulting `dmdtf` output
+before suggesting new transfer physics. Do **not** naively
+enable a headspace model without verifying interfacial
+area scaling and preventing double counting.
+
+Maintain the existing 9.9 s checkpoint and physics until
+the actual impeller geometry, real image morphology, and
+oxygen-transfer model configuration have been compared.
+
 ## 2r. Three-phase identification confirms HEADSPACE GAS at MEML upper impeller (9.9 s)
 
 The scratch-only three-field `foamToVTK` conversion returned status
