@@ -168,6 +168,37 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2g. Radial localization of blended deposition at 30 s
+
+The 30-second MEML VTK blended-deposition field was radially binned
+using radius `sqrt(x^2 + z^2)` around the vessel axis.
+
+| Radius (m) | Bubble volume (L), entire vessel | Deposition (L/s equiv.), entire vessel | Deposition (L/s equiv.), 0.6–0.8 m | Deposition (L/s equiv.), 0.8–1.0 m |
+|---|---:|---:|---:|---:|
+| 0–0.05 | 1.7865 | 3.7809 | 3.7108 | 0.0131 |
+| 0.05–0.10 | 2.4843 | 1.3305 | 1.2511 | 0.0782 |
+| 0.10–0.20 | 2.6703 | 1.3689 | 0.6073 | 0.6353 |
+| 0.20–0.35 | 0.5176 | 1.1658 | 0.1528 | 0.9598 |
+| >=0.35 | 0.1359 | 0.0783 | 0.0003 | 0.0476 |
+| **Total** | **7.5946** | **7.7244** | **5.7223** | **1.7339** |
+
+At 0.6–0.8 m, **64.85% of conversion** lies within
+5 cm of the axis although that radial core contains **16.6% of
+bubbles in this height band**. Within 10 cm, **86.71% of conversion**
+occurs where **48.3% of this band’s bubbles** reside. At 0.8–1.0 m,
+**92% of conversion** occurs at radii 0.10–0.35 m instead.
+The apparent outward migration of the conversion surface with increasing
+height is **consistent with an impeller-depressed, funnel-shaped
+headspace cavity**, but is not sufficient to validate its geometry.
+
+The highest priority follow-up is to calculate annular radial profiles
+of the local headspace fraction crossing (0.3 onset, 0.5 midpoint,
+0.7 full blending) and compare against a physically credible,
+experimentally validated free-surface shape. Binned averages are
+diagnostic, not exact `alpha=0.5` isosurfaces.
+Do not alter deposition parameters or initiate new nonreacting spin-up
+until the hydrodynamic geometry has been evaluated.
+
 ## 2f. Spatial distribution of the *blended* deposition at 30 s
 
 The existing MEML 30 s VTK fields were reanalyzed with the exact
