@@ -96,10 +96,15 @@ resolvedHeadspaceFilm
             << exit(FatalError);
     }
 
+    const phaseModel& declaredHeadspace =
+        pair.phase1().fluid().phases()[headspacePhase_];
+    const phaseModel& declaredLiquid =
+        pair.phase1().fluid().phases()[liquidPhase_];
+
     if
     (
-        !pair.contains(headspacePhase_)
-     || !pair.contains(liquidPhase_)
+        !pair.contains(declaredHeadspace)
+     || !pair.contains(declaredLiquid)
     )
     {
         FatalErrorInFunction
