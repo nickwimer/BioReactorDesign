@@ -179,6 +179,21 @@ gas/liquid inventory balance and effective area have been validated.
 Do not use such a coefficient to fit DO without independent physical
 evidence for the foam area.
 
+### First Kestrel compilation check (2026-11-03)
+
+The new scratch library's pure-Python preflight **passed**:
+dictionary insertion, interface gates, area normalization, and bounded
+foam-area checks. The first C++ `wmake` then failed with five
+`invalid use of incomplete type 'const class Foam::phaseSystem'`
+errors at `resolvedHeadspaceFilm.C` lines 100, 102, 144, 146 and
+148. Root cause: `phaseModel.H` only forward-declares
+`phaseSystem`, while this model accesses
+`phaseModel::fluid().phases()`. The experimental source now includes
+`phaseSystem.H` explicitly after `phaseModel.H` (commit
+`bb390fb`). **Recompile the same isolated scratch library; there
+is no physics/configuration change and no need to rerun the
+Python checks unless the installer changes.**
+
 ## 5. Kestrel execution: isolated build and short smoke test
 
 **Never paste top-level `exit`, `logout`, `exec`, `set -e`,
