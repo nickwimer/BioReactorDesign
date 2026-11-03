@@ -232,11 +232,28 @@ def install_phase_models(original: str, foam_multiplier: float = 0.0) -> str:
     return updated
 
 
-def set_control_entry(text: str, key: str, value: str) -> str:
-    pat = re.compile(r"(?m)^[ \t]*" + re.escape(key) + r"\s+[^;]*;")
+def set_control_entry(
+    text: str,
+    key: str,
+    value: str,
+    *,
+    insert_if_missing: bool = False,
+) -> str:
+    """Replace one setting or add an explicitly optional setting.
+
+    The SC1 source controlDict may omit writeControl, in which case
+    OpenFOAM uses its default. The trial needs runTime writes so we
+    insert it only into the scratch copy. Missing required entries
+    and duplicate entries remain errors.
+    """
+    pat = re.compile(r"(?m)^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;")
     matches = list(pat.finditer(text))
+    if not matches and insert_if_missing:
+        return text.rstrip() + f"\n\n{key}    {value};\n"
     if len(matches) != 1:
-        raise ValueError(f"Expected exactly one {key} in controlDict")
+        raise ValueError(
+            f"Expected exactly one {key} in controlDict, found {len(matches)}"
+        )
     return pat.sub(f"{key}    {value};", text, count=1)
 
 
@@ -310,7 +327,7 @@ def main() -> int:
             control, "endTime", f"{start_value + args.duration:.10f}"
         )
         control = set_control_entry(
-            control, "writeControl", "runTime"
+            control, "writeControl", "runTime", insert_if_missing=True
         )
         control = set_control_entry(
             control, "writeInterval", "0.1"
