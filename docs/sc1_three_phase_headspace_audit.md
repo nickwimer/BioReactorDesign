@@ -185,7 +185,7 @@ was 1.03e-6**. Area-weighted values:
 | Upper y=0.850–0.920 m | 0.07963 | 0.031 | **0.969** | ~0 | **98.8%** |
 | Upper r=0.10–0.175 m, y=0.780–0.850 m | 0.09796 | 0.053 | **0.946** | 0.001 | **94.9%** |
 | Upper r=0.175–0.30 m, y=0.850–0.920 m | 0.04898 | 0.050 | **0.950** | ~0 | **98.1%** |
-| Upper |n dot e_theta|>=0.8 face-normal proxy, r=0.10–0.30 m | 0.14091 | 0.311 | **0.686** | 0.003 | **66.2%** |
+| Upper abs(n dot e_theta)>=0.8 face-normal proxy, r=0.10–0.30 m | 0.14091 | 0.311 | **0.686** | 0.003 | **66.2%** |
 | Lower equivalent normal-orientation proxy | 0.12960 | 0.883 | **0.000** | 0.117 | **0.0%** |
 
 **Key conclusion:** MEML's nonliquid upper-propeller environment is
