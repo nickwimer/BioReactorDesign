@@ -31,8 +31,47 @@ def require_scratch(path: Path) -> Path:
     return real
 
 
+def matching_list_closer(text: str, start: int, keyword: str) -> int:
+    """Find the matching ')' of a known '(', respecting comments/strings."""
+    depth = 0
+    state = "plain"
+    pos = start
+    while pos < len(text):
+        char = text[pos]
+        next_char = text[pos + 1] if pos + 1 < len(text) else ""
+        if state == "line":
+            if char == "\n":
+                state = "plain"
+        elif state == "block":
+            if char == "*" and next_char == "/":
+                state = "plain"
+                pos += 1
+        elif state == "quote":
+            if char == "\\":
+                pos += 1
+            elif char == '"':
+                state = "plain"
+        else:
+            if char == "/" and next_char == "/":
+                state = "line"
+                pos += 1
+            elif char == "/" and next_char == "*":
+                state = "block"
+                pos += 1
+            elif char == '"':
+                state = "quote"
+            elif char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth == 0:
+                    return pos
+        pos += 1
+    raise ValueError(f"Unterminated list in {keyword}")
+
+
 def find_keyword_list(text: str, keyword: str) -> tuple[int, int] | None:
-    """Locate one OpenFOAM top-level keyword (...) list, ignoring comments."""
+    """Find one phaseProperties keyword (...) list (original behavior)."""
     rex = re.compile(
         r"(?m)^[ \t]*" + re.escape(keyword)
         + r"[ \t]*(?:\n[ \t]*)?\("
@@ -42,43 +81,8 @@ def find_keyword_list(text: str, keyword: str) -> tuple[int, int] | None:
         return None
     if len(found) != 1:
         raise ValueError(f"Expected one list for {keyword}, found {len(found)}")
-
     start = found[0].end() - 1
-    depth = 0
-    state = "plain"
-    i = start
-    while i < len(text):
-        c = text[i]
-        n = text[i + 1] if i + 1 < len(text) else ""
-        if state == "line":
-            if c == "\n":
-                state = "plain"
-        elif state == "block":
-            if c == "*" and n == "/":
-                state = "plain"
-                i += 1
-        elif state == "quote":
-            if c == "\\":
-                i += 1
-            elif c == '"':
-                state = "plain"
-        else:
-            if c == "/" and n == "/":
-                state = "line"
-                i += 1
-            elif c == "/" and n == "*":
-                state = "block"
-                i += 1
-            elif c == '"':
-                state = "quote"
-            elif c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-                if depth == 0:
-                    return (start, i)
-        i += 1
-    raise ValueError(f"Unterminated list in {keyword}")
+    return (start, matching_list_closer(text, start, keyword))
 
 
 def append_list_entry(text: str, keyword: str, entry: str) -> str:
@@ -232,7 +236,9 @@ def install_phase_models(original: str, foam_multiplier: float = 0.0) -> str:
     return updated
 
 
-def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
+def root_dictionary_matches(
+    text: str, statement: re.Pattern[str]
+) -> list[tuple[int, int]]:
     """Match only root-scope OpenFOAM dictionary statements.
 
     An SC1 controlDict can contain function objects with their own
@@ -241,9 +247,6 @@ def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
     Track quoted strings, line/block comments, and {}/() nesting before
     examining each beginning-of-line keyword.
     """
-    statement = re.compile(
-        r"^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;"
-    )
     matches: list[tuple[int, int]] = []
     braces = 0
     parentheses = 0
@@ -252,11 +255,9 @@ def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
 
     for line in text.splitlines(keepends=True):
         if state == "plain" and braces == 0 and parentheses == 0:
-            found = statement.match(line)
+            found = statement.match(text, offset)
             if found:
-                matches.append(
-                    (offset + found.start(), offset + found.end())
-                )
+                matches.append(found.span())
 
         pos = 0
         while pos < len(line):
@@ -312,6 +313,31 @@ def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
     return matches
 
 
+def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
+    statement = re.compile(
+        r"(?m)^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;"
+    )
+    return root_dictionary_matches(text, statement)
+
+
+def top_level_list_bounds(text: str, keyword: str) -> tuple[int, int] | None:
+    """Locate one root-level list, ignoring nested function-object libs."""
+    statement = re.compile(
+        r"(?m)^[ \t]*" + re.escape(keyword)
+        + r"[ \t]*(?:\n[ \t]*)?\("
+    )
+    matches = root_dictionary_matches(text, statement)
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError(
+            f"Expected at most one TOP-LEVEL {keyword} list, "
+            f"found {len(matches)}"
+        )
+    opening = matches[0][1] - 1
+    return opening, matching_list_closer(text, opening, keyword)
+
+
 def set_control_entry(
     text: str,
     key: str,
@@ -339,7 +365,7 @@ def add_library_to_control(text: str, library: Path) -> str:
     lib = str(library.resolve())
     if lib in text:
         raise ValueError("controlDict already references trial library.")
-    pair = find_keyword_list(text, "libs")
+    pair = top_level_list_bounds(text, "libs")
     if pair is None:
         return text.rstrip() + '\n\nlibs ("' + lib + '");\n'
     _, closing = pair
