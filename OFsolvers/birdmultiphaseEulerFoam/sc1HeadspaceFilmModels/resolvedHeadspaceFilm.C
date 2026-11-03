@@ -7,6 +7,7 @@
 
 #include "phasePair.H"
 #include "phaseModel.H"
+#include "phaseSystem.H"  // Complete type for phaseModel::fluid().phases()
 #include "fvcGrad.H"
 #include "PstreamReduceOps.H"
 #include "addToRunTimeSelectionTable.H"
