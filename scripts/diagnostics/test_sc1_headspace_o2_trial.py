@@ -101,6 +101,17 @@ def test_installer() -> None:
         assert changed[bounds[0]] == "("
         assert changed[bounds[1]] == ")"
 
+    # Parameter selection is made per isolated scenario, not by hand-
+    # editing the production phaseProperties file.
+    with_foam = patcher.install_phase_models(source, foam_multiplier=0.25)
+    assert with_foam.count("foamAreaMultiplier 0.25;") == 2
+    try:
+        patcher.install_phase_models(source, foam_multiplier=-1)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Negative foam-area multiplier was accepted")
+
     # Reapplication must refuse a duplicate pair, not silently double it.
     try:
         patcher.install_phase_models(changed)
