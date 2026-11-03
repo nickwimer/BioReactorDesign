@@ -168,6 +168,72 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2u. Confirmed SC1 transfer matrix: no headspace-liquid oxygen pathway
+
+The user read the **actual production MEML**
+`constant/phaseProperties` phase-qualified transfer entries.
+The active phase-system type is
+`interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem`.
+
+| Model entry | Actual configured value |
+|---|---|
+| `interfaceComposition.bubbleGas` | empty `()` |
+| `interfaceComposition.headspaceGas` | empty `()` |
+| `interfaceComposition.liquid` | `(liquid and bubbleGas)`: `Henry`, `species (O2)`, `k ($He_O2)`, `Le $LeLiqMix` |
+| `diffusiveMassTransfer.bubbleGas` | empty `()` |
+| `diffusiveMassTransfer.headspaceGas` | empty `()` |
+| `diffusiveMassTransfer.liquid` | `(bubbleGas in liquid)`: `Higbie`, `Le $LeLiqMix`; `(liquid in bubbleGas)`: `spherical`, `Le 1` |
+| `phaseTransfer` | `(bubbleGas in headspaceGas)`: `deposition`, efficiency 1 |
+
+The only existing `interfaceCompositionPhaseChange:dmdtf.*`
+checkpoint field is
+`interfaceCompositionPhaseChange:dmdtf.bubbleGasAndLiquid`.
+**No `(headspaceGas and liquid)` interfacial composition or
+diffusive transfer model is configured.** The case therefore has
+explicit O2 dissolution from `bubbleGas` to `liquid`, but
+**not directly from `headspaceGas` to `liquid`**.
+
+In `PhaseTransferPhaseSystem.C`,
+`addDmdtYfs()` transfers species mass along with signed
+*mixture* mass transfer (using each phase's species mass
+fraction), so bubble-to-headspace deposition conveys the
+gas-phase mixture, including its O2 species. However the
+opposite transfer `headspaceGas -> bubbleGas` has no explicit
+re-entrainment model in this configuration. No O2 diffusion
+across the headspace-bubble phase boundary is separately configured.
+
+**Correction of the earlier oxygen-audit caveat:** Although the
+solver-level `fluid.dmdtf(bubbleGas,liquid)` can generally sum
+multiple species, **this particular case specifies only O2**
+in the interfacial composition model for this pair and no
+additional `phaseTransfer` model on that pair. Therefore the
+measured ~0.084–0.092 g/s net bubble-liquid transfer near t=30–31 s
+is appropriately interpreted as **net modeled O2 interfacial
+transfer for this specific configuration**, subject to the actual
+signed field, and is much less than the ~0.498 g/s biological
+oxygen uptake. The updated generic diagnostic label
+`netBubbleLiquidMassLoss_kg_s` remains robust against future
+addition of other species.
+
+Physical relevance: at t=9.9 s the upper-impeller
+`propeller` patch is ~74.4% `headspaceGas`, 25.4%
+liquid and 0.2% bubbles (area-weighted). Experimental video
+reportedly shows foamy gas-liquid contact at that impeller.
+Omitting headspace-liquid O2 transfer and headspace-to-bubble
+re-entrainment are **plausible missing processes** in a model
+intended to resolve an aerated foam, not proof of a quantified
+oxygen-transfer error.
+
+**Do not simply add a headspace-liquid Henry/Higbie pair**:
+the `headspaceGas` phase includes a large connected free
+surface, and the available phase diameter/interfacial area
+law may generate nonphysical mass exchange in gas-dominated
+cells, as seen in older EMM/MAX calculations. Need a
+physically constrained interface-area and re-entrainment
+representation first. Prioritize confirming the experimental
+foam topology and quantifying candidate gas-liquid contact
+geometry without altering production physics.
+
 ## 2t. Verify actual O2 species-transfer pairs; phase-qualified dictionary keys
 
 A query of the original MEML `constant/phaseProperties` for
