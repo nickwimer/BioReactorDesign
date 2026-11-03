@@ -456,10 +456,11 @@ OTR or steady biological mass balance.
 The new headspace rate divided by the resolved interface area
 is `0.00365347 / 1.72563 = 0.002117 g/(m2 s)`.
 If film thickness, local oxygen driving force and density were
-unchanged everywhere, the extra ~0.4044 g/s required to match
-OUR beyond bubble transfer would imply approximately
-**191 m2 total effective headspace contact area** versus
-the current **1.73 m2**. This ratio is only a
+unchanged everywhere, the **total** ~0.4044 g/s headspace
+delivery needed to match OUR beyond bubble transfer (an
+**additional** ~0.4008 g/s above the resolved-interface result)
+would imply approximately **191 m2 total effective headspace
+contact area** versus the current **1.73 m2**. This ratio is only a
 **nonlinear-sensitivity scale**, NOT an endorsed foam area,
 film thickness, fitted parameter or evidence that such
 contact physically exists. Actual foam liquid films, dissolved
