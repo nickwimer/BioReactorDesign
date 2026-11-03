@@ -168,6 +168,65 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2t. Verify actual O2 species-transfer pairs; phase-qualified dictionary keys
+
+A query of the original MEML `constant/phaseProperties` for
+unqualified `interfaceComposition` and
+`diffusiveMassTransfer` returned missing-entry errors, while
+`phaseTransfer` contained the ordered
+`(bubbleGas in headspaceGas)` deposition model. **This does
+not demonstrate absent gas-liquid oxygen transfer.**
+
+BiRD's `phaseSystemTemplates.C` constructs species transfer
+models from **phase-qualified dictionary keys** by calling
+`IOobject::groupName(modelName, phase.name())`, e.g.
+`interfaceComposition.liquid` and
+`diffusiveMassTransfer.bubbleGas`, rather than requiring
+an unqualified parent entry. The upstream two-phase templates
+use the same convention, with `interfaceComposition.liquid`
+specifying a Henry model for O2/CO2 and
+`diffusiveMassTransfer.liquid` a gas-liquid film model.
+
+Check the **actual** MEML `constant/phaseProperties`:
+- `type`: is the interface-composition phase system active?
+- `interfaceComposition.bubbleGas`,
+  `interfaceComposition.headspaceGas`,
+  `interfaceComposition.liquid`: which unordered phase pair(s)
+  list `O2` and `CO2` in a Henry or other composition model?
+- `diffusiveMassTransfer.bubbleGas`,
+  `diffusiveMassTransfer.headspaceGas`,
+  `diffusiveMassTransfer.liquid`: do the paired sides have valid
+  diffusive transfer models?
+- List saved
+  `interfaceCompositionPhaseChange:dmdtf.*` fields: these
+  name actually instantiated phase pairs, although their **net
+  mass-transfer rates are not O2-specific**.
+
+**Additional audit correction**: the `bubbleMassAudit.H`
+field previously logged as `oxygenDissolutionLoss_kg_s`
+is computed as
+`-integral(fluid.dmdtf(phasePairKey("bubbleGas", "liquid")))`
+and is therefore the **net mass exchange across that pair**,
+which may combine O2, CO2, water and other interfacial
+species. It cannot be compared directly to biological OUR
+without measuring the O2-specific contribution. The source
+diagnostic was relabeled
+`netBubbleLiquidMassLoss_kg_s` for future scratch
+audit builds; this is **diagnostic text only, no physics change**.
+Older audit outputs retain the misleading historic label.
+
+The bubbleGas-to-headspaceGas `deposition` model
+transfers **mixture mass between two gas phases**,
+not gas-liquid oxygen dissolution. If the production case
+has no modeled `(headspaceGas and liquid)` species-transfer
+pair, that channel would be absent even where headspace-rich
+froth contacts liquid. However adding a headspace-liquid
+Henry/film model indiscriminately risks excessive artificial
+interfacial area and gas-transfer double counting. First
+verify the actual dictionary pairs, then measure species-specific
+O2 dissolution, then select a physically calibrated interface
+area model consistent with the observed gas-liquid morphology.
+
 ## 2s. Physical validation caveat: experimental video shows froth at upper impeller
 
 The user reports that the **upper impeller is liquid-submerged at
