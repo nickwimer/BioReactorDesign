@@ -135,6 +135,49 @@ libs ("libbirdphaseSystem.so");
         "endTime    31.4;"
     ) == 1
 
+    # The real Kestrel scratch controlDict omitted writeControl.
+    # The installer must add an explicit runTime setting to the *copy*.
+    missing_write_control = """startFrom latestTime;
+endTime 31.2;
+writeInterval 0.1;
+// writeControl timeStep;  commented out, not an active control
+"""
+    appended = patcher.set_control_entry(
+        missing_write_control,
+        "writeControl", "runTime", insert_if_missing=True
+    )
+    assert appended.count("writeControl    runTime;") == 1
+    assert missing_write_control.count("writeControl    runTime;") == 0
+    assert appended.count("writeInterval 0.1;") == 1
+
+    # If explicitly present, replace rather than insert a second entry.
+    explicit = patcher.set_control_entry(
+        before, "writeControl", "runTime", insert_if_missing=True
+    )
+    assert explicit.count("writeControl    runTime;") == 1
+    assert "writeControl timeStep;" not in explicit
+
+    # Never silently accept a duplicated setting.
+    duplicate = before + "writeControl adjustableRunTime;\n"
+    try:
+        patcher.set_control_entry(
+            duplicate, "writeControl", "runTime", insert_if_missing=True
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Duplicate writeControl was not rejected")
+
+    # Other critical settings must remain required.
+    try:
+        patcher.set_control_entry(
+            missing_write_control, "startTime", "31.2"
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Missing required setting was accepted")
+
     print("PASS: phase-pair insertion, preservation and duplicate checks")
 
 
