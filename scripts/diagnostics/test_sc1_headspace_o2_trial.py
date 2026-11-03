@@ -182,7 +182,7 @@ def test_area_closure() -> None:
         )*dz
         for i in range(samples)
     )
-    assert 0.75 < integrated_area < 1
+    assert abs(integrated_area - 1) < 0.002
     print(f"PASS: area gates, bounded foam enhancement; planar area={integrated_area:.5f}")
 
 
