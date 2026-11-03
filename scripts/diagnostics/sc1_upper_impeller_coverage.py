@@ -135,9 +135,64 @@ def report_patch(vtk: Path) -> None:
         mean_al = float(np.sum(al[mask] * face_area[mask]) / area)
         print(f"{r0:5.3f}-{r1:5.3f}            {area:8.5f}   {mean_al:10.3f}")
 
+    # A coarse upper-MRF average can conceal very different liquid coverage
+    # on the shaft/hub and the blade-bearing axial/radial regions. These
+    # are geometric bins, not a face-level component classification.
+    print("\nFine-scale propeller-wall liquid coverage (scratch VTK only):")
     print(
-        "Patch alpha is a liquid-area proxy, not a resolved "
-        "wetting/contact-line measurement."
+        "Axial m         Radial m       Area m2   mean alphaL"
+        "   area alphaL<0.1 %   area alphaL<0.5 %"
+    )
+
+    def summarize(y0: float, y1: float, r0: float, r1: float) -> None:
+        selected = (
+            valid
+            & (y >= y0) & (y < y1)
+            & (r >= r0) & (r < r1)
+        )
+        area = float(np.sum(face_area[selected]))
+        if area <= 0:
+            print(f"{y0:5.3f}-{y1:5.3f}    {r0:5.3f}-{r1:5.3f}        no faces")
+            return
+
+        mean_liquid = float(np.sum(al[selected]*face_area[selected])/area)
+        low10 = float(
+            100.0 * np.sum(face_area[selected & (al < 0.1)]) / area
+        )
+        low50 = float(
+            100.0 * np.sum(face_area[selected & (al < 0.5)]) / area
+        )
+        print(
+            f"{y0:5.3f}-{y1:5.3f}    {r0:5.3f}-{r1:5.3f}"
+            f"     {area:8.5f}     {mean_liquid:8.3f}"
+            f"          {low10:7.1f}             {low50:7.1f}"
+        )
+
+    # The lower window is a control: a fully submerged lower impeller
+    # should be liquid-dominated even if the upper one is gas-contacting.
+    print("Lower MRF axial span (control), all available propeller patch radii:")
+    summarize(0.179705, 0.347345, 0.0, 0.30)
+    print("Upper MRF axial span, all reported propeller patch radii:")
+    summarize(UPPER_MRF_LO, UPPER_MRF_HI, 0.0, 0.30)
+
+    print("Upper MRF axial sub-bands, all r<0.30 m:")
+    for y0, y1 in (
+        (UPPER_MRF_LO, 0.780),
+        (0.780, 0.850),
+        (0.850, 0.920),
+        (0.920, UPPER_MRF_HI),
+    ):
+        summarize(y0, y1, 0.0, 0.30)
+
+    print("Potential blade-bearing radial zones, two axial sub-bands:")
+    for y0, y1 in ((0.780, 0.850), (0.850, 0.920)):
+        for r0, r1 in ((0.100, 0.175), (0.175, 0.300)):
+            summarize(y0, y1, r0, r1)
+
+    print(
+        "All bins include any shaft/hub/blade faces in the patch. "
+        "Alpha and area fractions do NOT identify individual blade faces, "
+        "prove physical dewetting, or separate headspace gas from bubbles."
     )
 
 
