@@ -168,6 +168,45 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2o. Exact MEML MRF axial spans and propeller-coverage follow-up
+
+A Kestrel inspection of the production `constant/polyMesh/cellZones`,
+`constant/MRFProperties` and `system/topoSetDict.mrfFromYaml` showed:
+
+- Original and RHEL9 MEML `cellZones` files are byte-identical;
+  their active `rotor` zone has **35,629 cells**.
+- Historical EMM's active `rotor` has **43,680 cells**.
+  The cell counts alone are not directly comparable physical volumes.
+- All three cases use `MRF1`, origin (0,0,0), Y axis,
+  17.38 rad/s, and empty `nonRotatingPatches`. MEML ramps
+  from zero to 17.38 rad/s over the first 0.1 s;
+  EMM specifies a constant angular velocity.
+- MEML creates the rotating `rotor` as the **intersection of
+  the original `rotorEnvelope` and two axial windows**:
+  lower y=**0.179705–0.347345 m**, upper
+  y=**0.70802753–0.93662247 m**.
+
+The MEML `alpha.liquid=0.5` contour around the shaft at 9.9 s
+is near **y=0.693 m**, below the upper MRF window at the axis.
+At r=0.05–0.10 m the contour is around 0.745 m; at
+r=0.10–0.20 m it is near 0.789 m. Thus a significant part of
+the *upper MRF zone* is headspace-dominated at the same early time.
+
+**Do not equate the MRF zone with the physical impeller blades.**
+For a more decisive result, the new read-only
+`scripts/diagnostics/sc1_upper_impeller_coverage.py` measures
+cell-volume-weighted `alpha.liquid` for radial bands and upper
+MRF height sub-bands at 9.9/20 s, using existing scratch VTKs.
+It additionally inspects the actual OpenFOAM `propeller` boundary
+patch VTK and estimates the face-area-weighted liquid fraction at
+upper-MRF heights if `alpha.liquid` was exported on the patch.
+No new VTK conversion or CFD run is needed.
+
+Interpret any patch-area-weighted liquid fractions as a
+**wetted-area proxy**, not a rigorous interfacial wetting or gas
+ingestion measurement. Compare the actual production geometry
+before asserting that blades are dewatered.
+
 ## 2n. MRF rotation preflight across cases
 
 Kestrel confirmed that all three simulations use an MRF `cellZone
