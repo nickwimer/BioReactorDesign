@@ -82,8 +82,12 @@ a_geom = |grad(alpha.headspaceGas)|
 ```
 
 with a smooth gate requiring both headspace and liquid
-fractions to be present and little dispersed bubble gas. This
-approximates the interface area of the resolved three-phase cavity.
+fractions to be present and little dispersed bubble gas. The
+geometric area is divided by `(1-minInterfaceAlpha-fullInterfaceAlpha)`
+(0.88 with the trial defaults), which normalizes the integrated
+area of a planar 0-to-1 liquid/headspace transition to its
+resolved surface area; this is a simple calibration and not
+a substitute for grid-convergence tests.
 
 **The resolved area alone is unlikely to supply the full oxygen
 deficit**: a ~1 m2 macroscopic interface cannot be assumed to
