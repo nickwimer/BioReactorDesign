@@ -1,0 +1,327 @@
+# SC1 MEML: restore headspace-to-liquid oxygen transfer without false gas-volume OTR
+
+**Status (2026-11-03): design and trial implementation committed; NOT COMPILED or VALIDATED on Kestrel yet. This is NOT a production physics change.**
+
+## 1. Confirmed defect in the old three-phase transfer matrix
+
+The production MEML phase system is
+`interfaceCompositionPhaseChangePopulationBalanceMultiphaseSystem` with
+`bubbleGas`, `headspaceGas` (reference gas phase) and `liquid`.
+The actual original MEML `constant/phaseProperties` has:
+
+- `interfaceComposition.liquid`: Henry, `species (O2)`, on **(liquid and bubbleGas)** only.
+- `diffusiveMassTransfer.liquid`: Higbie and spherical models on **bubbleGas/liquid** only.
+- `interfaceComposition.headspaceGas`, `interfaceComposition.bubbleGas`,
+  `diffusiveMassTransfer.headspaceGas` and
+  `diffusiveMassTransfer.bubbleGas`: empty.
+- `phaseTransfer`: **(bubbleGas in headspaceGas)** deposition, efficiency 1.
+
+The only saved `interfaceCompositionPhaseChange:dmdtf.*` field was
+`interfaceCompositionPhaseChange:dmdtf.bubbleGasAndLiquid`.
+Thus there is no explicit headspace–liquid O2 dissolution path.
+Deposition transfers gas-mixture mass and species *between the two gas phases*;
+it does NOT replace an interphase oxygen-transfer model.
+
+At t=9.9 s the original MEML upper `propeller` wall has roughly
+74.4% headspace gas, 25.4% liquid and 0.2% bubbles in the upper
+MRF height window (area-weighted), and 66.2% of a circumferential-normal
+blade-face proxy is headspace-dominated. Experimental video was described
+as showing strong foaming about this impeller, but has not been
+quantitatively analyzed here.
+
+The current MEML bubble/liquid O2 net transfer near t=30–31 s is
+only ~0.084–0.092 g/s versus ~0.498 g/s biological OUR.
+The missing pathway is a plausible but **not yet quantified** contributor
+to this supply deficit.
+
+## 2. Implement through the existing coupled OpenFOAM species transfer
+
+Use the existing `InterfaceCompositionPhaseChangePhaseSystem` machinery,
+which already couples a Henry-law composition model, mass-transfer coefficient
+`K`, gas/liquid phase mass transfer, and equal-and-opposite O2
+species source terms. Source-code path:
+
+- `phaseSystems/PhaseSystems/InterfaceCompositionPhaseChangePhaseSystem/`
+  `InterfaceCompositionPhaseChangePhaseSystem.C`
+- `interfacialCompositionModels/interfaceCompositionModels/Henry/Henry.C`
+- `interfacialCompositionModels/diffusiveMassTransferModels/`
+  `diffusiveMassTransferModel/diffusiveMassTransferModel.C`.
+
+For dissolved species on the liquid side the code evaluates
+
+```text
+R_O2 = rho_liquid * D_O2 * K_liquid * (Y*_O2 - Y_O2,liquid)
+K_liquid = a_eff / delta
+k_L = D_O2 / delta
+```
+
+where `a_eff` has units m^2/m^3, `K` units m^-2,
+`delta` is a film thickness in metres,
+and `Y*_O2` is the existing Henry-model equilibrium liquid
+mass fraction evaluated from **headspaceGas** O2 concentration.
+The phase system transfers the same O2 mass from headspace gas to liquid;
+no independent source is added to the biological equation.
+
+**Critical:** do **not** use the dispersed-bubble Higbie diameter
+on a continuous headspace interface. Its area expression
+`6 alpha_g/d_b` is not an appropriate general area for a headspace
+cavity. The older EMM/MAX-OUR simulations experienced spurious
+mass transfer in gas-dominated cells.
+
+## 3. New closure: resolved interface first, optional localized froth
+
+Implemented in
+`OFsolvers/birdmultiphaseEulerFoam/sc1HeadspaceFilmModels/`.
+The new run-time model is `resolvedHeadspaceFilm`, compiled
+into a **separate scratch library** `libsc1HeadspaceFilmModels.so`.
+
+Its default geometric interface-area density is
+
+```text
+a_geom = |grad(alpha.headspaceGas)|
+```
+
+with a smooth gate requiring both headspace and liquid
+fractions to be present and little dispersed bubble gas. This
+approximates the interface area of the resolved three-phase cavity.
+
+**The resolved area alone is unlikely to supply the full oxygen
+deficit**: a ~1 m2 macroscopic interface cannot be assumed to
+provide the area of a dense foam. The optional froth treatment is:
+
+```text
+a_foam = C_foam * 6 * alpha_headspace * alpha_liquid / d_foam
+a_eff  = min( max(a_geom, a_foam), a_max )
+```
+
+The extra area is used **only** inside a specified upper-impeller
+height/radius window, and is zero unless
+`foamAreaMultiplier > 0`. `max`, not `sum`, is used to
+avoid simply counting the same diffuse interface twice.
+The `minInterfaceAlpha/fullInterfaceAlpha` gate applies to
+both estimates, and bubble-rich cells are excluded.
+The parameters `foamAreaMultiplier`, `foamDiameter`,
+`filmThickness` and `maxAreaDensity` require calibration
+and mesh-sensitivity checks. None are experimental measurements.
+
+A reference *pilot* configuration uses:
+
+```foam
+filmThickness 1e-5;          // m, exploratory, not calibrated
+foamAreaMultiplier 0;       // first test: resolved interface ONLY
+foamDiameter 0.003;         // m, used only if foam enabled
+foamYMin 0.65; foamYMax 1.05;
+foamRMax 0.30;
+minInterfaceAlpha 0.02;
+fullInterfaceAlpha 0.10;
+maxBubbleAlpha 0.10;
+maxAreaDensity 2000;        // 1/m
+```
+
+Since `D_O2` is supplied by the actual interface-composition model,
+the trial's effective liquid-side `k_L=D_O2/filmThickness`.
+Do not interpret the numerical `filmThickness` as a measured
+physical film without validating mass-transfer data.
+
+The library also optionally logs:
+
+```text
+HEADSPACE_O2_AREA_AUDIT t_s=... geometricArea_m2=...
+  foamCandidateArea_m2=... effectiveArea_m2=... filmThickness_m=...
+```
+
+The two `resolvedHeadspaceFilm` orientations are added to
+`diffusiveMassTransfer.liquid`; this preserves the normal BiRD
+blending selection across phase topology while still using
+one distinct `(liquid and headspaceGas)` Henry species model.
+
+## 4. Paired case entries and consistency requirements
+
+The experimental case adds:
+
+1. `interfaceComposition.liquid`: `(liquid and headspaceGas)`
+   with an O2-only Henry model **cloned from the existing bubble-liquid
+   Henry entry** (same `$He_O2`, `$LeLiqMix`).
+2. `diffusiveMassTransfer.liquid`: ordered
+   `(headspaceGas in liquid)` and `(liquid in headspaceGas)`
+   `resolvedHeadspaceFilm` models, both with the same closure
+   but with only one area logger active.
+3. `heatTransfer.liquid` and `heatTransfer.headspaceGas`:
+   matching bidirectional RanzMarshall/spherical models. The existing
+   two-resistance heat-transfer phase system *requires* a model
+   on both sides of every new interface-composition pair.
+4. `system/controlDict`: loads only the new isolated scratch
+   `libsc1HeadspaceFilmModels.so` by absolute path.
+
+The original bubble-liquid O2 and bubble-to-headspace deposition
+entries are retained. No kinetic parameters or OUR schedule are
+modified, and no independent headspace-to-bubble re-entrainment
+is asserted to exist.
+
+The scratch-only installer is
+`scripts/diagnostics/prepare_sc1_headspace_o2_trial.py`.
+It copies the latest collated time from the
+existing **scratch** bubble audit case into a **different scratch**
+run folder, patches only the new scratch `phaseProperties`
+and `controlDict`, and refuses an existing destination.
+It does **not** silently edit any production checkpoint.
+
+## 5. Kestrel execution: isolated build and short smoke test
+
+**Never paste top-level `exit`, `logout`, `exec`, `set -e`,
+or shell termination traps into an interactive `salloc` shell.**
+The following only builds an experimental library in scratch and
+prepares a new scratch run. First restore OpenFOAM and libfabric
+if needed:
+
+```bash
+source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc"
+module load libfabric
+```
+
+Then:
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+BIRD="$HOME/OpenFOAM9_RHEL9/BiRD/birdmultiphaseEulerFoam"
+SRC="$REPO/OFsolvers/birdmultiphaseEulerFoam/sc1HeadspaceFilmModels"
+LIB=/scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so
+
+if git -C "$REPO" pull --ff-only; then
+    if "$PY" "$REPO/scripts/diagnostics/test_sc1_headspace_o2_trial.py"; then
+        mkdir -p "$(dirname "$LIB")"
+        if (cd "$SRC" && SC1_BIRD_ROOT="$BIRD" \
+            wmake > build.sc1Headspace.log 2>&1); then
+            if [[ -f "$LIB" ]]; then
+                echo "HEADSPACE FILM LIBRARY BUILD SUCCESS"
+                ldd "$LIB" | grep -E 'bird|not found'
+            else
+                echo "Build reported success, but scratch library is missing."
+            fi
+        else
+            echo "Build failed. Do not launch CFD."
+            grep -nE 'error:|fatal error:|undefined reference' \
+                "$SRC/build.sc1Headspace.log" | head -30
+        fi
+    fi
+fi
+```
+
+**Only after the library exists and has no missing dependencies**,
+prepare the isolated short experiment:
+
+```bash
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+RUN=/scratch/nwimer/sc1_headspace_o2_trial_20261103/run
+LIB=/scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so
+
+if [[ -f "$LIB" && ! -e "$RUN" ]]; then
+    "$PY" "$REPO/scripts/diagnostics/prepare_sc1_headspace_o2_trial.py"
+
+    if [[ -f "$RUN/constant/phaseProperties" ]]; then
+        foamDictionary "$RUN/constant/phaseProperties" \
+            -entry interfaceComposition.liquid -value
+        foamDictionary "$RUN/constant/phaseProperties" \
+            -entry diffusiveMassTransfer.liquid -value
+        foamDictionary "$RUN/constant/phaseProperties" \
+            -entry heatTransfer.headspaceGas -value
+        foamDictionary "$RUN/system/controlDict" -entry libs -value
+    fi
+else
+    echo "Missing library or trial directory already exists; no copy attempted."
+fi
+```
+
+To capture the new channel alongside the old one, copy the
+latest `bubbleMassAudit.H` from the GitHub branch into the
+**scratch-only** diagnostic solver, then touch its
+`putidaFoam.C` and rebuild only
+`putidaFoamMask01BubbleAudit`. The old production solver is
+not affected. The updated audit logs
+`netBubbleLiquidMassLoss_kg_s` and
+`netHeadspaceLiquidMassLoss_kg_s` separately.
+For this present MEML configuration, both are O2-only
+interfacial transfers; after changing any species models,
+recheck that assumption.
+
+Only after validating all of the above, run the **short**
+trial continuation with the same 52-rank collated parallel IO
+as the existing scratch diagnostic case:
+
+```bash
+RUN=/scratch/nwimer/sc1_headspace_o2_trial_20261103/run
+EXE="$FOAM_USER_APPBIN/putidaFoamMask01BubbleAudit"
+LIB=/scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so
+
+if [[ -x "$EXE" && -f "$LIB" && -d "$RUN/processors52" ]]; then
+    (cd "$RUN" && srun -n 52 "$EXE" -parallel -fileHandler collated \
+        > log.headspaceO2.smoke 2>&1)
+    echo "Solver command status: $?"
+    grep -E 'HEADSPACE_O2_AREA_AUDIT|BUBBLE_MASS_AUDIT|FOAM FATAL|End$' \
+        "$RUN/log.headspaceO2.smoke" | tail -30
+fi
+```
+
+**Do not use this short existing-reacting-state trial as a new
+baseline for comparative MM/EMM/MEML biology.** It checks that
+the code compiles, that the new pair is assembled, and that
+mass/species sources remain stable. Hydrodynamics changed: any
+final baseline must be regenerated from nonreacting spin-up
+or re-equilibrated sufficiently with the new physics and shown
+to reach stable interfacial area, phase inventory and DO.
+
+## 6. Acceptance criteria before any 9.9 s common checkpoint
+
+1. The new `interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`
+   field is written, nonzero where headspace and liquid overlap,
+   and near-zero in pure headspace and pure liquid.
+2. The field's volume integral agrees with the diagnostic
+   `netHeadspaceLiquidMassLoss_kg_s` (allowing for evaluation-time
+   differences). Check signs, not only absolute magnitude.
+3. The original `bubbleGasAndLiquid` field and
+   `bubbleGas in headspaceGas` deposition persist, with expected
+   signs. O2 is conserved across the new gas/liquid pair and
+   headspace O2 does not become negative.
+4. The total modeled O2 transfer equals
+   bubble-to-liquid plus headspace-to-liquid contributions;
+   compare to OUR (~0.498 g/s). Track **time averages**,
+   not one endpoint.
+5. With `foamAreaMultiplier=0`, inspect the
+   resolved-headspace contact area vs expected physical
+   free-surface area (~tank cross section + cavity/waves).
+   Conduct grid-sensitivity checks on integrated area, not
+   just concentration fields.
+6. For a foam-area sweep, vary `foamAreaMultiplier` and
+   `foamDiameter` only in scratch; constrain the assumed
+   foam region using the video and quantitative OTR/kLa
+   or DO-response measurements. If it takes unrealistic area
+   to match OUR, revisit headspace entrainment, plume
+   distribution, and cavity shape rather than forcing kL.
+7. Maintain stable liquid volume (~1000 L), plausible
+   bubble holdup and oxygen inventory, acceptable time-step
+   changes and MRF interface structure.
+8. A common validated **nonreacting 9.9 s** state must feed
+   all intended kinetic variants. Preserve the deliberate
+   four-hour biological step and frozen-OUR cadence.
+
+The existing MEML model has no explicit
+`headspaceGas -> bubbleGas` entrainment/fragmentation, which
+remains a distinct second-stage physics requirement if the
+experiment shows large gas recirculation or fine bubbles
+generated from the surface. Do not treat interfacial O2
+diffusion as a replacement for entrainment.
+
+## References
+
+- OpenFOAM 9
+  [InterfaceCompositionPhaseChangePhaseSystem](https://cpp.openfoam.org/v9/InterfaceCompositionPhaseChangePhaseSystem_8C_source.html):
+  shows how `K*D` enters species and phase mass transfer.
+- [OpenFOAM Foundation: Disperse Multiphase Flows](https://openfoam.org/guides/disperse-multiphase-flows/):
+  distinguishes resolved interfaces from the distributed
+  surface area of dispersed phases.
+- The exact repository `Higbie.C`, `Henry.C`,
+  `BlendedInterfacialModel.C` and `PhaseTransferPhaseSystem.C`
+  implementations in this branch are the source of the
+  SC1-specific interfaces, sign conventions and blending behavior.
