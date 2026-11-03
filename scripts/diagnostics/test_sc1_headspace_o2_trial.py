@@ -139,7 +139,7 @@ def closure_area_density(
         max(0, min(1, (h-min_alpha)/(full_alpha-min_alpha)))
       * max(0, min(1, (l-min_alpha)/(full_alpha-min_alpha)))
     )
-    geom = gate * abs(grad_h)
+    geom = gate * abs(grad_h)/(1 - min_alpha - full_alpha)
     foam = 0
     if (
         foam_area_multiplier > 0
