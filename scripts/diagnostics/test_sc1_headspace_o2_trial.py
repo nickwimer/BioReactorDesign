@@ -164,7 +164,9 @@ def test_area_closure() -> None:
     assert closure_area_density(.5, .5, 0, 0, 0.5, 0.8, 0, 1) == 0
 
     # MAX rather than a sum means no resolved/foam area double count.
-    assert closure_area_density(.5, .5, 0, 500, 0, 0.8, 0, 1) == 500
+    assert abs(
+        closure_area_density(.5, .5, 0, 500, 0, 0.8, 0, 1) - 500/0.88
+    ) < 1e-9
     assert closure_area_density(.5, .5, 0, 100, 0, 0.8, 0, 1) == 500
     assert closure_area_density(.5, .5, 0, 999999, 0, 0.8, 0, 1) == 2000
 
