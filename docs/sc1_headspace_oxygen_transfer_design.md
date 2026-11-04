@@ -623,6 +623,63 @@ experimentally constrained and benchmarked against gas
 holdup, oxygen transfer and liquid inventory. Do not edit
 production settings or force-fit the foam coefficient.
 
+## 5c. Confirmed outlet O2 species boundary conditions (2026-11-04)
+
+The user directly inspected the checkpoint
+`run_geometric_05/processors52/31.199982372783058`
+using read-only byte decoding of the OpenFOAM field's textual
+`boundaryField` section. Direct `foamDictionary` failed on
+the binary collated field's internal data, **not because the
+boundary data were corrupt**. The solver had successfully read
+and advanced the same checkpoint.
+
+All three `outlet` species fields have `type inletOutlet`,
+their phase-specific flux names, and the following **reverse-
+flow compositions**:
+
+| Species field | `phi` | `inletValue` |
+|---|---|---|
+| `O2.headspaceGas` | `phi.headspaceGas` | `uniform 0.23` |
+| `O2.bubbleGas` | `phi.bubbleGas` | `uniform 0.23` |
+| `O2.liquid` | `phi.liquid` | `uniform 8e-06` |
+
+These values are oxygen mass fractions. Gas inlet
+O2 mass fraction 0.23 is consistent with air. The
+outlet face's stored `value` for `O2.headspaceGas`
+is approximately 0.2299–0.23, also consistent with
+oxygen-rich air. `O2.bubbleGas` saved face
+values vary widely, including values near zero,
+but the outlet `alpha.bubbleGas` is ~1e-9
+and its reported mass flux ~1e-9 kg/s;
+these gas-face composition values are largely
+immaterial at that boundary. The liquid inlet
+value 8e-6 corresponds to ~8 mg/L at
+density 1000 kg/m3, but reported
+`liquidOut_kg_s=0` and `liquidIn_kg_s=0`,
+so this boundary is not delivering liquid oxygen.
+
+**Interpretation:** There is no evidence that an
+incorrect *prescribed species mass fraction* at the
+outlet caused low MEML oxygen dissolution.
+The reverse-flow gas receives air-like O2
+composition. The large gross bidirectional
+headspace exchange through the outlet remains
+a separate hydrodynamic/pressure-boundary
+validation question. The `value` arrays alone
+do not identify which faces are in- versus
+outflow or prove species-flux budgets; that
+would require phase flux-weighted integration.
+
+**Next physics priority remains the upper-impeller
+free-surface/foam topology, headspace-gas
+re-entrainment into dispersed bubbleGas, and
+experimentally grounded liquid-side transfer
+area**, rather than changing the air-side O2
+inlet fraction. Keep the validated coupled
+headspace-liquid transfer pair in trial physics
+and retain current production configuration
+until the closure is independently checked.
+
 ## 6. Acceptance criteria before any 9.9 s common checkpoint
 
 1. The new `interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`
