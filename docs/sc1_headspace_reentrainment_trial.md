@@ -593,6 +593,109 @@ gas-phase topology and near-impeller
 vorticity/pressure before defining a
 different entrainment model.
 
+## Interface-normal gate diagnostic and opt-in trial (2026-11-04)
+
+The user ran the diagnostic-only normal-motion comparison
+`run_normalgate_02` (0.2 s from original collated
+`31.199982372783058` source, 52 ranks) successfully.
+The reported values at t≈31.3 s were:
+
+| Measurement | Value |
+|---|---:|
+| Cells in bounded impeller window | 18,432 |
+| Mixed-phase cells within window | 3,993 |
+| Mixed window area after bubble exclusion | 0.331308 m² |
+| Downward-liquid cells | 2 |
+| Downward-liquid area | 0.0000136809 m² |
+| Non-downward-liquid area | 0.331294 m² |
+| **Normal gas-into-liquid cells** | **1,765** |
+| **Normal gas-into-liquid area** | **0.163135 m²** |
+| Normal gas-away area | 0.168172 m² |
+| Area-weighted signed normal relative speed | -0.194645 m/s |
+| Area-weighted liquid vertical speed | +1.33425 m/s |
+| Hypothetical raw entrainment without downflow gate | 0.0189264 kg/s |
+| **Hypothetical raw normal-inward entrainment** | **0.00263105 kg/s** |
+| Current 0.01-efficiency downflow-gated raw entrainment | 7.82129e-7 kg/s |
+
+This means ~49.24% of the available window mixed-interface
+area has positive gas-to-liquid relative normal motion,
+while only ~0.00413% survives the earlier
+`U.liquid.y < 0` condition. The global *mean*
+relative normal speed is negative, despite locally positive
+normal motion over ~half of the area. A speed-proportional
+normal-inward model would propose **2.631 g/s raw**,
+then the configured 2 g/s global raw cap would scale
+the proposal by ~0.760. These are diagnostics only,
+not validated real bubble entrainment rates.
+
+**New explicit scratch-only model switch**:
+
+```foam
+entrainmentVelocityCriterion legacyDownwardLiquid;   // old default
+requireDownwardLiquid true;
+```
+
+Or, in an **independently prepared** scratch trial:
+
+```foam
+entrainmentVelocityCriterion normalGasIntoLiquid;    // OPT IN
+requireDownwardLiquid false;
+```
+
+The code hard-rejects `normalGasIntoLiquid` combined with
+`requireDownwardLiquid true`. This prevents accidental
+use of two mutually exclusive kinematic gates.
+The trial helper adds a
+`--velocity-criterion normalGasIntoLiquid` option,
+defaulting to `legacyDownwardLiquid` for all
+existing workflows. The new model uses
+`max(0,(U_L-U_H) dot grad(alpha_H)/|grad(alpha_H)|)`
+as the effective relative penetration velocity, capped at
+`maxSlipSpeed`, with unchanged phase-fraction,
+spatial-window, donor-cap and global-rate limits.
+The old zero-efficiency and legacy nonzero modes are
+unchanged by default.
+
+**Next numerical gate, not physics validation:**
+
+1. Compile just the scratch `libsc1HeadspaceEntrainmentModels.so`
+   library on Kestrel and run the updated Python preflight.
+2. From the same original scratch checkpoint, prepare a
+   **fresh** `run_normalactive_02` with
+   `--entrainment-efficiency 0.01`,
+   `--velocity-criterion normalGasIntoLiquid`,
+   `--max-entrained-kg-s 0.002`,
+   `--nucleation-diameter 0.002`,
+   `--foam-multiplier 0`, and `--duration 0.2`.
+   Never overwrite the completed zero control or
+   other geometric/foam/entrainment trials.
+3. Verify the runtime log has
+   `velocityCriterion=normalGasIntoLiquid`,
+   positive `eligibleCells`, raw candidate and
+   capped rate with `capScale<=1`. Compare new
+   PB positive net bubble gain, bubble inventory,
+   bubble-liquid and headspace-liquid O₂ flux,
+   deposition and endpoint residual against the
+   existing zero control. Positive **gross**
+   entrainment may remain locally offset by
+   deposition so net PB creation need not equal
+   the 2 g/s cap.
+4. Confirm finite `d.bubbleGas`, normalized
+   size groups and conserved species inventories
+   before extending to a 0.5 s numerical comparison.
+   If runtime instability or physically unacceptable
+   gas holdup appears, halt investigation of
+   nonzero entrainment rather than force the coefficient.
+
+**Science caveat:** Eulerian interphase relative normal speed
+is not the true moving-interface velocity, and inward motion
+does not by itself establish detachment into dispersed
+2 mm bubbles. The experimental foam video, gas holdup,
+breakup and oxygen-transfer measurements must be used to
+decide whether and where this closure is physical. This
+is still a scratch-only, uncalibrated prototype; no
+production configuration or solver has changed.
+
 ## Validation gates
 
 1. **Zero-efficiency equivalence:** at identical starting
