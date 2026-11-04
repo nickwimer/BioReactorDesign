@@ -84,6 +84,7 @@ def install_entrainment_models(
     maximum_rate_kg_s: float,
     nucleation_diameter_m: float,
     foam_multiplier: float = 0,
+    velocity_criterion: str = "legacyDownwardLiquid",
 ) -> str:
     """Patch source string; do not touch any production/scratch file."""
     for name, value, maximum in (
@@ -96,6 +97,8 @@ def install_entrainment_models(
 
     if maximum_rate_kg_s <= 0 or nucleation_diameter_m <= 0:
         raise ValueError("Maximum rate and bubble diameter must be positive")
+    if velocity_criterion not in ("legacyDownwardLiquid", "normalGasIntoLiquid"):
+        raise ValueError("Unknown entrainment velocity criterion")
 
     base = load_headspace_helper()
     updated = base.install_phase_models(original, foam_multiplier)
@@ -141,7 +144,8 @@ def install_entrainment_models(
         maxSlipSpeed 5;
         donorTimeScale 0.05;
         maxGlobalEntrainedKgS {maximum_rate_kg_s:.8g};
-        requireDownwardLiquid true;
+        entrainmentVelocityCriterion {velocity_criterion};
+        requireDownwardLiquid {'true' if velocity_criterion == 'legacyDownwardLiquid' else 'false'};
         reportRate true;
     """
     transfer_body = (
@@ -195,6 +199,12 @@ def main() -> int:
         help="0 reproduces original deposition (safe control)."
     )
     parser.add_argument(
+        "--velocity-criterion",
+        choices=("legacyDownwardLiquid", "normalGasIntoLiquid"),
+        default="legacyDownwardLiquid",
+        help="Explicit optional kinematic eligibility; legacy is default.",
+    )
+    parser.add_argument(
         "--max-entrained-kg-s", type=float, default=0.002,
         help="Gross UNBLENDED gas entrainment cap, kg/s."
     )
@@ -244,6 +254,7 @@ def main() -> int:
             maximum_rate_kg_s=args.max_entrained_kg_s,
             nucleation_diameter_m=args.nucleation_diameter,
             foam_multiplier=args.foam_multiplier,
+            velocity_criterion=args.velocity_criterion,
         )
 
         control = (src / "system/controlDict").read_text()
@@ -282,6 +293,7 @@ def main() -> int:
         print(f"Prepared isolated SC1 entrainment trial: {out}")
         print(f"  Starting checkpoint: {tname}; end={tstart + args.duration:.6f}")
         print(f"  Bubble entrainment efficiency: {args.entrainment_efficiency}")
+        print(f"  Entrainment velocity criterion: {args.velocity_criterion}")
         print(f"  Raw entrainment cap: {args.max_entrained_kg_s} kg/s")
         print(f"  Nucleated bubble diameter: {args.nucleation_diameter} m")
         print(f"  Headspace O2 foam multiplier: {args.foam_multiplier}")
