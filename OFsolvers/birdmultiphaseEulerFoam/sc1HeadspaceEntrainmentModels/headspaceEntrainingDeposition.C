@@ -187,8 +187,28 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
     scalar interfaceArea = 0;
     label eligibleCells = 0;
 
+    // Diagnostic gates only; the actual source formula is unchanged.
+    // These count sequential losses of interfacial area through each
+    // eligibility condition, not model parameter sensitivities.
+    scalar wholeDomainMixedArea = 0;
+    scalar windowMixedArea = 0;
+    scalar windowNoBubbleArea = 0;
+    label windowCells = 0;
+    label windowMixedCells = 0;
+    label windowNoBubbleCells = 0;
+
     forAll(V, celli)
     {
+        const scalar h = max(min(alphaH[celli], scalar(1)), scalar(0));
+        const scalar l = max(min(alphaL[celli], scalar(1)), scalar(0));
+        const scalar interfaceGate = gate(h)*gate(l);
+        const scalar area = interfaceGate*mag(gradH[celli]);
+
+        if (interfaceGate > SMALL)
+        {
+            wholeDomainMixedArea += area*V[celli];
+        }
+
         const vector& c = C[celli];
         const scalar r = sqrt
         (
@@ -199,27 +219,36 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
         (
             c.y() < yMin_ || c.y() > yMax_
          || r < rMin_ || r > rMax_
-         || alphaB[celli] >= maxBubbleAlpha_
         )
         {
             continue;
         }
 
-        const scalar h = max(min(alphaH[celli], scalar(1)), scalar(0));
-        const scalar l = max(min(alphaL[celli], scalar(1)), scalar(0));
-        const scalar interfaceGate = gate(h)*gate(l);
+        ++windowCells;
 
         if (interfaceGate <= SMALL)
         {
             continue;
         }
 
+        ++windowMixedCells;
+        windowMixedArea += area*V[celli];
+
+        if (alphaB[celli] >= maxBubbleAlpha_)
+        {
+            continue;
+        }
+
+        ++windowNoBubbleCells;
+        windowNoBubbleArea += area*V[celli];
+
         if (requireDownwardLiquid_ && UL[celli].y() >= 0)
         {
             continue;
         }
 
-        const scalar area = interfaceGate*mag(gradH[celli]);
+        // The original entrainment kernel starts here, unchanged.
+        // The area includes the same alphaH/alphaL gates and gradH.
         const scalar slip = min(mag(UL[celli] - UH[celli]), maxSlipSpeed_);
 
         // kg/(m3 s): rho_H * C_e * interfacial area density * slip.
@@ -243,6 +272,12 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
     reduce(rawIntegral, sumOp<scalar>());
     reduce(interfaceArea, sumOp<scalar>());
     reduce(eligibleCells, sumOp<label>());
+    reduce(wholeDomainMixedArea, sumOp<scalar>());
+    reduce(windowMixedArea, sumOp<scalar>());
+    reduce(windowNoBubbleArea, sumOp<scalar>());
+    reduce(windowCells, sumOp<label>());
+    reduce(windowMixedCells, sumOp<label>());
+    reduce(windowNoBubbleCells, sumOp<label>());
 
     const scalar globalScale =
         rawIntegral > SMALL
@@ -274,6 +309,12 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
                     << " t_s=" << mesh.time().value()
                     << " interfaceArea_m2=" << interfaceArea
                     << " eligibleCells=" << eligibleCells
+                    << " domainMixedArea_m2=" << wholeDomainMixedArea
+                    << " windowCells=" << windowCells
+                    << " windowMixedCells=" << windowMixedCells
+                    << " windowMixedArea_m2=" << windowMixedArea
+                    << " windowLowBubbleCells=" << windowNoBubbleCells
+                    << " windowLowBubbleArea_m2=" << windowNoBubbleArea
                     << " rawEntrainment_kg_s=" << rawIntegral
                     << " capScale=" << globalScale
                     << " cappedEntrainment_kg_s="
