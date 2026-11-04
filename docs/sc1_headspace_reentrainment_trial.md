@@ -485,6 +485,114 @@ physics rather than blindly removing the
 gate. A cap/efficiency increase cannot
 repair an empty eligible set.
 
+## Gate audit resolves the bottleneck: downward-liquid velocity (2026-11-04)
+
+User ran the **diagnostic-only** `run_gateaudit_05`
+successfully (solver status 0, 52 ranks) from the
+same 31.199982372783058 s source, with
+`entrainmentEfficiency=0.01`, `foamAreaMultiplier=0`,
+raw cap `0.002 kg/s`. It reproduces previous
+nonzero-trial rates, confirming the intermediate
+gate counters did not change the applied model.
+
+| t (s) | Domain gated area (m²) | Window gated area (m²) | Low-bubble area (m²) | After downflow (m²) | Eligible cells |
+|---|---:|---:|---:|---:|---:|
+| 31.3 | 1.53462 | 0.331308 | 0.331308 | 1.36809e-5 | 2 |
+| 31.4 | 1.52251 | 0.327969 | 0.327969 | 2.61243e-6 | 7 |
+| 31.5 | 1.52675 | 0.329672 | 0.329657 | 0 | 0 |
+| 31.6 | 1.53930 | 0.337778 | 0.337778 | 6.37885e-5 | 4 |
+| 31.7 | 1.52077 | 0.334136 | 0.334136 | 0 | 0 |
+
+18,432 cells lie in the axial/radial window.
+About 4,000 cells per output pass the mixed-phase
+gate, with virtually all remaining after the
+bubble-fraction filter. Yet only 0–7 cells pass
+`requireDownwardLiquid`.
+
+Across the five output times, **99.99518% of
+the window's eligible interfacial area is
+discarded by the downward-liquid velocity
+requirement**, retaining only **0.00482%**
+(area-weighted). The window retains
+~21.73% of the domain's gated interface
+area before the velocity requirement.
+Neither the prescribed zone nor the
+bubble-rich exclusion is the main bottleneck.
+The actual 2 g/s raw source cap remained
+inactive throughout.
+
+**Interpretation:** The criterion
+`U.liquid.y() < 0` does not follow from
+interfacial gas transport or topological
+bubble formation. It rejects nearly all
+computed interface contact, possibly because
+the local liquid vertical velocity is upward,
+even while a nearby free surface is deforming.
+This does **not** prove gas is physically
+entraining: a finite positive phase-normal
+relative velocity is only a more relevant
+candidate proxy, still requiring breakup,
+interfacial deformation, and experimental
+validation.
+
+### Next diagnostic, no physics change
+
+Experimental source `headspaceEntrainingDeposition.C`
+now logs these **additional counterfactual statistics**
+inside the same upper-impeller and low-bubble
+window, without applying them to phase equations:
+
+- `downwardLiquidArea_m2` and
+  `nonDownwardLiquidArea_m2`: interface
+  area grouped by sign of `U.liquid.y`;
+- `normalGasIntoLiquidArea_m2` and
+  `normalGasAwayArea_m2`: areas grouped by
+  sign of `(U.liquid-U.headspaceGas) dot n`,
+  `n=grad(alpha.headspaceGas)/|grad|`;
+- `meanNormalGasIntoLiquidSpeed_m_s` and
+  `meanLiquidVerticalSpeed_m_s`:
+  area-weighted signed velocity proxies;
+- `diagnosticRawNoDownGate_kg_s`:
+  hypothetical *unblended* raw entrainment
+  with the same coefficient and donor limit
+  but without the vertical-velocity gate;
+- `diagnosticRawNormalInward_kg_s`:
+  hypothetical *unblended* entrainment using
+  positive normal relative speed as both
+  eligibility gate and velocity magnitude.
+
+The gas-into-liquid sign convention is
+positive `(U_L-U_H) dot n` where `n`
+points from liquid toward headspace.
+This is a relative-velocity diagnostic,
+**not** a validated criterion for gas
+breakup or a permission to change the model.
+The original `requireDownwardLiquid true`
+source remains unchanged in this diagnostic
+run. A Python regression tests the normal
+velocity sign convention and shows that
+downward `U_L.y` is neither necessary nor
+sufficient for inward relative gas motion.
+
+Rebuild **only the experimental entrainment
+library** (do not rebuild the film library or
+audit solver), prepare a fresh **0.2-second**
+scratch run from the original
+`31.199982372783058` checkpoint, and
+read the new `HEADSPACE_ENTRAINMENT_CANDIDATE`
+statistics at t≈31.3. Compare the no-down
+and normal-inward hypothetical rates before
+enabling any new source physics.
+
+If normal-inward flow is also scarce, do
+not bypass both kinematic checks. The
+experimental video might depict a foam
+interface or trapped gas, not actual
+dispersed bubble breakup. Instead assess
+gas-phase topology and near-impeller
+vorticity/pressure before defining a
+different entrainment model.
+
 ## Validation gates
 
 1. **Zero-efficiency equivalence:** at identical starting
