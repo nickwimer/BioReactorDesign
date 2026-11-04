@@ -1,5 +1,15 @@
 # SC1 MEML: restore headspace-to-liquid oxygen transfer without false gas-volume OTR
 
+> **Separate experimental re-entrainment prototype (2026-11-04):**
+> The present Henry/film closure remains unchanged. A new optional
+> `headspaceEntrainingDeposition` phase-transfer model plus
+> `headspaceEntrainmentNucleation` population-balance source
+> has been committed to a **different scratch-only library**.
+> See [the staged entrainment trial](sc1_headspace_reentrainment_trial.md).
+> The new model has **not been compiled or runtime validated**;
+> do not enable it in production.
+
+
 **Status (2026-11-03): design and trial implementation committed; NOT COMPILED or VALIDATED on Kestrel yet. This is NOT a production physics change.**
 
 ## 1. Confirmed defect in the old three-phase transfer matrix
