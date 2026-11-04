@@ -13,6 +13,7 @@
 #include "velocityGroup.H"
 #include "sizeGroup.H"
 #include "mathematicalConstants.H"
+#include "PstreamReduceOps.H"
 #include "addToRunTimeSelectionTable.H"
 
 namespace Foam
@@ -138,8 +139,43 @@ addToNucleationRate
         popBal_.eta(i, pi/6*pow3(dNuc_))
     );
 
+    const tmp<volScalarField> tPositiveMass
+    (
+        max(bubbleGain, zeroRate)
+    );
+    const volScalarField& positiveMass = tPositiveMass();
+
     nucleationRate +=
-        groupAllocation*max(bubbleGain, zeroRate)/rho/fi.x();
+        groupAllocation*positiveMass/rho/fi.x();
+
+    // Report net positive bubble creation once per write. All size
+    // groups share this same amount, allocated by eta(i,x_nuc).
+    if (i == 0 && popBal_.mesh().time().writeTime())
+    {
+        static scalar lastReport = -GREAT;
+        if (mag(popBal_.mesh().time().value() - lastReport) > SMALL)
+        {
+            lastReport = popBal_.mesh().time().value();
+
+            scalar positiveBubbleMass = 0;
+            const scalarField& V = popBal_.mesh().V();
+            forAll(V, celli)
+            {
+                positiveBubbleMass += positiveMass[celli]*V[celli];
+            }
+            reduce(positiveBubbleMass, sumOp<scalar>());
+
+            if (Pstream::master())
+            {
+                Info<< "HEADSPACE_ENTRAINMENT_PB_AUDIT"
+                    << " t_s=" << popBal_.mesh().time().value()
+                    << " positiveNetBubbleGain_kg_s="
+                    << positiveBubbleMass
+                    << " nucleationDiameter_m=" << dNuc_.value()
+                    << endl;
+            }
+        }
+    }
 }
 
 // ************************************************************************* //
