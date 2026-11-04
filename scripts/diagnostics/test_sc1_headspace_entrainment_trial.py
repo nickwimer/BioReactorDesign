@@ -71,8 +71,13 @@ def test_installer() -> None:
         original, efficiency=0.01, maximum_rate_kg_s=0.002,
         nucleation_diameter_m=0.002,
     )
+    normal = trial.install_entrainment_models(
+        original, efficiency=0.01, maximum_rate_kg_s=0.002,
+        nucleation_diameter_m=0.002,
+        velocity_criterion="normalGasIntoLiquid",
+    )
 
-    for output in (control, active):
+    for output in (control, active, normal):
         assert output.count("type headspaceEntrainingDeposition;") == 1
         assert output.count("headspaceEntrainmentNucleation") == 1
         assert output.count("type deposition;") == 0
@@ -99,6 +104,13 @@ def test_installer() -> None:
 
     assert "entrainmentEfficiency 0;" in control
     assert "entrainmentEfficiency 0.01;" in active
+    assert "entrainmentEfficiency 0.01;" in normal
+    for output in (control, active):
+        assert "entrainmentVelocityCriterion legacyDownwardLiquid;" in output
+        assert "requireDownwardLiquid true;" in output
+    assert "entrainmentVelocityCriterion normalGasIntoLiquid;" in normal
+    assert "requireDownwardLiquid false;" in normal
+    assert "requireDownwardLiquid true;" not in normal
 
     # Reject existing transfer, unphysical parameters and size targets.
     bad_inputs = [
@@ -114,6 +126,9 @@ def test_installer() -> None:
              nucleation_diameter_m=0.015),
         dict(efficiency=math.nan, maximum_rate_kg_s=0.002,
              nucleation_diameter_m=0.002),
+        dict(efficiency=0.01, maximum_rate_kg_s=0.002,
+             nucleation_diameter_m=0.002,
+             velocity_criterion="unphysical"),
     ]
     for kwargs in bad_inputs:
         try:
@@ -237,6 +252,38 @@ def test_kinematic_diagnostics() -> None:
         tuple(a-b for a, b in zip(moving_up_liquid, faster_upward_gas)),
         n_liquid_to_gas,
     ) < 0
+
+    # The new mode uses only positive relative normal speed, not
+    # total slip magnitude and not the sign of liquid vertical velocity.
+    def normal_rate(relative_normal_speed, *, h=0.5, l=0.5,
+                    gradient=10, density=1.2, efficiency=0.01,
+                    speed_limit=5, donor_time=0.05):
+        if relative_normal_speed <= 0:
+            return 0.0
+        area = gate(h)*gate(l)*abs(gradient)
+        candidate_rate = density*efficiency*area*min(
+            relative_normal_speed, speed_limit
+        )
+        local_donor_cap = density*max(h-0.02, 0)/donor_time
+        return min(candidate_rate, local_donor_cap)
+
+    assert normal_rate(-1.0) == 0
+    assert normal_rate(0) == 0
+    assert normal_rate(1.0) > 0
+    assert normal_rate(2.0) > normal_rate(1.0)
+    assert abs(normal_rate(50.0) - normal_rate(5.0)) < 1e-12
+    assert normal_rate(1.0, efficiency=0) == 0
+    assert normal_rate(1.0, h=0) == 0
+    assert normal_rate(1.0, l=0) == 0
+    assert normal_rate(5.0, efficiency=1) <= 1.2*(0.5-0.02)/0.05
+
+    # Previous t31.3 diagnostic predicted 0.00263105 kg/s before
+    # capping. A 0.002 kg/s cap should yield scale approximately 0.76.
+    observed_raw = 0.00263105
+    cap = 0.002
+    scale = min(1., cap/observed_raw)
+    assert 0.75 < scale < 0.77
+    assert abs(observed_raw*scale - cap) < 1e-12
 
     print("PASS: candidate gas-into-liquid normal direction and velocity gates")
 
