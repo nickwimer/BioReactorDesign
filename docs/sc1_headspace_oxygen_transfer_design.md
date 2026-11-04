@@ -535,6 +535,94 @@ has been altered.** Runtime success validates that the
 new mass-transfer pair can be assembled, not its physical
 parameterization or eventual oxygen supply.
 
+## 5b. Paired 0.5 s foam-area trials (2026-11-04)
+
+**Data:** User's Kestrel `run_geometric_05` and `run_foam_05`
+scratch logs, both from collated checkpoint `31.199982372783058`
+with 52 ranks, both completed to ~31.7 s (exit status 0).
+The subsequent SSH "No route to host" occurred after both runs
+finished; user obtained a new `salloc` allocation.
+
+**Arithmetic mean of the five diagnostics at 31.3–31.7 s,
+not a continuous time integral or equilibrium measurement:**
+
+| Quantity | Geometric (`C_foam=0`) | Foam (`C_foam=1`) |
+|---|---:|---:|
+| Resolved area | 1.72215 m² | 1.72276 m² |
+| Candidate foam area | 0 | 4.25672 m² |
+| **Effective headspace-liquid area** | **1.72215 m²** | **5.58391 m²** |
+| BubbleGas→liquid O₂ | 0.094754 g/s | 0.094689 g/s |
+| **HeadspaceGas→liquid O₂** | **0.003644 g/s** | **0.011627 g/s** |
+| **Total modeled OTR** | **0.098398 g/s** | **0.106316 g/s** |
+| Share of prior ~0.498 g/s frozen OUR | 19.76% | 21.35% |
+| Deficit against 0.498 g/s | 0.399602 g/s | 0.391684 g/s |
+
+The foam area makes headspace O₂ transfer **3.1905 times**
+larger while the effective area grows **3.2424 times**. It
+increases total OTR by only **0.007918 g/s**, ~1.59 percentage
+points of OUR. The existing bubble transfer remains essentially
+unchanged. The headspace transfer/area ratio is about
+0.0021 g/(m² s) in both cases. This is evidence the experimental
+closure responds to its area input, *not* validation of that area.
+
+The candidate foam area `4.25672 m²` at
+`foamDiameter=0.003 m` implies
+`integral(gate*alphaH*alphaL dV)=4.25672*(0.003)/6
+=0.00212836 m³` (with bubble-rich cells excluded).
+The configured cylindrical foam window
+`r<=0.30 m, 0.65<=y<=1.05 m` has volume
+`pi*0.30²*0.40=0.113097 m³`.
+Thus the window-averaged gate-weighted `alphaH*alphaL`
+is only **0.01882**, indicating that the simulated phases
+remain largely segregated within this candidate foam zone.
+It does not represent extensive unresolved wet froth simply
+because the impeller has a headspace-rich phase fraction.
+
+A linear area extrapolation at unchanged mass-transfer
+coefficient/driving force suggests roughly **190 m²** of
+headspace contact would be required to close the shortfall
+by headspace transfer alone. This is *not* a physical
+target or justification to increase `foamAreaMultiplier`
+toward 40–50: dissolved O₂, gas composition, geometry and
+interfacial mass-transfer efficiency would change.
+
+**Mass-budget and boundary qualifications:**
+
+- At t=31.7, geometric deposition 0.00985781 kg/s plus
+  bubble-to-liquid mass loss 9.5896e-05 kg/s agrees with
+  assembled bubble interphase source -0.0099537 kg/s.
+  Foam deposition 0.00931156 kg/s plus bubble-to-liquid
+  9.5718e-05 kg/s agrees with -0.00940727 kg/s.
+  This supports transfer-source assembly consistency,
+  **not** a time-integrated conservation proof.
+- The sampled endpoint bubble closure residual at t=31.7
+  remains 0.00170228 kg/s geometric and
+  0.000408192 kg/s foam. Mean absolute residuals over
+  four later writes are ~0.001278 and ~0.000984 kg/s,
+  respectively. Endpoint budgets are not solver-discrete
+  conservation residuals; proper time integration is needed.
+- The earlier 0.2 s trial's t=31.3
+  `HEADSPACE_PRESSURE_AUDIT` measured open top `outlet`
+  area 0.889278 m², net outward +0.00774726 kg/s,
+  **gross inward -1.14072 kg/s**, hence gross outward
+  ~1.14847 kg/s. Wall and propeller mass flows were
+  nearly zero. This is large counterflow through the pressure
+  boundary even though its NET mass flux is small.
+  Examine inlet/outlet O₂ composition BCs and gas recirculation;
+  this is not automatically proof of a numerical defect.
+
+**Scientific decision:** A headspace-liquid film model is
+necessary but insufficient by itself. Next assess **surface
+gas re-entrainment into the dispersed bubbleGas phase** and
+bubble breakup/coalescence near the upper impeller, in light
+of the user's observed experimental foam. The present
+`phaseTransfer` has bubbleGas→headspaceGas deposition
+but no reverse headspaceGas→bubbleGas conversion. Any
+entrainment transfer must be bounded, conservative,
+experimentally constrained and benchmarked against gas
+holdup, oxygen transfer and liquid inventory. Do not edit
+production settings or force-fit the foam coefficient.
+
 ## 6. Acceptance criteria before any 9.9 s common checkpoint
 
 1. The new `interfaceCompositionPhaseChange:dmdtf.headspaceGasAndLiquid`
