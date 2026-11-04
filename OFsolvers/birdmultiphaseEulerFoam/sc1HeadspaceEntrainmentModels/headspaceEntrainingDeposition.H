@@ -39,6 +39,11 @@ class headspaceEntrainingDeposition
     // Maximum sum of UNBLENDED positive entrainment rates, kg/s.
     const scalar maxGlobalEntrainedKgS_;
     const bool requireDownwardLiquid_;
+
+    // legacyDownwardLiquid preserves the original experiment exactly.
+    // normalGasIntoLiquid uses positive phase-normal relative velocity.
+    const word entrainmentVelocityCriterion_;
+
     const bool reportRate_;
 
     scalar gate(const scalar alpha) const;
