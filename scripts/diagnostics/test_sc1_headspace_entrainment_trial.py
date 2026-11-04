@@ -195,7 +195,54 @@ def test_bounds() -> None:
     print("PASS: bounded interface/downflow entrainment and global cap")
 
 
+def test_kinematic_diagnostics() -> None:
+    """Check the sign of the diagnostic normal-penetration proxy.
+
+    The unit normal points from liquid toward headspace: grad(alphaH).
+    Relative gas penetration into liquid corresponds to
+    (U_liquid - U_headspace) dot n > 0. This is NOT a validated
+    physical breakup/entrainment law.
+    """
+    def dot(a, b):
+        return sum(x*y for x, y in zip(a, b))
+
+    n_liquid_to_gas = (0, 1, 0)
+    liquid_static = (0, 0, 0)
+    gas_downward = (0, -1, 0)
+    gas_upward = (0, 1, 0)
+
+    gas_to_liquid = dot(
+        tuple(a-b for a, b in zip(liquid_static, gas_downward)),
+        n_liquid_to_gas,
+    )
+    gas_away_from_liquid = dot(
+        tuple(a-b for a, b in zip(liquid_static, gas_upward)),
+        n_liquid_to_gas,
+    )
+
+    assert gas_to_liquid > 0
+    assert gas_away_from_liquid < 0
+
+    # A downward-moving LIQUID is neither a necessary nor a
+    # sufficient condition for normal gas penetration: interfacial
+    # geometry and relative gas velocity matter.
+    moving_up_liquid = (0, 0.5, 0)
+    faster_upward_gas = (0, 0.75, 0)
+    assert moving_up_liquid[1] > 0
+    assert dot(
+        tuple(a-b for a, b in zip(moving_up_liquid, gas_downward)),
+        n_liquid_to_gas,
+    ) > 0
+    assert dot(
+        tuple(a-b for a, b in zip(moving_up_liquid, faster_upward_gas)),
+        n_liquid_to_gas,
+    ) < 0
+
+    print("PASS: candidate gas-into-liquid normal direction and velocity gates")
+
+
 if __name__ == "__main__":
     test_installer()
     test_bounds()
-    print("PASS: isolated Python preflight; C++ and 52-rank runtime untested")
+    test_kinematic_diagnostics()
+    print("PASS: isolated Python preflight; C++ and 52-rank runtime still require separate validation")
