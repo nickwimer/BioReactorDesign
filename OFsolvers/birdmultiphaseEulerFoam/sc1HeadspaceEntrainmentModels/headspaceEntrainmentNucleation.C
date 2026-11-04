@@ -130,7 +130,7 @@ addToNucleationRate
 
     const dimensionedScalar zeroRate
     (
-        "zeroRate", phaseTransferModel::dimDmdt, 0
+        "zeroRate", dimDensity/dimTime, 0
     );
 
     const dimensionedScalar groupAllocation
