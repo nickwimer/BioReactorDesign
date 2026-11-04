@@ -377,6 +377,114 @@ rates with actual bubble injection or new OTR.
 If `run_entrain_05` already exists, inspect
 it instead of recreating the run.
 
+## Nonzero entrainment pilot completed: near-zero eligibility (2026-11-04)
+
+The user ran the separate `run_entrain_05` at
+`entrainmentEfficiency=0.01`, `foamAreaMultiplier=0`,
+`maxGlobalEntrainedKgS=0.002`, a 2 mm PB nucleus,
+from the same `31.199982372783058` scratch checkpoint
+as the validated zero-efficiency control. The 52-rank
+continuation **completed successfully** (status 0)
+with five audit writes at t=31.3, 31.4, 31.5, 31.6,
+and 31.7 s.
+
+| Diagnostic | t31.3 | t31.4 | t31.5 | t31.6 | t31.7 |
+|---|---:|---:|---:|---:|---:|
+| Eligible cells | 2 | 7 | 0 | 4 | 0 |
+| Raw entrainment (kg/s) | 7.82129e-7 | 1.5131e-7 | 0 | 3.69635e-6 | 0 |
+| Positive NET bubble creation to PB (kg/s) | 0 | 8.86303e-9 | 0 | 6.50491e-7 | 0 |
+| Candidate interface area (m²) | 1.36809e-5 | 2.61243e-6 | 0 | 6.37885e-5 | 0 |
+| Headspace-to-liquid O₂ loss (kg/s) | 3.65348e-6 | 3.62201e-6 | 3.62579e-6 | 3.65850e-6 | 3.60418e-6 |
+
+**Critical result:** At most **7 cells** met all criteria,
+and two of five output times had no eligible cells.
+The maximum raw candidate was **3.69635 mg/s**
+(not grams/s), with maximum positive net
+bubble gain **0.650491 mg/s**. The model
+never reached the 2 g/s cap: `capScale=1`
+whenever the candidate was nonzero.
+At t31.6, its total eligible interface area
+of `6.37885e-5 m²` was roughly
+**0.0037%** of the concurrent
+`1.72912 m²` headspace-liquid resolved
+interface area reported by the O₂ film
+model. The two area definitions differ
+slightly by geometric normalizations and
+the entrainment restrictions, but their
+large scale separation is unambiguous.
+
+Five-sample arithmetic means, in g/s:
+
+| Rate | Zero control | Entrainment 0.01 |
+|---|---:|---:|
+| bubbleGas→liquid O₂ | 0.094754 | 0.094732 |
+| headspaceGas→liquid O₂ | 0.003644 | 0.003633 |
+| **Total OTR** | **0.098398** | **0.098365** |
+
+Entrainment produced **no meaningful OTR improvement**
+(~-0.000033 g/s difference, below the resolution
+needed to infer a physical causal signal). This
+does not establish that surface gas entrainment
+is physically negligible: the experimental model's
+**eligibility gates** are selecting almost
+none of the simulated gas-liquid interface.
+Overall bubble deposition is still ~7–10 g/s,
+far greater than the raw entrainment candidate.
+The logged `netBubbleGasFromHeadspace_kg_s`
+remains negative at every output: this
+is signed **net** bubbleGas mass loss, not
+a gross entrainment measurement. Rare local
+positive net production is confirmed by
+`HEADSPACE_ENTRAINMENT_PB_AUDIT`.
+
+### Next gate diagnosis: no coefficient changes
+
+Before adjusting entrainment efficiency or
+the global cap, determine which eligibility
+condition removes most of the candidate
+interface. A **diagnostic-only** update to
+`headspaceEntrainingDeposition.C` adds the
+following stage counters/areas to the existing
+`HEADSPACE_ENTRAINMENT_CANDIDATE` line:
+
+- `domainMixedArea_m2`: gated `|grad(alphaH)|`
+  integrated throughout the domain.
+- `windowCells`: cells within the prescribed
+  y/r bounding window (before phase gates).
+- `windowMixedCells`, `windowMixedArea_m2`:
+  window cells containing both headspace
+  and liquid within the phase-fraction gates.
+- `windowLowBubbleCells`,
+  `windowLowBubbleArea_m2`: those remaining
+  after rejecting bubble-rich cells.
+- `eligibleCells`, `interfaceArea_m2`:
+  those remaining after requiring liquid
+  `U_y<0` (the actual entrainment eligibility).
+
+The C++ source **changes reporting only**; the
+per-cell proposal, donor cap, global mass cap,
+phase-transfer signs, and PB coupling remain
+unchanged. Recompile only the separate scratch
+entrainment library, then prepare a **fresh 0.2 s
+scratch trial** from the same original source
+using `--entrainment-efficiency 0.01`.
+Do **not** overwrite the completed zero/nonzero
+0.5 s tests or modify production cases.
+
+If window area is near zero, inspect the
+free-surface shape and upper impeller/cavity
+geometry before moving bounds. If the phase
+overlap gate eliminates most area, determine
+whether the Eulerian phase separation
+represents a coherent cavity rather than
+the observed bubbly froth. If the
+downward-liquid requirement eliminates most
+of the area, inspect the sign of local
+interfacial normal velocity and entrainment
+physics rather than blindly removing the
+gate. A cap/efficiency increase cannot
+repair an empty eligible set.
+
 ## Validation gates
 
 1. **Zero-efficiency equivalence:** at identical starting
