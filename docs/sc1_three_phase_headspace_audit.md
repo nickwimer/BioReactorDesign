@@ -178,6 +178,43 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2v. Experimental gas re-entrainment and PB size injection (2026-11-04)
+
+The coupled headspaceGas-liquid O2 film-transfer prototype compiled
+and was runtime tested successfully in previous scratch experiments.
+Foam-area multiplier 1 raised headspace OTR from ~0.00364 to
+~0.01163 g/s, but total OTR remained only ~0.1063 g/s against
+~0.498 g/s frozen biological OUR. The top oxygen
+`inletOutlet` species BCs have physically plausible reverse-flow
+values (gas O2 mass fraction 0.23). The experiment reportedly shows
+foamy mixing at the upper impeller.
+
+After source review, **do not add a second opposite ordered
+`phaseTransfer` entry alone**, because signed BiRD blending may
+combine it incorrectly with deposition. **Do not add bubble phase
+mass without populating the PB size-group fractions.**
+
+A new **separate scratch-only** library now contains
+`headspaceEntrainingDeposition`, a single combined
+deposition + countervailing entrainment model with algebraically
+identical original deposition at `entrainmentEfficiency=0`,
+and `headspaceEntrainmentNucleation`, which assigns positive
+net bubble gain (after deposition and phaseTransfer blending)
+to the PB's existing size bins via `popBal.eta()`.
+The mixture phase transfer carries donor headspace species
+(including O2) through the standard BiRD specie-transfer
+equations, without creating O2 mass from nothing.
+Initial test: 0 or 0.01 entrainment efficiency, raw global
+entrainment cap 0.002 kg/s, 2 mm target nucleus, downward-flow
+gate and bounded upper-impeller zone. The existing
+headspace O2 film model is retained with `foamAreaMultiplier=0`.
+The optional new library and script have **not yet been
+compiled or runtime-tested on Kestrel**, and no production
+cases or libraries have changed.
+
+See [scratch entrainment/PB development and stage gates]
+(sc1_headspace_reentrainment_trial.md).
+
 ## 2u. Confirmed SC1 transfer matrix: no headspace-liquid oxygen pathway
 
 The user read the **actual production MEML**
