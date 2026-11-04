@@ -21,6 +21,9 @@
     (
         fluid.dmdtf(phasePairKey("bubbleGas", "headspaceGas"))
     );
+    // For experimental re-entrainment, this is NET exchange across
+    // bubbleGas-headspaceGas; the legacy depositionLoss label then
+    // includes both deposition and re-entrainment.
     const volScalarField& auditDep = auditDepTmp();
     const PtrList<volScalarField> auditActualSources(fluid.dmdts());
 
@@ -224,6 +227,8 @@
             << " inventory_kg=" << auditBubbleMass
             << " injection_kg_s=" << auditInjection
             << " depositionLoss_kg_s=" << auditDepositionLoss
+            << " netBubbleGasFromHeadspace_kg_s="
+            << -auditDepositionLoss
             << " orderedDepLoss_kg_s=" << auditOrderedDepLoss
             << " assembledBubbleDmdt_kg_s=" << auditBubblePhaseSource
             << " assembledBubbleDmdtPresent=" << auditHasBubbleSource
