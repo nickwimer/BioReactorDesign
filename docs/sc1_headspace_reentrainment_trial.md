@@ -210,6 +210,32 @@ Do NOT proceed to trial creation until the new
 including `libbirdeulerianInterfacialModels.so` and
 `libbirdphaseSystem.so`.
 
+### First Kestrel library build confirmed (2026-11-04)
+
+The user updated the feature branch to `ec9136e`. On Kestrel,
+`test_sc1_headspace_entrainment_trial.py` passed both
+configuration/PB-injection tests and bounded-source/global-cap
+checks. The separate `sc1HeadspaceEntrainmentModels` C++ library
+then **built and linked successfully**, and `ldd` resolved both
+`libbirdeulerianInterfacialModels.so` and
+`libbirdphaseSystem.so` under the expected RHEL9
+`$FOAM_USER_LIBBIN` path.
+
+**This establishes compilation/link success only.** No runtime
+trial has been executed and the current prototype's signed
+transfer, PB nucleation, species transport and final bubble mass
+budget have not yet been verified in a solver run.
+
+The next gate is to prepare **two independent scratch cases**
+from the same 31.199982372783058 s source checkpoint,
+using `--entrainment-efficiency 0` and `0.01`,
+with `--foam-multiplier 0` for both. Inspect the two
+`phaseTransfer` and `nucleationModels` entries and
+load both experimental libraries. Rebuild only the isolated
+scratch audit solver from the updated `bubbleMassAudit.H`,
+then run the zero-efficiency equivalence case FIRST.
+Do not change any original solver or production files.
+
 ## Paired scratch 52-rank tests — after compile and preflight
 
 Run independent *0.5-second* continuations from the same
