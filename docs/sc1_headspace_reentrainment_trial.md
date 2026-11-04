@@ -310,6 +310,73 @@ rather than editing it.
 validated `run_geometric_05` and `run_foam_05`
 as independent comparisons; never overwrite them.
 
+## Zero-efficiency control passed on Kestrel (2026-11-04)
+
+The user rebuilt the scratch audit solver and ran
+`run_control_05` from the same collated
+`31.199982372783058` state as the earlier
+`run_geometric_05`, with
+`entrainmentEfficiency 0`, `foamAreaMultiplier 0`,
+`nucleationDiameter 0.002` m and raw cap
+`0.002 kg/s`.
+
+**The trial completed normally (solver status 0).**
+At all five saved t=31.3–31.7 s audits, the numerical
+values **exactly match the displayed precision**
+of the original geometric-only trial for
+`inventory_kg`, `injection_kg_s`,
+`depositionLoss_kg_s`,
+`assembledBubbleDmdt_kg_s`,
+`netBubbleLiquidMassLoss_kg_s`,
+`netHeadspaceLiquidMassLoss_kg_s`, and
+`effectiveArea_m2`. The diagnostic
+`HEADSPACE_ENTRAINMENT_PB_AUDIT` confirms
+`positiveNetBubbleGain_kg_s=0` at all five times,
+so the companion population-balance source
+adds no bubbles when entrainment is disabled.
+
+Example at 31.7 s, in both models:
+
+```text
+inventory_kg=0.00961191
+depositionLoss_kg_s=0.00985781
+assembledBubbleDmdt_kg_s=-0.0099537
+netBubbleLiquidMassLoss_kg_s=9.5896e-05
+netHeadspaceLiquidMassLoss_kg_s=3.64407e-06
+effectiveArea_m2=1.72277
+endpointClosure_kg_s=0.00170228
+```
+
+The newly logged
+`netBubbleGasFromHeadspace_kg_s=-0.00985781`
+is the signed net bubble mass gain from that
+phase pair, hence negative for normal deposition.
+It is **not** a gross re-entrainment measurement.
+The equivalence at display precision is an
+important regression check, but it does not
+validate the full solver-discrete gas or
+species mass balance; the endpoint residual
+remains nonzero as in the original trial.
+
+**Next gate:** a **fresh**, independent 0.5 s
+`run_entrain_05` trial at
+`entrainmentEfficiency=0.01`, with
+`foamAreaMultiplier=0`, the same starting
+checkpoint and unchanged 2 mm PB nucleus
+diameter and 2 g/s raw global cap. The
+`HEADSPACE_ENTRAINMENT_CANDIDATE` output
+must be checked against `positiveNetBubbleGain_kg_s`.
+An unblended raw entrainment candidate
+may be nonzero yet the NET bubble creation
+may remain zero due to local deposition and
+phaseTransfer blending. Do not equate candidate
+rates with actual bubble injection or new OTR.
+
+**Do not overwrite** `run_control_05`,
+`run_geometric_05` or `run_foam_05`.
+If `run_entrain_05` already exists, inspect
+it instead of recreating the run.
+
 ## Validation gates
 
 1. **Zero-efficiency equivalence:** at identical starting
