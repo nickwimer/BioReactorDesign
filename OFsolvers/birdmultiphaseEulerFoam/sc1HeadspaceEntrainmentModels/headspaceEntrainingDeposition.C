@@ -68,6 +68,13 @@ headspaceEntrainingDeposition
     (
         dict.lookupOrDefault<bool>("requireDownwardLiquid", true)
     ),
+    entrainmentVelocityCriterion_
+    (
+        dict.lookupOrDefault<word>
+        (
+            "entrainmentVelocityCriterion", "legacyDownwardLiquid"
+        )
+    ),
     reportRate_(dict.lookupOrDefault<bool>("reportRate", true))
 {
     if
@@ -93,6 +100,32 @@ headspaceEntrainingDeposition
         FatalIOErrorInFunction(dict)
             << "Invalid headspaceEntrainingDeposition phase pair or "
             << "entrainment parameters."
+            << exit(FatalIOError);
+    }
+
+    if
+    (
+        entrainmentVelocityCriterion_ != "legacyDownwardLiquid"
+     && entrainmentVelocityCriterion_ != "normalGasIntoLiquid"
+    )
+    {
+        FatalIOErrorInFunction(dict)
+            << "Unknown entrainmentVelocityCriterion "
+            << entrainmentVelocityCriterion_ << ". Valid options are "
+            << "legacyDownwardLiquid and normalGasIntoLiquid."
+            << exit(FatalIOError);
+    }
+
+    if
+    (
+        entrainmentVelocityCriterion_ == "normalGasIntoLiquid"
+     && requireDownwardLiquid_
+    )
+    {
+        FatalIOErrorInFunction(dict)
+            << "Set requireDownwardLiquid false with "
+            << "entrainmentVelocityCriterion normalGasIntoLiquid. "
+            << "Both mutually exclusive velocity screens must not be active."
             << exit(FatalIOError);
     }
 
@@ -313,14 +346,30 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
             rawWithNormalInwardGate += diagnosticNormalRate*V[celli];
         }
 
-        if (requireDownwardLiquid_ && UL[celli].y() >= 0)
+        // Select one mutually exclusive kinematic proxy. The legacy
+        // branch is algebraically identical to previous experiments.
+        // The new branch requires gas to move toward the liquid
+        // RELATIVE to the liquid, in the local phase-normal direction.
+        // This relative-speed diagnostic does not prove interfacial
+        // breakup or detachment of new dispersed bubbles.
+        const bool normalMode =
+            entrainmentVelocityCriterion_ == "normalGasIntoLiquid";
+
+        if (normalMode)
+        {
+            if (normalGasIntoLiquidSpeed <= 0)
+            {
+                continue;
+            }
+        }
+        else if (requireDownwardLiquid_ && UL[celli].y() >= 0)
         {
             continue;
         }
 
-        // The original entrainment kernel starts here, unchanged.
-        // The area includes the same alphaH/alphaL gates and gradH.
-        const scalar slip = min(mag(UL[celli] - UH[celli]), maxSlipSpeed_);
+        const scalar slip = normalMode
+          ? min(normalGasIntoLiquidSpeed, maxSlipSpeed_)
+          : min(mag(UL[celli] - UH[celli]), maxSlipSpeed_);
 
         // kg/(m3 s): rho_H * C_e * interfacial area density * slip.
         // This is a bounded experimental closure, not a validated
@@ -388,6 +437,8 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
             {
                 Info<< "HEADSPACE_ENTRAINMENT_CANDIDATE"
                     << " t_s=" << mesh.time().value()
+                    << " velocityCriterion="
+                    << entrainmentVelocityCriterion_
                     << " interfaceArea_m2=" << interfaceArea
                     << " eligibleCells=" << eligibleCells
                     << " domainMixedArea_m2=" << wholeDomainMixedArea
