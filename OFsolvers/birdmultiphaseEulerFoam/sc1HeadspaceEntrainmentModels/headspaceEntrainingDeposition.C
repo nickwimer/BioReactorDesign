@@ -197,6 +197,19 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
     label windowMixedCells = 0;
     label windowNoBubbleCells = 0;
 
+    // Diagnostic-only alternative kinematic screenings. They DO NOT
+    // change the already validated downflow-gated source expression.
+    scalar windowDownwardLiquidArea = 0;
+    scalar windowNonDownwardLiquidArea = 0;
+    scalar windowNormalGasIntoLiquidArea = 0;
+    scalar windowNormalGasAwayFromLiquidArea = 0;
+    scalar rawWithoutDownwardGate = 0;
+    scalar rawWithNormalInwardGate = 0;
+    scalar areaWeightedNormalSpeed = 0;
+    scalar areaWeightedLiquidVerticalSpeed = 0;
+    label windowDownwardLiquidCells = 0;
+    label windowNormalGasIntoLiquidCells = 0;
+
     forAll(V, celli)
     {
         const scalar h = max(min(alphaH[celli], scalar(1)), scalar(0));
@@ -242,6 +255,64 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
         ++windowNoBubbleCells;
         windowNoBubbleArea += area*V[celli];
 
+        // Interface normal n = grad(alpha.headspaceGas)/|grad| points
+        // approximately from liquid towards headspace. Positive
+        // (U_liquid-U_headspace).n suggests gas penetration relative
+        // to liquid; it is a velocity PROXY, not proof of breakup or
+        // a validated entrainment correlation.
+        const scalar normalGasIntoLiquidSpeed =
+            ((UL[celli] - UH[celli]) & gradH[celli])
+           /max(mag(gradH[celli]), scalar(SMALL));
+
+        areaWeightedNormalSpeed +=
+            area*normalGasIntoLiquidSpeed*V[celli];
+        areaWeightedLiquidVerticalSpeed +=
+            area*UL[celli].y()*V[celli];
+
+        if (UL[celli].y() < 0)
+        {
+            ++windowDownwardLiquidCells;
+            windowDownwardLiquidArea += area*V[celli];
+        }
+        else
+        {
+            windowNonDownwardLiquidArea += area*V[celli];
+        }
+
+        if (normalGasIntoLiquidSpeed > 0)
+        {
+            ++windowNormalGasIntoLiquidCells;
+            windowNormalGasIntoLiquidArea += area*V[celli];
+        }
+        else
+        {
+            windowNormalGasAwayFromLiquidArea += area*V[celli];
+        }
+
+        // Counterfactual rates, before original downward gate or
+        // phaseTransfer blending. NOT added to phase equations.
+        const scalar diagnosticSlip =
+            min(mag(UL[celli] - UH[celli]), maxSlipSpeed_);
+        const scalar diagnosticDonorLimit =
+            rhoH[celli]*max(h - minAlpha_, scalar(0))/donorTimeScale_;
+        const scalar diagnosticFullRate = min
+        (
+            rhoH[celli]*entrainmentEfficiency_*area*diagnosticSlip,
+            diagnosticDonorLimit
+        );
+        rawWithoutDownwardGate += diagnosticFullRate*V[celli];
+
+        if (normalGasIntoLiquidSpeed > 0)
+        {
+            const scalar diagnosticNormalRate = min
+            (
+                rhoH[celli]*entrainmentEfficiency_*area
+               *min(normalGasIntoLiquidSpeed, maxSlipSpeed_),
+                diagnosticDonorLimit
+            );
+            rawWithNormalInwardGate += diagnosticNormalRate*V[celli];
+        }
+
         if (requireDownwardLiquid_ && UL[celli].y() >= 0)
         {
             continue;
@@ -278,6 +349,16 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
     reduce(windowCells, sumOp<label>());
     reduce(windowMixedCells, sumOp<label>());
     reduce(windowNoBubbleCells, sumOp<label>());
+    reduce(windowDownwardLiquidArea, sumOp<scalar>());
+    reduce(windowNonDownwardLiquidArea, sumOp<scalar>());
+    reduce(windowNormalGasIntoLiquidArea, sumOp<scalar>());
+    reduce(windowNormalGasAwayFromLiquidArea, sumOp<scalar>());
+    reduce(rawWithoutDownwardGate, sumOp<scalar>());
+    reduce(rawWithNormalInwardGate, sumOp<scalar>());
+    reduce(areaWeightedNormalSpeed, sumOp<scalar>());
+    reduce(areaWeightedLiquidVerticalSpeed, sumOp<scalar>());
+    reduce(windowDownwardLiquidCells, sumOp<label>());
+    reduce(windowNormalGasIntoLiquidCells, sumOp<label>());
 
     const scalar globalScale =
         rawIntegral > SMALL
@@ -315,6 +396,25 @@ Foam::phaseTransferModels::headspaceEntrainingDeposition::dmdtf() const
                     << " windowMixedArea_m2=" << windowMixedArea
                     << " windowLowBubbleCells=" << windowNoBubbleCells
                     << " windowLowBubbleArea_m2=" << windowNoBubbleArea
+                    << " downwardLiquidCells=" << windowDownwardLiquidCells
+                    << " downwardLiquidArea_m2=" << windowDownwardLiquidArea
+                    << " nonDownwardLiquidArea_m2="
+                    << windowNonDownwardLiquidArea
+                    << " normalGasIntoLiquidCells="
+                    << windowNormalGasIntoLiquidCells
+                    << " normalGasIntoLiquidArea_m2="
+                    << windowNormalGasIntoLiquidArea
+                    << " normalGasAwayArea_m2="
+                    << windowNormalGasAwayFromLiquidArea
+                    << " meanNormalGasIntoLiquidSpeed_m_s="
+                    << areaWeightedNormalSpeed/max(windowNoBubbleArea, SMALL)
+                    << " meanLiquidVerticalSpeed_m_s="
+                    << areaWeightedLiquidVerticalSpeed
+                      /max(windowNoBubbleArea, SMALL)
+                    << " diagnosticRawNoDownGate_kg_s="
+                    << rawWithoutDownwardGate
+                    << " diagnosticRawNormalInward_kg_s="
+                    << rawWithNormalInwardGate
                     << " rawEntrainment_kg_s=" << rawIntegral
                     << " capScale=" << globalScale
                     << " cappedEntrainment_kg_s="
