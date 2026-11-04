@@ -24,7 +24,9 @@ def case_fixture() -> str:
     original_test = load(
         "test_sc1_headspace_o2_trial.py", "sc1_existing_film_test"
     )
-    original = original_test.synthetic_phase_properties()
+    original = original_test.synthetic_phase_properties().replace(
+        "surface headspaceGas;", "surface headspaceGas; efficiency 1;"
+    )
     return original + """
 bubbleGas
 {
@@ -80,9 +82,7 @@ def test_installer() -> None:
         assert output.count("species (O2);") == 2
         assert output.count("droplet bubbleGas;") == 1
         assert output.count("surface headspaceGas;") == 1
-        assert output.count("efficiency 1;") == 0 or (
-            output.count("efficiency 1;") == 1
-        )
+        assert output.count("efficiency 1;") == 1
         assert "nucleationDiameter 0.002;" in output
         assert "velocityGroup bubbleGas;" in output
         assert "headspacePhase headspaceGas;" in output
