@@ -178,6 +178,56 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2w. First normal-inward headspace entrainment runtime (2026-11-04)
+
+52-rank SCRATCH-only trial
+`run_normalactive_02` completed normally
+after updating the optional entrainment model
+to use positive
+`(U.liquid-U.headspaceGas) dot grad(alpha.headspaceGas)/|grad(alpha.headspaceGas)|`
+instead of downflowing liquid as the
+kinematic criterion. At t31.3–31.4
+the model reported 0.163–0.169 m²
+eligible area and 1,791–1,875 eligible
+cells. Raw proposed mass was
+2.571–2.665 g/s and the **global
+unblended 2.0 g/s cap** was correctly
+enforced (scale 0.778–0.750).
+
+This did **not** result in 2 g/s of
+new dispersed bubbles: positive
+**net** bubbleGas mass gain passed to
+the population balance was only
+0.228–0.208 g/s, while the signed
+overall bubble↔headspace net
+exchange remained -7.14 to
+-7.54 g/s (deposition still dominates).
+Compared with the zero-entrainment
+matched-time case, bubble inventory
+increased by 11.09–24.17 mg and
+total modeled OTR improved by just
+0.28–0.40 **mg O₂/s**, not g/s.
+
+Therefore the opt-in model's
+sign, cap and bubble PB source run
+successfully, but oxygen delivery
+is not materially repaired on this
+0.2 s test. The endpoint mass-balance
+residual at t31.4
+(0.000429673 kg/s) is comparable
+to the positive net PB bubble birth
+(0.000207738 kg/s); a rigorous
+time-integrated conservative
+species/phase budget is still needed.
+Verify PB size-fraction min/max
+and diameter before extending
+the test. No production edits.
+
+Full data table and next
+acceptance gates are in
+[SC1 headspace re-entrainment trial]
+(sc1_headspace_reentrainment_trial.md).
+
 ## 2v. Experimental gas re-entrainment and PB size injection (2026-11-04)
 
 The coupled headspaceGas-liquid O2 film-transfer prototype compiled
