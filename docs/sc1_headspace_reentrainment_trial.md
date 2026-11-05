@@ -1,8 +1,12 @@
 # SC1: conservative headspace-to-bubble entrainment — isolated development trial
 
-**Status (2026-11-04): source and regression scripts are committed, but the
-new C++ library and its impact on the 52-rank case have NOT been compiled
-or run on Kestrel. This is NOT a production change or a validated closure.**
+**Status (2026-11-04): the isolated experimental library has compiled
+successfully on Kestrel; zero-efficiency equivalence, 0.01-efficiency
+legacy gating, normal-velocity diagnostics, and an opt-in
+`normalGasIntoLiquid` 0.2 s runtime trial have completed successfully.
+The new model is numerically active, but it remains uncalibrated and
+its gas/species inventory conservation and 2 mm PB size distribution
+are not yet fully validated. No production change is authorized.**
 
 The previous headspace-liquid Henry/film model is compiled and runtime
 tested. The two 0.5-second baseline/foam trials showed total OTR only
@@ -695,6 +699,122 @@ breakup and oxygen-transfer measurements must be used to
 decide whether and where this closure is physical. This
 is still a scratch-only, uncalibrated prototype; no
 production configuration or solver has changed.
+
+## First opt-in normal-direction runtime: numerical operation demonstrated (2026-11-04)
+
+User completed the new `run_normalactive_02` successfully
+(`Solver status: 0`, `End`) on 52 MPI ranks, starting
+from the **same** collated checkpoint `31.199982372783058`
+and ending around 31.4 s. The scratch library compiled,
+the Python regression checks passed, and
+`entrainmentVelocityCriterion normalGasIntoLiquid` /
+`requireDownwardLiquid false` were verified in
+`constant/phaseProperties`.
+
+Configuration: `entrainmentEfficiency=0.01`,
+`maxGlobalEntrainedKgS=0.002` (2 g/s raw unblended cap),
+`nucleationDiameter=0.002` m,
+`foamAreaMultiplier=0`. The old zero-entrainment
+`run_control_05` provides matched-time controls.
+
+| Quantity | 31.3 s normal | 31.4 s normal |
+|---|---:|---:|
+| Eligible normal-inward cells | 1,791 | 1,875 |
+| Eligible interface area (m²) | 0.162999 | 0.168764 |
+| Raw normal-inward entrainment (kg/s) | 0.00257137 | 0.00266542 |
+| Global cap scale | 0.777796 | 0.750352 |
+| **Capped, still UNBLENDED entrainment (kg/s)** | **0.002** | **0.002** |
+| Positive **NET** local bubble gain for PB (kg/s) | 0.000227563 | 0.000207738 |
+| Signed NET bubble↔headspace rate (kg/s) | -0.00713551 | -0.00753911 |
+| Bubble inventory (kg) | 0.00934556 | 0.00949945 |
+| BubbleGas→liquid O₂ flux (kg/s) | 9.38776e-5 | 9.45063e-5 |
+| HeadspaceGas→liquid O₂ flux (kg/s) | 3.63763e-6 | 3.62483e-6 |
+| Bubble-balance endpoint residual (kg/s) | N/A | 0.000429673 |
+
+**Matched control comparison:**
+
+| t (s) | Bubble inventory control→normal (kg) | Bubble→liquid O₂ control→normal (g/s) | Headspace→liquid O₂ control→normal (g/s) | Total OTR gain (g/s) |
+|---|---|---|---|---:|
+| 31.3 | 0.00933447 → 0.00934556 | 0.0935802 → 0.0938776 | 0.00365347 → 0.00363763 | +0.00028156 |
+| 31.4 | 0.00947528 → 0.00949945 | 0.0941079 → 0.0945063 | 0.00362237 → 0.00362483 | +0.00040086 |
+
+The bubble mass increases by **11.09 mg** at
+t31.3 and **24.17 mg** at t31.4 relative to
+the matched control. The OTR gain at these
+very early outputs is only **0.28–0.40 mg O₂/s**,
+far smaller than the ~0.498 **g/s** previously
+measured frozen biological OUR; do not
+confuse milligrams with grams. The 0.2 s smoke
+test is not long enough for entrained bubbles
+to establish a new residence-time distribution
+or quasi-steady OTR.
+
+**Important rate distinctions:**
+
+- The 2 g/s cap applies to the **candidate
+  mixture mass transfer before BiRD blending**.
+  It is NOT 2 g/s of new 2 mm bubbles delivered
+  into the PB and certainly not 2 g O₂/s.
+- `HEADSPACE_ENTRAINMENT_PB_AUDIT` reports the
+  sum of **local positive NET** bubble creation
+  after deposition and blending: ~0.21–0.23 g/s.
+  This is about 10–11% of the unblended cap.
+  The source may be offset by deposition
+  elsewhere, and positive net PB production
+  does not by itself prove complete population
+  size-moment conservation.
+- Signed integrated
+  `netBubbleGasFromHeadspace_kg_s` remains
+  negative (~-7.1 to -7.5 g/s): deposition still
+  dominates global gas exchange.
+  Do **not** call this a gross entrainment rate.
+  The t31.4 net deposition differs by only
+  +0.02954 g/s from the zero control and its
+  direction reflects changed hydrodynamics,
+  not a direct measurement of 2 g/s transfer.
+- The t31.4 endpoint closure residual in the
+  active normal case is `0.000429673 kg/s`
+  vs `0.000268565 kg/s` in the control.
+  Both are instantaneous endpoint
+  approximations rather than time-integrated
+  discrete solver residuals. We cannot
+  certify conservation from these values.
+- The near-interface area-weighted liquid
+  vertical velocity remains upward (~+1.35 m/s),
+  while the averaged signed gas-into-liquid
+  normal velocity is negative
+  (~-0.15 m/s), despite positive normal
+  velocity in ~half the interface. These
+  Eulerian velocity proxies need independent
+  validation against the real impeller/free
+  surface; a net gas-film displacement
+  is not necessarily bubble detachment.
+
+**Next action:** prepare a *fresh* 0.5 s
+`run_normalactive_05` from the original
+source, with exactly the above configuration,
+and compare all five saved times against
+`run_control_05`. Do not extend by overwriting
+`run_normalactive_02`. Inspect
+`bubbleGas sizeGroups-sum volume fraction`
+min/max and `bubbleGas Sauter mean diameter`
+in the solver log, along with positive PB
+bubble creation, OTR, inventory and endpoint
+closure. If size-bin sum drifts substantially
+outside [0,1] or diameter becomes non-finite,
+do not use the model for calibration.
+
+**Science decision:** This is an important
+functional validation of controlled
+headspace→bubble conversion with PB
+nucleation, but not evidence that
+surface entrainment can close the
+~0.4 g O₂/s deficit. Validate the PB
+size distribution and gas/liquid contact
+physics before adjusting `C_e` or the 2 g/s
+candidate limit. Production cases, original
+BiRD libraries and experimental foam film
+library stay untouched.
 
 ## Validation gates
 
