@@ -15,10 +15,15 @@ without interpolation. The normal run's own-duration mean OTR improves only
 0.353%, and its native final bubble inventory is 125.23 mg lower. Both retain
 large clipping/correction and unresolved phase budgets. Read
 [the paired results and new stage-audit build gate](sc1_conservation_pair_results_2026-11-06.md)
-first. A new isolated instrumentation revision is implemented and locally
-tested; **its OpenFOAM build/runtime are pending**. Next build a fresh scratch
-executable, then run a new 0.1 s control after build review. Preserve both
-completed runs; no coefficient or biology-schedule changes are approved.
+first. The new isolated instrumentation revision **compiled successfully on
+Kestrel at `4a1d7de`; all 50 checks pass there and executable dependencies
+resolve**. Reuse
+`/scratch/nwimer/sc1_stage_audit_20261106T231907Z/bin/putidaFoamSC1ConservationAudit`.
+Header hashes match the committed code, and original solver-source hashes and
+dependency paths match the earlier reviewed build. Next prepare a fresh 0.1 s
+pair and run its control only; stage-audit MPI validation remains pending.
+Preserve both completed runs; no coefficient or biology-schedule changes are
+approved.
 
 > **Instruction to the next assistant:** Read this handoff and the linked audit documents before changing anything. Review the actual BiRD source and trial outputs before forming new conclusions. Make **every code or documentation change as a Git commit pushed to the GitHub feature branch**. Do not leave work as an uncommitted patch, and do not modify the production CFD runs. Do not rerun already completed experiments without a reason.
 

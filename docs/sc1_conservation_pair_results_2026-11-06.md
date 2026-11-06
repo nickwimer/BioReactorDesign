@@ -12,6 +12,12 @@ size remain unchanged.
 This continues the [handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md) and
 [timestep audit](sc1_timestep_conservation_audit.md).
 
+**Latest follow-up:** The revision-2 stage audit built successfully on Kestrel
+at `4a1d7de`, with all 50 checks passing. Use the existing
+`/scratch/nwimer/sc1_stage_audit_20261106T231907Z` build. No stage-audit CFD run
+has launched yet. The next action is the
+[fresh 0.1 s control launch](#successful-stage-audit-build-and-short-control-launch).
+
 ## Initial-state and regression checks
 
 All five printed initial phase/aggregate dictionaries match exactly, including
@@ -147,9 +153,10 @@ All **50 focused local checks pass** (10 audit, 3 oxygen-stage, 8 mass-stage,
 and assembly-contract tests. They cover accumulator identities, stage ordering and
 cross terms, stabilization/clipping identities, read-only reporting at unequal
 times, source-preserving hook insertion, and complete short-case copying.
-**The new OpenFOAM wrapper has not yet been compiled or run on Kestrel.**
+The following Kestrel build subsequently passed the same 50 checks and compiled
+the OpenFOAM wrapper. Its MPI runtime behavior remains to be tested.
 
-## Next command: report old logs and build only
+## Build procedure (completed successfully)
 
 Do not rerun the completed pair. Use the updated reader on those existing
 logs and compile a fresh solver tree. Return build status/output before
@@ -197,3 +204,80 @@ existing 31.3 s control and inspect the new oxygen/mass-stage records. Do not
 extend a reacting continuation or promote any closure while the budget remains
 unattributed. Quantitative free-surface/foam comparison and the eventual
 nonreacting 9.9 s checkpoint remain downstream of this work.
+
+## Successful stage-audit build and short-control launch
+
+The uploaded `Pasted text(20261106-232244).txt` confirms build status **0**,
+successful final linking, all 50 checks passing, and no missing executable
+dependencies in `ldd`. The displayed compiler warnings concern Torch casts
+and unused variables in the preserved biology/pH files; no audit compile
+error is shown. No CFD was launched by that build command.
+
+| Provenance item | Verified result |
+|---|---|
+| Repository implementation | `4a1d7dec7d5153cdb83ba13ee2011dff309b04ce` |
+| Scratch build root | `/scratch/nwimer/sc1_stage_audit_20261106T231907Z` |
+| Canonical root | `/kfs3/scratch/nwimer/sc1_stage_audit_20261106T231907Z` |
+| Executable SHA256 | `32262b1b49d57bc423a00a0cd7c393881a336d3c9471657e506401900db2fc42` |
+| `sc1BudgetLedger.H` SHA256 | `9813c051d4abaf14a75d3568c60affb37e543a67142e6617cd9381f459c02ec8` |
+| `sc1ConservationAudit.H` SHA256 | `3bf9293b7ac5acbf818cd2205d12661797e6653075c6ab3aa88e9c0fa05c76b2` |
+| `sc1MassStageAudit.H` SHA256 | `716dd28a373372d7b8952c32bee9e4d7a7c66d6632651d7afc1c83ea53525c21` |
+| `sc1MassStageLedger.H` SHA256 | `934d48a7199b98e7216109e39d8bcb705d774c3f87eb29218119c0e35b217d20` |
+
+All four header hashes match the committed files. The manifest's original
+`putidaFoam.C`, `YEqns.H`, `Make/files` and `Make/options` hashes match the
+earlier reviewed source manifest, as do all dependency source paths. The
+new `--native-times` reader also successfully reported both completed 0.5 s
+logs, retaining their actual clocks and unsynchronized endpoint label.
+
+No further implementation or rebuild is needed before this short diagnostic.
+The same preparer revalidates the old source pair, copies its complete common
+checkpoint into two new cases, retains the reviewed settings and changes only
+the requested new end time plus established audit/output settings. A new
+timestamped destination and subshell noclobber protect existing results.
+Only **control** runs; the prepared normal case remains unused pending review.
+The four-hour biological update size, 200 s CFD trigger, saved OUR and pH
+schedule remain as before. This remains a reacting-state diagnostic.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+AUDIT2ROOT=/scratch/nwimer/sc1_stage_audit_20261106T231907Z
+AUDITEXE="$AUDIT2ROOT/bin/putidaFoamSC1ConservationAudit"
+SC1_EXE_SHA=32262b1b49d57bc423a00a0cd7c393881a336d3c9471657e506401900db2fc42
+PAIR2ROOT="/scratch/nwimer/sc1_stage_pair_$(date -u +%Y%m%dT%H%M%SZ)"
+
+if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$AUDITEXE" || ! -x "$PY" ]]; then
+    echo "Stopped: active allocation, built executable or Python missing."
+elif source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric \
+    && printf '%s  %s\n' "$SC1_EXE_SHA" "$AUDITEXE" | sha256sum -c - \
+    && "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" \
+        --allow-courant-location-metadata --duration 0.1 --out "$PAIR2ROOT"; then
+    echo "PAIR2ROOT=$PAIR2ROOT"
+    CONTROL="$PAIR2ROOT/control"
+    if [[ -e "$CONTROL/log.conservation" || -L "$CONTROL/log.conservation" ]]; then
+        echo "Stopped: existing control log; preserve this case."
+    else
+        (cd "$CONTROL" && set -C && \
+            srun -n 52 "$AUDITEXE" -parallel -fileHandler collated > log.conservation 2>&1)
+        SC1_STATUS=$?
+        echo "SC1 stage-control solver status: $SC1_STATUS"
+        "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" \
+            "$CONTROL/log.conservation" --native-times
+        awk '/^SC1_/ {if ($1 != "SC1_BOUNDARY" || /patch=outlet /) print}
+             /^(BUBBLE_MASS_AUDIT|BUBBLE_STAGE_AUDIT|HEADSPACE_ENTRAINMENT_PB_AUDIT) / {print}' \
+            "$CONTROL/log.conservation"
+        tail -n 30 "$CONTROL/log.conservation"
+    fi
+else
+    echo "Stopped before launch. Preserve any created directory and paste the output."
+fi
+```
+
+Return the solver status, new pair path, summary and emitted records. Verify
+the 0.1 s control against the existing first report before interpreting the
+new stage terms. Inspect `SC1_OXYGEN_STAGE` component/stage remainders and
+negative-O2 correction, plus `SC1_MASS_STAGE` all-outer-iteration counts,
+allocation/density contributions and unassigned changes. Do not rerun a
+failed or completed case in place, and do not launch the new normal case yet.

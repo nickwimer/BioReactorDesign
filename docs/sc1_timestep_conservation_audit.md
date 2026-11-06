@@ -6,8 +6,9 @@
 Both 52-rank diagnostics completed with status 0; all five new control records
 reproduce the old control at printed precision. The budgets expose large
 correction terms and unresolved residuals; validation has not passed.
-The next isolated stage-audit implementation is locally tested, with its
-OpenFOAM build/runtime pending.** Read the
+The next isolated stage audit compiled successfully on Kestrel at `4a1d7de`,
+with all 50 checks passing and dependencies resolved. Its MPI runtime
+validation is pending; reuse the `sc1_stage_audit_20261106T231907Z` build.** Read the
 [paired results and current build command](sc1_conservation_pair_results_2026-11-06.md)
 before using the historical commands below.
 
