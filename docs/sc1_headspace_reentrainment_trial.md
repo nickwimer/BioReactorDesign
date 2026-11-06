@@ -816,6 +816,59 @@ candidate limit. Production cases, original
 BiRD libraries and experimental foam film
 library stay untouched.
 
+## Normal-inward PB numerical sanity gate passed (2026-11-06)
+
+The user inspected the complete short `run_normalactive_02` and
+matched `run_control_05` solver logs on a **new Kestrel
+allocation** (node `x1006c3s5b1n1`; prior runs were already
+finished and preserved). The last eight reported
+`bubbleGas sizeGroups-sum volume fraction, min, max`
+lines were **`1 1 1`** for *both* runs.
+The last eight `bubbleGas Sauter mean diameter`
+lines were finite and stable:
+
+| Last reported statistic | `run_control_05` | `run_normalactive_02` |
+|---|---:|---:|
+| PB fraction mean / min / max | 1 / 1 / 1 | 1 / 1 / 1 |
+| Sauter mean diameter (m) | 0.00120099 | 0.00120567 |
+| Sauter minimum diameter (m) | 0.00100252 | 0.00100249 |
+| Sauter maximum diameter (m) | 0.00532335 | 0.00536886 |
+
+Mean Sauter diameter rises by only ~0.39% in the
+new early entrainment run; the maximum rises ~0.86%.
+The search for `FOAM FATAL`, `floating point exception`,
+and `segmentation fault` returned only
+`sigFpe : Enabling floating point exception trapping
+(FOAM_SIGFPE).`, which is **normal startup output**,
+not an actual exception.
+
+**Numerical gate passed:** no evidence of
+size-group normalization failure, non-finite diameters,
+or fatal solver errors. However, BiRD's
+`velocityGroup::scale()` applies `max(0)` to size groups
+and renormalizes them on correction, so `1 1 1` is
+not an independent demonstration of unmodified
+pre-normalization number/volume moment conservation.
+The positive net nucleation source also has not been
+independently integrated against PB size-bin mass
+to prove a fully conservative population moment.
+
+**Next:** prepare a **new, non-overwriting 0.5-second**
+scratch run `run_normalactive_05` from the *same*
+source checkpoint `31.199982372783058`,
+with `entrainmentEfficiency=0.01`,
+`entrainmentVelocityCriterion normalGasIntoLiquid`,
+`maxGlobalEntrainedKgS=0.002` kg/s, 2 mm
+nucleation diameter, and
+`foamAreaMultiplier=0`. Compare the five
+t31.3–31.7 outputs with `run_control_05`.
+Inspect O₂ supply, bubble inventory, net/headspace
+mass exchange, PB positive production, diameter
+stability, and endpoint residuals. The run is a
+short-term numerical sensitivity, **not** a
+validated physical closure or nonreacting 9.9 s
+checkpoint.
+
 ## Validation gates
 
 1. **Zero-efficiency equivalence:** at identical starting
