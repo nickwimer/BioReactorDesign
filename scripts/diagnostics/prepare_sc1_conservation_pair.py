@@ -3,6 +3,7 @@
 
 No CFD launch. Completed inputs are read-only. New copies retain the existing
 physics and biological schedule. Only diagnostic output controls are changed.
+Use --inspect-inputs without --out to report raw differences without copying.
 """
 import argparse
 import hashlib
@@ -25,14 +26,77 @@ def hashes(root):
         if path.is_symlink() and path.is_dir():
             raise ValueError(f'Directory symlink needs explicit provenance review: {path}')
         if path.is_file():
+            before=path.stat()
             digest = hashlib.sha256()
             with path.open('rb') as stream:
                 for block in iter(lambda: stream.read(4*1024*1024), b''):
                     digest.update(block)
+            after=path.stat()
+            if (before.st_size,before.st_mtime_ns,before.st_ino,before.st_dev) != (after.st_size,after.st_mtime_ns,after.st_ino,after.st_dev):
+                raise ValueError(f'File changed while hashing: {path}')
             result[str(path.relative_to(root))] = digest.hexdigest()
     if not result:
         raise ValueError(f'Empty checkpoint/mesh: {root}')
     return result
+
+
+def file_summary(path, digest):
+    return {'size_bytes':path.stat().st_size, 'sha256':digest,
+            'resolved_path':str(path.resolve()), 'symlink':path.is_symlink(),
+            'compressed_suffix':path.suffix == '.gz'}
+
+
+def first_difference(left, right):
+    """Bounded raw-byte evidence, not a decoder or a header-only classifier."""
+    offset=0
+    with left.open('rb') as a, right.open('rb') as b:
+        while True:
+            x,y=a.read(1024*1024),b.read(1024*1024)
+            if x != y:
+                offset += next((i for i,(u,v) in enumerate(zip(x,y)) if u!=v), min(len(x),len(y)))
+                break
+            if not x:
+                return None
+            offset += len(x)
+    result={'offset':offset}
+    for label,path in (('control',left),('normal',right)):
+        start=max(0,offset-32)
+        with path.open('rb') as stream:
+            stream.seek(start)
+            context=stream.read(96)
+        result[label]={'offset':start, 'hex':context.hex(),
+                       'escaped_ascii':context.decode('ascii',errors='backslashreplace')}
+    return result
+
+
+def inspect_pair_inputs(control, active, checkpoint):
+    """Read-only report; differences never authorize bypassing validation."""
+    report={'inspection_only':True, 'checkpoint':checkpoint,
+            'control_source':str(control), 'normal_source':str(active),
+            'note':'Raw byte comparison only. An early header difference does not exclude later field differences. No files are normalized or copied.',
+            'sections':{}, 'read_errors':0}
+    for section in ('processors52/constant',f'processors52/{checkpoint}','constant','system'):
+        try:
+            left,right=control/section,active/section
+            a,b=hashes(left),hashes(right)
+            common=set(a)&set(b)
+            changed=[]
+            for name in sorted(n for n in common if a[n]!=b[n]):
+                changed.append({'file':name,
+                                'control':file_summary(left/name,a[name]),
+                                'normal':file_summary(right/name,b[name]),
+                                'first_difference':first_difference(left/name,right/name),
+                                'classification':'undetermined'})
+            report['sections'][section]={
+                'files_control':len(a), 'files_normal':len(b),
+                'identical_files':sum(a[n]==b[n] for n in common),
+                'changed':changed,
+                'only_control':[dict(file=n,**file_summary(left/n,a[n])) for n in sorted(set(a)-set(b))],
+                'only_normal':[dict(file=n,**file_summary(right/n,b[n])) for n in sorted(set(b)-set(a))]}
+        except (OSError,ValueError) as error:
+            report['sections'][section]={'error':str(error)}
+            report['read_errors']+=1
+    return report
 
 
 def enable_audit(text):
@@ -54,7 +118,7 @@ def validate_pair(control, active, checkpoint):
     for section in ('processors52/constant', f'processors52/{checkpoint}'):
         a,b=hashes(control/section),hashes(active/section)
         if a != b:
-            raise ValueError(f'Inputs are not identical: {section}')
+            raise ValueError(f'Inputs are not identical: {section}; use --inspect-inputs (without --out) for a read-only file comparison')
         evidence[section]=a
     for field in ('alpha.liquid','alpha.bubbleGas','alpha.headspaceGas',
                   'O2.liquid','O2.bubbleGas','O2.headspaceGas','f.bubbleGas'):
@@ -104,18 +168,28 @@ def main():
     parser.add_argument('--control',type=Path,default=root/'run_control_05')
     parser.add_argument('--active',type=Path,default=root/'run_normalactive_05')
     parser.add_argument('--checkpoint',default=CHECKPOINT)
-    parser.add_argument('--out',type=Path,required=True)
+    parser.add_argument('--out',type=Path,help='Required for preparation; must not be used with --inspect-inputs')
+    parser.add_argument('--inspect-inputs',action='store_true',help='Print raw input differences only; create no files or cases')
     args=parser.parse_args()
+    if args.inspect_inputs and args.out is not None:
+        parser.error('--inspect-inputs must not be combined with --out')
+    if not args.inspect_inputs and args.out is None:
+        parser.error('--out is required for case preparation')
     try:
-        control,active,out=map(scratch,(args.control,args.active,args.out))
+        control,active=map(scratch,(args.control,args.active))
+        # Explicit time names only; prohibit traversal and latestTime selection.
+        if not re.fullmatch(r'\d+(?:\.\d+)?',args.checkpoint):
+            raise ValueError('Checkpoint must be an explicit numeric directory')
+        if args.inspect_inputs:
+            report=inspect_pair_inputs(control,active,args.checkpoint)
+            print(json.dumps(report,indent=2,ensure_ascii=True))
+            return 2 if report['read_errors'] else 0
+        out=scratch(args.out)
         if out.exists() or out.is_symlink():
             raise ValueError(f'Destination exists: {out}')
         for src in (control,active):
             if src==out or src in out.parents or out in src.parents:
                 raise ValueError('Input/output paths overlap')
-        # Explicit time names only; prohibit traversal and latestTime selection.
-        if not re.fullmatch(r'\d+(?:\.\d+)?',args.checkpoint):
-            raise ValueError('Checkpoint must be an explicit numeric directory')
         evidence=validate_pair(control,active,args.checkpoint)
         contents=[]
         for src in (control,active):

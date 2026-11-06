@@ -52,6 +52,16 @@ before running the zero control. The matched audit retains the original
 31.199982372783058 state and biology settings; it is not yet the nonreacting
 9.9 s release checkpoint.
 
+**Checkpoint comparison follow-up (2026-11-06):** The first matched-case
+preparation stopped on a raw input mismatch in
+`processors52/31.199982372783058`, after the collated mesh comparison passed.
+No destination/cases were created and no CFD launched. The mismatch has not
+been classified as metadata, file-set or physical-state differences. Use
+`prepare_sc1_conservation_pair.py --inspect-inputs` (without `--out`) to obtain
+file-level hashes, sizes and bounded byte evidence. The equality requirement
+remains unchanged; do not strip headers, discard fields or silently replace
+either checkpoint. See the [inspection instructions](sc1_timestep_conservation_audit.md#checkpoint-mismatch-before-case-preparation-2026-11-06).
+
 ## 1. What we are trying to accomplish
 
 Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.

@@ -1,7 +1,8 @@
 # SC1 timestep phase and O2 conservation audit
 
-**2026-11-06: implemented and locally tested; OpenFOAM compilation and MPI
-validation on Kestrel are pending. No new CFD results are claimed.**
+**2026-11-06: OpenFOAM compilation and 19 checks passed on Kestrel at
+`6ac7e36`. Matched-case preparation stopped on a checkpoint byte mismatch;
+MPI runtime validation remains pending. No new CFD results are claimed.**
 
 This continues the [session handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md),
 [entrainment results](sc1_headspace_reentrainment_trial.md),
@@ -218,7 +219,53 @@ frozen-OUR configuration deliberately; do not relabel it as the nonreacting
 9.9 s baseline. Any source/config mismatch is evidence to review, not an
 instruction to overwrite the local source or change biology settings.
 
-### Next command after the successful build
+### Checkpoint mismatch before case preparation (2026-11-06)
+
+The next supplied terminal output stopped at
+`Inputs are not identical: processors52/31.199982372783058`. The collated
+mesh/constant comparison preceding that check passed. This is a raw byte/file
+set mismatch, not yet evidence of different physical field values. Validation
+occurs before the destination is created, so this attempt created neither
+matched case and launched no CFD. The successful executable is unaffected.
+
+Use the new read-only inspection before attempting preparation again:
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+SC1_BRANCH=codex/sc1-headspace-bubble-audit-20261029
+if [[ "$(git -C "$REPO" branch --show-current)" == "$SC1_BRANCH" ]] \
+    && git -C "$REPO" pull --ff-only origin "$SC1_BRANCH"; then
+    "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" --inspect-inputs
+else
+    echo "Repository update stopped; paste the output and git status."
+fi
+```
+
+The report covers both collated mesh/checkpoint trees and the constant/system
+directories, continuing past differences to expose other discrepancies in
+one inspection. It lists changed and one-sided files, sizes, SHA-256 hashes,
+resolved paths and bounded hex/escaped-ASCII excerpts at the first byte
+difference. Hashing detects ordinary size/mtime/inode changes during a read;
+the report is not an atomic filesystem snapshot. Expected raw differences in
+phaseProperties/controlDict are reported too; they do not bypass the preparer's
+separate configuration checks.
+
+Differences remain `classification: undetermined`: the first mismatch cannot
+prove that later numerical data agree. Collated binary fields are not decoded,
+normalized, stripped of headers or rewritten. Inspection creates no files;
+`--out` is rejected in inspection mode. Exit status zero means inspection
+completed without read errors, not that inputs are equal or scientifically
+accepted. Preserve all original inputs and review the report before selecting
+any common seed or changing the comparison. No solver rebuild is needed.
+
+Eight input-inspection regression tests pass locally, covering nested missing
+files, hash/size reports, differences beyond 4 MiB, an early difference with
+later changed data, unequal lengths, read errors, escaped bounded output and
+CLI refusal of copy/write/preparation operations. These tests do not decode
+OpenFOAM fields or establish equality of the actual Kestrel checkpoints.
+
+### Next command after resolving the input mismatch
 
 Prepare a fresh pair and collect a text report for review. This reads the
 completed cases and creates new copies; it does not run CFD or rebuild the
