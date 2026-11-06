@@ -75,8 +75,11 @@ The **raw candidate entrainment rate** in an eligible cell is
 ```text
 a_resolved  = |grad(alpha.headspaceGas)| [m^-1]
 g(alpha)   = clamp((alpha-alphaMin)/(alphaFull-alphaMin), 0, 1)
+n          = grad(alpha_H) / max(|grad(alpha_H)|, SMALL)
+u_legacy   = |U_L-U_H|, allowed only if U_L,y < 0
+u_normal   = max(0, (U_L-U_H).n), no vertical-velocity condition
 S_H_to_B   = rho_H * C_e * g(alpha_H) * g(alpha_L)
-             * a_resolved * min(|U_L-U_H|, u_slipMax) [kg/m3/s]
+             * a_resolved * min(u_mode, u_slipMax) [kg/m3/s]
 ```
 
 There is also a per-cell donor limit:
@@ -106,8 +109,12 @@ The trial only considers cells with:
   (`alphaMin 0.02`, `alphaFull 0.10`);
 - `alpha.bubbleGas < 0.10` to restrict the source to
   a mostly not-yet-dispersed interface;
-- **downward-moving liquid** `U.liquid_y < 0`;
-- relative headspace/liquid slip capped at 5 m/s.
+- for the **legacy** mode, **downward-moving liquid**
+  `U.liquid_y < 0` plus total relative headspace/liquid slip;
+- for the **opt-in normal-inward** mode, positive
+  `(U.liquid-U.headspaceGas) dot n`, instead of
+  the downward-liquid condition; and
+- mode-specific relative speed capped at 5 m/s.
 
 These are engineering hypotheses and exploratory local
 guards, **not empirically calibrated entrainment physics**.
