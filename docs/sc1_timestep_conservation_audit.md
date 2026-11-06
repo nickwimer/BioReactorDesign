@@ -3,10 +3,13 @@
 **2026-11-06: OpenFOAM compilation and 19 checks passed on Kestrel at
 `6ac7e36`. The checkpoint mismatch was proved to be four Co location values;
 16 metadata checks and matched-case preparation passed at `289a606`.
-The zero-control audit completed on 52 ranks with status 0 and reproduces
-the old control's final diagnostics. Normal entrainment remains pending.
-The new budgets expose large correction terms and unresolved residuals;
-physical and conservation validation have not passed.**
+Both 52-rank diagnostics completed with status 0; all five new control records
+reproduce the old control at printed precision. The budgets expose large
+correction terms and unresolved residuals; validation has not passed.
+The next isolated stage-audit implementation is locally tested, with its
+OpenFOAM build/runtime pending.** Read the
+[paired results and current build command](sc1_conservation_pair_results_2026-11-06.md)
+before using the historical commands below.
 
 This continues the [session handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md),
 [entrainment results](sc1_headspace_reentrainment_trial.md),

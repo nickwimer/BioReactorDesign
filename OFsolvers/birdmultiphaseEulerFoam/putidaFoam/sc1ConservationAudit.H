@@ -16,6 +16,7 @@ class sc1ConservationAudit
 {
     phaseSystem& fluid_;
     const fvMesh& mesh_;
+    const dimensionedScalar speciesResidualAlpha_;
     wordList names_;
     std::vector<sc1Budget::Ledger> ledgers_;
     std::array<sc1Budget::Rates, 5> rates_{};
@@ -23,7 +24,12 @@ class sc1ConservationAudit
     std::array<bool, 3> speciesSeen_{};
     PtrList<fvScalarMatrix> equations_, transfer_, external_, advection_;
     PtrList<fvScalarMatrix> diffusion_, reaction_;
-    std::array<scalar, 3> beforeNormalization_{};
+    PtrList<fvScalarMatrix> ddt_, stabilization_, componentMismatch_;
+    std::array<scalar, 5> startSpeciesO_{}, oldSpeciesO_{};
+    std::array<scalar, 5> beforeNormalization_{}, afterNormalization_{};
+    std::array<scalar, 5> negativeOxygenMass_{}, minimumOxygenY_{};
+    std::array<unsigned long, 5> negativeOxygenCells_{};
+    std::array<sc1Budget::OxygenStageLedger, 5> oxygenStages_{};
     std::array<scalar, 3> pbBefore_{}, pbCorrection_{}, pbCorrectionSum_{};
     std::array<scalar, 5> pairIntegral_{};
     scalar pbInput_ = 0;
@@ -40,6 +46,13 @@ class sc1ConservationAudit
         FatalErrorInFunction << "Unexpected SC1 phase " << phase
             << exit(FatalError);
         return -1;
+    }
+
+    template<class T>
+    void sumPhaseGroups(std::array<T,5>& values) const
+    {
+        values[3]=values[1]+values[2];
+        values[4]=values[0]+values[3];
     }
 
     void inventory(std::array<scalar, 5>& mass,
@@ -90,9 +103,12 @@ class sc1ConservationAudit
 
 public:
     sc1ConservationAudit(phaseSystem& fluid, bool LTS)
-    : fluid_(fluid), mesh_(fluid.mesh()), names_(5),
+    : fluid_(fluid), mesh_(fluid.mesh()),
+      speciesResidualAlpha_("residualAlpha",dimless,mesh_.solverDict("Yi")),
+      names_(5),
       equations_(3), transfer_(3), external_(3), advection_(3),
-      diffusion_(3), reaction_(3), patchIntegral_(3*mesh_.boundary().size())
+      diffusion_(3), reaction_(3), ddt_(3), stabilization_(3),
+      componentMismatch_(3), patchIntegral_(3*mesh_.boundary().size())
     {
         if (LTS || mesh_.moving() || fluid.phases().size()!=3)
             FatalErrorInFunction << "SC1 audit requires global dt, fixed mesh, three phases"
@@ -113,7 +129,11 @@ public:
         }
         Info<< "SC1_BALANCE_METHOD version=1 quadrature=rightEndpointEveryStep"
             << " exactDiscreteBudget=0 speciesStage=finalPimpleBeforeNormalization"
-            << " boundaryOxygen=faceYProxy PBSource=preSolveProxy" << endl;
+            << " boundaryOxygen=faceYProxy PBSource=preSolveProxy"
+            << " oxygenDecompositionVersion=2"
+            << " stabilization=assemblyStateReconstruction"
+            << " speciesResidualAlpha=" << speciesResidualAlpha_.value()
+            << " negativeCellCounts=phaseCellsFinalPimple" << endl;
         Info().precision(oldPrecision);
     }
 
@@ -123,11 +143,15 @@ public:
     {
         std::array<scalar,5> m{},o{},v{};
         inventory(m,o,v);
+        startSpeciesO_=o;
         for (label i=0; i<5; ++i)
         {
             jump_[i]=o[i]-previousO_[i];
             normalization_[i]=0; rates_[i].fill(0);
         }
+        oldSpeciesO_.fill(0); beforeNormalization_.fill(0);
+        afterNormalization_.fill(0); negativeOxygenMass_.fill(0);
+        negativeOxygenCells_.fill(0);
         speciesSeen_.fill(false); pbSeen_=false; pbInput_=0;
     }
 
@@ -149,8 +173,9 @@ public:
     }
 
     // Copy the ACTUAL unrelaxed equation and RHS matrices before solve.
-    // Auxiliary advection/diffusion/reaction matrices are reconstructed at
-    // the same state, using the same API as MultiComponentPhaseModel::YiEqn.
+    // Auxiliary matrices are reconstructed at the same assembly state using
+    // MultiComponentPhaseModel::YiEqn's API. The explicit stabilization term
+    // MUST be frozen here, before solve changes Y, not recomputed afterwards.
     void equation(phaseModel& p, volScalarField& y, const fvScalarMatrix& eq,
                   const fvScalarMatrix& transfer, const fvScalarMatrix& source)
     {
@@ -173,8 +198,35 @@ public:
             );
         diffusion_.set(i,transport.divj(y).ptr());
         const volScalarField& alpha = p;
+        const volScalarField& rho = p.thermo().rho();
+        const volScalarField& oldTimeY = y;
+        // The actual phase.YiEqn has already accessed this existing old-time
+        // level. Const access here neither requests old-old time nor changes Y.
+        oldSpeciesO_[i]=integral
+        (
+            alpha.oldTime()*rho.oldTime()*oldTimeY.oldTime()
+        );
         tmp<fvScalarMatrix> reaction(alpha*p.R(y));
         reaction_.set(i,reaction.ptr());
+        ddt_.set(i,fvm::ddt(alpha,rho,y).ptr());
+        tmp<fvScalarMatrix> stabilization
+        (
+            fvc::ddt(speciesResidualAlpha_*rho,y)
+          - fvm::ddt(speciesResidualAlpha_*rho,y)
+        );
+        stabilization_.set(i,stabilization.ptr());
+        // Compare the reconstruction with the ACTUAL retained equation.
+        // Ddt = physical RHS + stabilization + actual residual + mismatch.
+        componentMismatch_.set
+        (
+            i,
+            new fvScalarMatrix
+            (
+                ddt_[i]+advection_[i]+diffusion_[i]
+              - reaction_[i]-stabilization_[i]-transfer_[i]-external_[i]
+              - equations_[i]
+            )
+        );
         speciesSeen_[i]=true;
     }
 
@@ -197,16 +249,42 @@ public:
             const tmp<volScalarField> residual(equations_[i]&y);
             r[sc1Budget::equationResidual]=integral(residual);
             r[sc1Budget::equationResidualL1]=integral(mag(residual()));
+            r[sc1Budget::oxygenDdt]=integral(ddt_[i]&y);
+            r[sc1Budget::oxygenStabilization]=integral(stabilization_[i]&y);
+            const tmp<volScalarField> mismatch(componentMismatch_[i]&y);
+            r[sc1Budget::oxygenComponentMismatch]=integral(mismatch);
+            r[sc1Budget::oxygenComponentMismatchL1]=integral(mag(mismatch()));
             beforeNormalization_[i]=integral(p*p.rho()*y);
+            const tmp<volScalarField> rho=p.rho();
+            sc1Budget::NegativeOxygenStats negative;
+            forAll(mesh_.V(), c)
+                negative.add(p[c],rho()[c],y[c],mesh_.V()[c]);
+            scalar missingMass=negative.correctionMass;
+            scalar minimumY=negative.minimumY;
+            label cells=negative.cells;
+            reduce(missingMass,sumOp<scalar>());
+            reduce(minimumY,minOp<scalar>());
+            reduce(cells,sumOp<label>());
+            negativeOxygenMass_[i]=missingMass;
+            minimumOxygenY_[i]=minimumY;
+            negativeOxygenCells_[i]=cells;
         }
+        sumPhaseGroups(oldSpeciesO_);
+        sumPhaseGroups(beforeNormalization_);
+        sumPhaseGroups(negativeOxygenMass_);
+        sumPhaseGroups(negativeOxygenCells_);
+        minimumOxygenY_[3]=min(minimumOxygenY_[1],minimumOxygenY_[2]);
+        minimumOxygenY_[4]=min(minimumOxygenY_[0],minimumOxygenY_[3]);
     }
     void afterSpeciesCorrection()
     {
         for (label i=0; i<3; ++i)
         {
             const phaseModel& p=fluid_.phases()[names_[i]];
-            normalization_[i]=integral(p*p.rho()*p.Y("O2"))-beforeNormalization_[i];
+            afterNormalization_[i]=integral(p*p.rho()*p.Y("O2"));
+            normalization_[i]=afterNormalization_[i]-beforeNormalization_[i];
         }
+        sumPhaseGroups(afterNormalization_);
     }
 
     void sample(bool report)
@@ -284,11 +362,20 @@ public:
         static const char* labels[sc1Budget::nTerms]={
             "massExternal","massTransfer","massIn","massOut","oxygenExternal",
             "oxygenTransfer","oxygenReaction","oxygenAdvection","oxygenDiffusion",
-            "oxygenInProxy","oxygenOutProxy","equationResidual","equationResidualL1"};
+            "oxygenInProxy","oxygenOutProxy","equationResidual","equationResidualL1",
+            "oxygenDdt","oxygenStabilization","oxygenComponentMismatch",
+            "oxygenComponentMismatchL1"};
         for(label i=0;i<5;++i)
         {
             auto& l=ledgers_[i];
             l.advance(t,dt,rates_[i],jump_[i],normalization_[i]);
+            auto& stages=oxygenStages_[i];
+            stages.advance
+            (
+                startSpeciesO_[i],oldSpeciesO_[i],beforeNormalization_[i],
+                afterNormalization_[i],o[i],dt,rates_[i][sc1Budget::oxygenDdt],
+                negativeOxygenMass_[i],negativeOxygenCells_[i],normalization_[i]
+            );
             if(report)
             {
                 Info<< "SC1_BALANCE phase=" << names_[i] << " t_s=" << t
@@ -309,6 +396,32 @@ public:
                         << " " << labels[k] << "Integral_kg=" << l.integral[k];
                 if(i==0) Info<< " DO_mg_L=" << 1000*o[i]/max(v[i],SMALL);
                 Info<< endl;
+                const scalar legacyResidual=o[i]-l.initialOxygen
+                    -sc1Budget::Ledger::oxygenExpected(l.integral)
+                    -l.oxygenJump-l.normalization;
+                Info<< "SC1_OXYGEN_STAGE version=2 phase=" << names_[i]
+                    << " t_s=" << t << " steps=" << l.steps
+                    << " startStepOxygen_kg=" << startSpeciesO_[i]
+                    << " oldTimeOxygen_kg=" << oldSpeciesO_[i]
+                    << " preCorrectionOxygen_kg=" << beforeNormalization_[i]
+                    << " postCorrectionOxygen_kg=" << afterNormalization_[i]
+                    << " endStepOxygen_kg=" << o[i]
+                    << " negativeOxygenMass_kg=" << negativeOxygenMass_[i]
+                    << " negativePhaseCells=" << negativeOxygenCells_[i]
+                    << " minimumY=" << minimumOxygenY_[i]
+                    << " negativeOxygenMassSum_kg=" << stages.negativeMassSum
+                    << " negativePhaseCellSamples=" << stages.negativePhaseCellSamples
+                    << " correctionDefect_kg=" << stages.correctionDefect
+                    << " correctionDefectSum_kg=" << stages.correctionDefectSum
+                    << " oldTimeOffset_kg=" << stages.oldTimeOffset
+                    << " oldTimeOffsetSum_kg=" << stages.oldTimeOffsetSum
+                    << " ddtInventoryDefect_kg=" << stages.ddtInventoryDefect
+                    << " ddtInventoryDefectSum_kg=" << stages.ddtInventoryDefectSum
+                    << " postSpeciesChange_kg=" << stages.postSpeciesChange
+                    << " postSpeciesChangeSum_kg=" << stages.postSpeciesChangeSum
+                    << " explainedLegacyResidual_kg=" << stages.explainedResidual(l.integral)
+                    << " unexplainedLegacyResidual_kg="
+                    << legacyResidual-stages.explainedResidual(l.integral) << endl;
                 l.resetWindow(t,m[i],o[i]);
             }
         }

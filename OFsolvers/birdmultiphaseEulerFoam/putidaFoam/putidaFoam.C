@@ -37,6 +37,7 @@ Description
 #include "dynamicFvMesh.H"
 #include "phaseSystem.H"
 #include "sc1ConservationAudit.H"
+#include "sc1MassStageAudit.H"
 #include "phaseDynamicMomentumTransportModel.H"
 #include "pimpleControl.H"
 #include "pressureReference.H"
@@ -106,9 +107,11 @@ int main(int argc, char *argv[])
     }
 
     autoPtr<sc1ConservationAudit> sc1Conservation;
+    autoPtr<sc1MassStageAudit> sc1MassStages;
     if (pimple.dict().lookupOrDefault<Switch>("sc1ConservationAudit", false))
     {
         sc1Conservation.reset(new sc1ConservationAudit(fluid, LTS));
+        sc1MassStages.reset(new sc1MassStageAudit(fluid, LTS));
     }
 
     while (pimple.run(runTime))
@@ -155,6 +158,7 @@ int main(int argc, char *argv[])
         }
 	
         if (sc1Conservation.valid()) sc1Conservation->beforeAdvance();
+        if (sc1MassStages.valid()) sc1MassStages->beforeAdvance();
         runTime++;
         Info<< "Time = " << runTime.timeName() <<  nl << endl;
 	time=runTime.value();
@@ -171,11 +175,15 @@ int main(int argc, char *argv[])
 
                 if (pimple.thermophysics())
                 {
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("alphaPB");
                     if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->beforePB();
                     fluid.solve(rAUs, rAUfs);
                     if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBSolve();
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("alphaPB");
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("modelCorrect");
                     fluid.correct();
                     if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBCorrect();
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("modelCorrect");
                     // Sample deposition at the same PIMPLE state as fluid.correct().
                     if
                     (
@@ -191,8 +199,12 @@ int main(int argc, char *argv[])
                     }
                     fluid.correctContinuityError();
 
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("species");
                     #include "YEqns.H"
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("species");
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("energy");
                     #include "EEqns.H"
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("energy");
                     #include "pEqnComps.H"
 
                     forAll(phases, phasei)
@@ -260,11 +272,15 @@ int main(int argc, char *argv[])
                     fvModels.correct();
                 }
 
+                if (sc1MassStages.valid()) sc1MassStages->beforeBlock("alphaPB");
                 if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->beforePB();
                 fluid.solve(rAUs, rAUfs);
                 if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBSolve();
+                if (sc1MassStages.valid()) sc1MassStages->afterBlock("alphaPB");
+                if (sc1MassStages.valid()) sc1MassStages->beforeBlock("modelCorrect");
                 fluid.correct();
                 if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBCorrect();
+                if (sc1MassStages.valid()) sc1MassStages->afterBlock("modelCorrect");
                 // Sample deposition at the same PIMPLE state as fluid.correct().
                 if
                 (
@@ -282,7 +298,9 @@ int main(int argc, char *argv[])
 
                 if (pimple.thermophysics())
                 {
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("species");
                     #include "YEqns.H"
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("species");
                 }
 
                 if (faceMomentum)
@@ -291,10 +309,14 @@ int main(int argc, char *argv[])
 
                     if (pimple.thermophysics())
                     {
+                        if (sc1MassStages.valid()) sc1MassStages->beforeBlock("energy");
                         #include "EEqns.H"
+                        if (sc1MassStages.valid()) sc1MassStages->afterBlock("energy");
                     }
 
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("pressure");
                     #include "pUf/pEqn.H"
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("pressure");
                 }
                 else
                 {
@@ -302,10 +324,14 @@ int main(int argc, char *argv[])
 
                     if (pimple.thermophysics())
                     {
+                        if (sc1MassStages.valid()) sc1MassStages->beforeBlock("energy");
                         #include "EEqns.H"
+                        if (sc1MassStages.valid()) sc1MassStages->afterBlock("energy");
                     }
 
+                    if (sc1MassStages.valid()) sc1MassStages->beforeBlock("pressure");
                     #include "pU/pEqn.H"
+                    if (sc1MassStages.valid()) sc1MassStages->afterBlock("pressure");
                 }
 
                 #include "HcellEqn.H"
@@ -342,6 +368,10 @@ int main(int argc, char *argv[])
                 runTime.writeTime()
              || !runTime.running()
             );
+        }
+        if (sc1MassStages.valid())
+        {
+            sc1MassStages->sample(runTime.writeTime() || !runTime.running());
         }
         runTime.write();
 

@@ -188,7 +188,9 @@ class MatchedCheckpointCopyTests(unittest.TestCase):
                 f"entrainmentEfficiency {efficiency}; {gate} "
                 "maxGlobalEntrainedKgS 0.002; nucleationDiameter 0.002; foamAreaMultiplier 0;"
             )
-            (case / "constant/microbeUpdateProperties").write_text("reaction_update_time 14400;\n")
+            (case / "constant/microbeUpdateProperties").write_text(
+                "reaction_update_time 4;\nfluid_update_time 200;\nph_update_time 0.1;\n"
+            )
             (case / "system/fvSolution").write_text("PIMPLE {}\n")
             (case / "system/fvSchemes").write_text("ddtSchemes { default Euler; }\n")
             (case / "system/controlDict").write_text(
@@ -259,6 +261,35 @@ class MatchedCheckpointCopyTests(unittest.TestCase):
         self.assertEqual(manifest["initial_state_source"], str(self.control.resolve()))
         self.assertEqual(set(manifest["courant_location_metadata_proofs"]), set(CO_FIELDS))
         self.assertEqual(manifest["initial_state_sha256"][self.time_section], expected)
+
+    def test_short_diagnostic_changes_only_new_duration_and_preserves_biology(self):
+        before = {str(case): pair.hashes(case) for case in (self.control, self.normal)}
+        destination = self.root / "short_pair"
+        argv = ["prepare", "--control", str(self.control), "--active", str(self.normal),
+                "--out", str(destination), "--allow-courant-location-metadata", "--duration", "0.1"]
+        with (patch.object(sys, "argv", argv),
+              patch.object(pair, "scratch", side_effect=lambda p: Path(p).resolve()),
+              contextlib.redirect_stdout(io.StringIO())):
+            self.assertEqual(pair.main(), 0)
+        manifest = json.loads((destination / "comparison_manifest.json").read_text())
+        self.assertEqual(manifest["duration_s"], 0.1)
+        for name, original in (("control", self.control), ("normal", self.normal)):
+            copied = destination / name
+            compact = ' '.join((copied / "system/controlDict").read_text().split())
+            self.assertIn(f"endTime {float(pair.CHECKPOINT)+0.1:.14g};", compact)
+            self.assertEqual(pair.hashes(copied / "constant"), pair.hashes(original / "constant"))
+            self.assertEqual(pair.hashes(copied / self.time_section),
+                             pair.hashes(self.control / self.time_section))
+        self.assertEqual({str(case): pair.hashes(case) for case in (self.control, self.normal)}, before)
+
+    def test_unreviewed_duration_is_rejected_before_preparation(self):
+        destination = self.root / "must_not_exist"
+        with (patch.object(sys, "argv", ["prepare", "--out", str(destination), "--duration", "200"]),
+              contextlib.redirect_stderr(io.StringIO())):
+            with self.assertRaises(SystemExit) as raised:
+                pair.main()
+        self.assertEqual(raised.exception.code, 2)
+        self.assertFalse(destination.exists())
 
     def test_failed_proof_does_not_create_destination(self):
         path = self.normal / self.time_section / "Co.liquid"

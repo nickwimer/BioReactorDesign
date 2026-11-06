@@ -6,6 +6,20 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
+**Latest state (2026-11-06):** Both conservation diagnostics in
+`/scratch/nwimer/sc1_conservation_pair_20261106T201549Z` completed with status
+0. The five control audit lines reproduce the old control exactly at displayed
+precision, and all initial inventories match. Report times differ by up to
+26.94 microseconds; the reader now offers explicit `--native-times` reporting
+without interpolation. The normal run's own-duration mean OTR improves only
+0.353%, and its native final bubble inventory is 125.23 mg lower. Both retain
+large clipping/correction and unresolved phase budgets. Read
+[the paired results and new stage-audit build gate](sc1_conservation_pair_results_2026-11-06.md)
+first. A new isolated instrumentation revision is implemented and locally
+tested; **its OpenFOAM build/runtime are pending**. Next build a fresh scratch
+executable, then run a new 0.1 s control after build review. Preserve both
+completed runs; no coefficient or biology-schedule changes are approved.
+
 > **Instruction to the next assistant:** Read this handoff and the linked audit documents before changing anything. Review the actual BiRD source and trial outputs before forming new conclusions. Make **every code or documentation change as a Git commit pushed to the GitHub feature branch**. Do not leave work as an uncommitted patch, and do not modify the production CFD runs. Do not rerun already completed experiments without a reason.
 
 **Conservation instrumentation follow-up (2026-11-06):** An opt-in timestep

@@ -237,7 +237,8 @@ int main() {
         modified,ys=instrument(main,species)
         self.assertEqual(modified,(SOLVER/'putidaFoam.C').read_text())
         self.assertEqual(ys,(SOLVER/'YEqns.H').read_text())
-        self.assertEqual(modified.count('->sample'),1)
+        self.assertEqual(modified.count('sc1Conservation->sample'),1)
+        self.assertEqual(modified.count('sc1MassStages->sample'),1)
         self.assertEqual(modified.count('->beforePB'),2)
         self.assertIn('lookupOrDefault<Switch>("sc1ConservationAudit", false)',modified)
         self.assertEqual(main[main.index('double pH_highRes_Fix'):main.index('    while (pimple.run')],
@@ -247,6 +248,19 @@ int main() {
         self.assertEqual(ys.count('fvModels.source(alpha, rho, Y[i])'),1)
         with self.assertRaises(ValueError): instrument(modified,ys)
         with self.assertRaises(ValueError): instrument(main.replace('fluid.solve(rAUs, rAUfs);','fluid.solveChanged();'),species)
+
+    def test_mass_stage_wrappers_cover_all_branches_and_reject_unknown_layout(self):
+        old=lambda name: subprocess.check_output(['git','show',f'8e10fc70f0048b1e414d7d92701781c5e6122ef0:OFsolvers/birdmultiphaseEulerFoam/putidaFoam/{name}'],cwd=ROOT,text=True)
+        main,species=old('putidaFoam.C'),old('YEqns.H')
+        modified,_=instrument(main,species)
+        for stage,count in (('alphaPB',2),('modelCorrect',2),('species',2),('energy',3),('pressure',2)):
+            self.assertEqual(modified.count(f'sc1MassStages->beforeBlock("{stage}")'),count)
+            self.assertEqual(modified.count(f'sc1MassStages->afterBlock("{stage}")'),count)
+        # Hooks must bracket existing includes, rather than move or replace them.
+        for include in ('YEqns.H','EEqns.H','pUf/pEqn.H','pU/pEqn.H'):
+            self.assertEqual(main.count(f'#include "{include}"'),modified.count(f'#include "{include}"'))
+            with self.subTest(include=include), self.assertRaises(ValueError):
+                instrument(main.replace(f'#include "{include}"',f'#include "local/{include}"',1),species)
 
     def test_pimple_comments_and_duplicate_guard(self):
         text='// PIMPLE { fake }\nPIMPLE { nOuterCorrectors 2; /* } */ }\n'

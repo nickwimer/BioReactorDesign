@@ -5,6 +5,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 namespace sc1Budget
 {
@@ -13,7 +14,9 @@ enum Term
     massExternal, massTransfer, massIn, massOut,
     oxygenExternal, oxygenTransfer, oxygenReaction,
     oxygenAdvection, oxygenDiffusion, oxygenInProxy, oxygenOutProxy,
-    equationResidual, equationResidualL1, nTerms
+    equationResidual, equationResidualL1,
+    oxygenDdt, oxygenStabilization,
+    oxygenComponentMismatch, oxygenComponentMismatchL1, nTerms
 };
 typedef std::array<double, nTerms> Rates;
 struct Ledger
@@ -57,6 +60,72 @@ struct Ledger
     {
         windowStart=t; windowMass=m; windowOxygen=o;
         window={}; windowSteps=0; windowJump=0; windowNormalization=0;
+    }
+};
+
+// Positive correction predicted by Y <- max(Y,0), using the actual alpha/rho
+// weights. A negative phase weight remains visible instead of being hidden.
+struct NegativeOxygenStats
+{
+    double correctionMass = 0;
+    double minimumY = std::numeric_limits<double>::infinity();
+    unsigned long cells = 0;
+
+    void add(double alpha, double rho, double y, double volume)
+    {
+        minimumY = std::min(minimumY,y);
+        if (y < 0)
+        {
+            correctionMass -= alpha*rho*y*volume;
+            ++cells;
+        }
+    }
+};
+
+// These are stage impulses in kg, not rates: do not multiply them by dt.
+// Keep the v1 Ledger::oxygenExpected definition unchanged so old and new
+// diagnostics can be compared without silently changing residual meanings.
+struct OxygenStageLedger
+{
+    double oldTimeOffset = 0, oldTimeOffsetSum = 0;
+    double ddtInventoryDefect = 0, ddtInventoryDefectSum = 0;
+    double postSpeciesChange = 0, postSpeciesChangeSum = 0;
+    double negativeMassSum = 0;
+    double correctionDefect = 0, correctionDefectSum = 0;
+    unsigned long negativePhaseCellSamples = 0;
+
+    void advance
+    (
+        double startOxygen, double oldOxygen, double beforeCorrectionOxygen,
+        double afterCorrectionOxygen, double endOxygen,
+        double dt, double ddtRate, double negativeMass,
+        unsigned long negativeCells, double correction
+    )
+    {
+        const double values[] = {startOxygen,oldOxygen,beforeCorrectionOxygen,
+            afterCorrectionOxygen,endOxygen,dt,ddtRate,negativeMass,correction};
+        for (double value : values)
+            if (!std::isfinite(value))
+                throw std::runtime_error("SC1 audit: non-finite oxygen stage");
+        if (dt <= 0)
+            throw std::runtime_error("SC1 audit: non-positive oxygen-stage dt");
+        oldTimeOffset = oldOxygen-startOxygen;
+        ddtInventoryDefect = beforeCorrectionOxygen-oldOxygen-dt*ddtRate;
+        postSpeciesChange = endOxygen-afterCorrectionOxygen;
+        correctionDefect = correction-negativeMass;
+        oldTimeOffsetSum += oldTimeOffset;
+        ddtInventoryDefectSum += ddtInventoryDefect;
+        postSpeciesChangeSum += postSpeciesChange;
+        negativeMassSum += negativeMass;
+        correctionDefectSum += correctionDefect;
+        negativePhaseCellSamples += negativeCells;
+    }
+
+    double explainedResidual(const Rates& integral) const
+    {
+        return integral[oxygenStabilization]+integral[equationResidual]
+             + integral[oxygenComponentMismatch]+oldTimeOffsetSum
+             + ddtInventoryDefectSum+postSpeciesChangeSum;
     }
 };
 }

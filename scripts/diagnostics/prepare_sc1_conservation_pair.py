@@ -180,6 +180,8 @@ def main():
     parser.add_argument('--control',type=Path,default=root/'run_control_05')
     parser.add_argument('--active',type=Path,default=root/'run_normalactive_05')
     parser.add_argument('--checkpoint',default=CHECKPOINT)
+    parser.add_argument('--duration',type=float,choices=(0.1,0.5),default=0.5,
+                        help='New diagnostic duration in CFD seconds; default preserves the completed 0.5 s comparison')
     parser.add_argument('--out',type=Path,help='Required for preparation; must not be used with --inspect-inputs')
     parser.add_argument('--inspect-inputs',action='store_true',help='Print raw input differences only; create no files or cases')
     parser.add_argument('--allow-courant-location-metadata',action='store_true',
@@ -189,6 +191,8 @@ def main():
         parser.error('--inspect-inputs must not be combined with --out')
     if args.inspect_inputs and args.allow_courant_location_metadata:
         parser.error('--inspect-inputs is a raw report; do not combine with --allow-courant-location-metadata')
+    if args.inspect_inputs and args.duration != 0.5:
+        parser.error('--duration only applies to new case preparation')
     if not args.inspect_inputs and args.out is None:
         parser.error('--out is required for case preparation')
     try:
@@ -212,7 +216,7 @@ def main():
         contents=[]
         for src in (control,active):
             c=(src/'system/controlDict').read_text()
-            for key,value in (('startFrom','latestTime'),('endTime',f'{float(args.checkpoint)+0.5:.14g}'),
+            for key,value in (('startFrom','latestTime'),('endTime',f'{float(args.checkpoint)+args.duration:.14g}'),
                               ('writeControl','runTime'),('writeInterval','0.1')):
                 c=set_control_entry(c,key,value,insert_if_missing=(key=='writeControl'))
             contents.append((c,enable_audit((src/'system/fvSolution').read_text())))
@@ -240,7 +244,7 @@ def main():
         manifest={'checkpoint':args.checkpoint,'control_source':str(control),'normal_source':str(active),
                   'initial_state_source':str(control),
                   'courant_location_metadata_proofs':metadata_proofs,
-                  'initial_state_sha256':evidence,'duration_s':0.5,
+                  'initial_state_sha256':evidence,'duration_s':args.duration,
                   'physics':'unchanged from completed experiments','run_order':['control','normal']}
         (out/'comparison_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         print(f'Prepared matched, scratch-only cases: {out}/control and {out}/normal')

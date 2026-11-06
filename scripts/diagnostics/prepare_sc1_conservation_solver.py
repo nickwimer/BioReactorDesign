@@ -25,15 +25,18 @@ def instrument(main, species):
     if "sc1Conservation" in main or "sc1Conservation" in species:
         raise ValueError("Audit already/partially installed; use an unmodified source")
     main = replace_once(main, '#include "phaseSystem.H"',
-                        '#include "phaseSystem.H"\n#include "sc1ConservationAudit.H"')
+                        '#include "phaseSystem.H"\n#include "sc1ConservationAudit.H"\n#include "sc1MassStageAudit.H"')
     main = replace_once(main, '    while (pimple.run(runTime))', '''    autoPtr<sc1ConservationAudit> sc1Conservation;
+    autoPtr<sc1MassStageAudit> sc1MassStages;
     if (pimple.dict().lookupOrDefault<Switch>("sc1ConservationAudit", false))
     {
         sc1Conservation.reset(new sc1ConservationAudit(fluid, LTS));
+        sc1MassStages.reset(new sc1MassStageAudit(fluid, LTS));
     }
 
     while (pimple.run(runTime))''')
     main = replace_once(main, '        runTime++;', '''        if (sc1Conservation.valid()) sc1Conservation->beforeAdvance();
+        if (sc1MassStages.valid()) sc1MassStages->beforeAdvance();
         runTime++;''')
     pattern = re.compile(r"(?m)^([ \t]*)fluid\.solve\(rAUs, rAUfs\);\s*\n[ \t]*fluid\.correct\(\);")
 
@@ -41,14 +44,35 @@ def instrument(main, species):
         indent = match[1]
         guard = 'sc1Conservation.valid() && pimple.finalPimpleIter()'
         return '\n'.join(indent + line for line in (
+            'if (sc1MassStages.valid()) sc1MassStages->beforeBlock("alphaPB");',
             f'if ({guard}) sc1Conservation->beforePB();',
             'fluid.solve(rAUs, rAUfs);',
             f'if ({guard}) sc1Conservation->afterPBSolve();',
+            'if (sc1MassStages.valid()) sc1MassStages->afterBlock("alphaPB");',
+            'if (sc1MassStages.valid()) sc1MassStages->beforeBlock("modelCorrect");',
             'fluid.correct();',
-            f'if ({guard}) sc1Conservation->afterPBCorrect();'))
+            f'if ({guard}) sc1Conservation->afterPBCorrect();',
+            'if (sc1MassStages.valid()) sc1MassStages->afterBlock("modelCorrect");'))
     main, count = pattern.subn(pb_hooks, main)
     if count != 2:
         raise ValueError(f"Expected two adjacent solve/correct calls, found {count}")
+    # Wrap the actual local include calls, retaining all contents and order.
+    # All outer iterations count; block deltas are not weighted by deltaT.
+    for include, stage, expected in (
+        ('YEqns.H', 'species', 2), ('EEqns.H', 'energy', 3),
+        ('pUf/pEqn.H', 'pressure', 1), ('pU/pEqn.H', 'pressure', 1),
+    ):
+        pattern = re.compile(r'(?m)^([ \t]*)#include "' + re.escape(include) + r'"[ \t]*$')
+        def stage_hooks(match):
+            indent = match[1]
+            return '\n'.join(indent + line for line in (
+                f'if (sc1MassStages.valid()) sc1MassStages->beforeBlock("{stage}");',
+                f'#include "{include}"',
+                f'if (sc1MassStages.valid()) sc1MassStages->afterBlock("{stage}");',
+            ))
+        main, count = pattern.subn(stage_hooks, main)
+        if count != expected:
+            raise ValueError(f'Expected {expected} local {include} calls, found {count}')
     main = replace_once(main, '        runTime.write();', '''        if (sc1Conservation.valid())
         {
             sc1Conservation->sample
@@ -56,6 +80,10 @@ def instrument(main, species):
                 runTime.writeTime()
              || !runTime.running()
             );
+        }
+        if (sc1MassStages.valid())
+        {
+            sc1MassStages->sample(runTime.writeTime() || !runTime.running());
         }
         runTime.write();''')
 
@@ -134,7 +162,9 @@ def main():
                 dependencies[name] = target
             elif name != 'multiphaseCompressibleMomentumTransportModels':
                 raise FileNotFoundError(f'Missing dependency: {target}')
-        headers = {n: (AUDIT/n).read_text() for n in ('sc1BudgetLedger.H', 'sc1ConservationAudit.H')}
+        headers = {n: (AUDIT/n).read_text() for n in
+                   ('sc1BudgetLedger.H', 'sc1ConservationAudit.H',
+                    'sc1MassStageAudit.H', 'sc1MassStageLedger.H')}
         out.mkdir(parents=True, exist_ok=False)
         shutil.copytree(src, out/'solver', ignore=shutil.ignore_patterns('linux*', '*.o', '*.dep', 'build.*.log'))
         (out/'bin').mkdir()
@@ -147,7 +177,9 @@ def main():
         for name, content in headers.items():
             (out/'solver'/name).write_text(content)
         manifest = {'source': str(src), 'dependencies': {k: str(v) for k,v in dependencies.items()},
-                    'source_sha256': {k: hashlib.sha256(v.encode()).hexdigest() for k,v in originals.items()}}
+                    'source_sha256': {k: hashlib.sha256(v.encode()).hexdigest() for k,v in originals.items()},
+                    'diagnostic_revision': 2,
+                    'audit_header_sha256': {k: hashlib.sha256(v.encode()).hexdigest() for k,v in headers.items()}}
         (out/'source_manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
         print(f'Prepared {out}/solver; unique executable: {out}/bin/putidaFoamSC1ConservationAudit')
         print('No compilation or CFD launched. Review local source and compile before preparing cases.')
