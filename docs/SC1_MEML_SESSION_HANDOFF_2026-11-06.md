@@ -10,10 +10,11 @@
 
 **Conservation instrumentation follow-up (2026-11-06):** An opt-in timestep
 ledger, final-PIMPLE O2 equation/source capture, PB pre/post-correction moments,
-fresh solver/case preparers and log comparison tool are now implemented. Seven
+fresh solver/case preparers and log comparison tool are now implemented. Nine
 local regression tests pass, including compilation/execution of the independent
-C++ accumulator. **The OpenFOAM audit has not yet compiled or run on Kestrel;
-there are no new control/active balance logs or conservation conclusions.**
+C++ accumulator. **The first Kestrel audit build failed on `phaseModel::divj`;
+the corrected build is pending. There are no new control/active balance logs
+or conservation conclusions.**
 Read [the timestep audit design and build gate](sc1_timestep_conservation_audit.md)
 next. This work explicitly distinguishes timestep quadrature from fully
 discrete closure; full alpha/pressure/PB equation-level closure remains open.
@@ -29,6 +30,15 @@ analytical counterexample tests pass; they do not validate the OpenFOAM
 implementation. The diagnostic stream API and terminal-interval predicate
 were corrected. No physical closure or production case was changed, and no
 new Kestrel simulation or experimental comparison has been performed.
+
+**First build follow-up (2026-11-06):** The uploaded transcript confirms the
+seven then-existing diagnostic checks and ten analytical checks passed on
+Kestrel, but compilation failed at audit diffusion access. The corrected
+lookup uses the registered phase transport model, with its required include
+and link flags appended to the preserved local build options. Two additional
+local checks pass. Preserve the failed scratch tree
+`/scratch/nwimer/sc1_conservation_audit_20261106T182403Z`; rebuild in a fresh
+tree. See the [build record](sc1_timestep_conservation_audit.md#first-kestrel-build-and-diffusion-access-correction-2026-11-06).
 
 ## 1. What we are trying to accomplish
 

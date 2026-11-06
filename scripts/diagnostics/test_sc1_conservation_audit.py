@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import unittest
 
-from prepare_sc1_conservation_solver import ROOT, instrument
+from prepare_sc1_conservation_solver import ROOT, instrument, audit_make_options
 from prepare_sc1_conservation_pair import enable_audit, hashes, validate_pair, CHECKPOINT
 from summarize_sc1_conservation import load_log, compare, PHASES
 
@@ -17,6 +17,128 @@ SOLVER=ROOT/'OFsolvers/birdmultiphaseEulerFoam/putidaFoam'
 
 
 class AuditTests(unittest.TestCase):
+    def test_grouped_diffusion_access_contract(self):
+        # Compile the actual access block against a strict registry contract.
+        # Checks phase selection and fail-closed behavior; NOT an OF9 build.
+        source=(SOLVER/'sc1ConservationAudit.H').read_text()
+        access=re.search(
+            r'const thermophysicalTransportModel& transport\s*=.*?diffusion_\.set\(i,.*?\);',
+            source,re.S)
+        self.assertIsNotNone(access)
+        code=r'''
+#include <cassert>
+#include <map>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <typeinfo>
+struct volScalarField { double value; };
+struct fvScalarMatrix { double value; };
+struct MatrixTmp {
+    std::unique_ptr<fvScalarMatrix> value;
+    fvScalarMatrix* ptr() { return value.release(); }
+};
+struct RegisteredObject { virtual ~RegisteredObject() = default; };
+struct thermophysicalTransportModel : RegisteredObject {
+    static const std::string typeName;
+    virtual MatrixTmp divj(volScalarField&) const = 0;
+    virtual void correct() = 0;
+};
+const std::string thermophysicalTransportModel::typeName="thermophysicalTransport";
+struct Model : thermophysicalTransportModel {
+    double coefficient;
+    mutable int calls=0;
+    int corrections=0;
+    explicit Model(double c) : coefficient(c) {}
+    MatrixTmp divj(volScalarField& y) const override {
+        ++calls;
+        return {std::unique_ptr<fvScalarMatrix>(new fvScalarMatrix{coefficient*y.value})};
+    }
+    void correct() override { ++corrections; }
+};
+struct IOobject {
+    static std::string groupName(const std::string& base, const std::string& group) {
+        return base+"."+group;
+    }
+};
+struct Mesh {
+    std::map<std::string,const RegisteredObject*> objects;
+    template<class T> const T& lookupObject(const std::string& name) const {
+        return dynamic_cast<const T&>(*objects.at(name));
+    }
+};
+struct Flux {
+    std::string phase;
+    const Flux& operator()() const { return *this; }
+    const std::string& group() const { return phase; }
+};
+// Deliberately no divj on this abstract-phase stand-in.
+struct Phase { Flux alphaRhoPhi() const { return {name}; } std::string name; };
+struct Matrices {
+    std::unique_ptr<fvScalarMatrix> values[3];
+    void set(int i,fvScalarMatrix* m) { values[i].reset(m); }
+};
+struct Audit {
+    const Mesh& mesh_;
+    Matrices diffusion_;
+    explicit Audit(const Mesh& mesh) : mesh_(mesh) {}
+    void capture(Phase& p,volScalarField& y,int i) {
+        const Flux flux=p.alphaRhoPhi();
+        ACCESS
+    }
+};
+int main() {
+    Mesh mesh;
+    Model liquid(2), bubbles(3), headspace(5);
+    Model* models[]={&liquid,&bubbles,&headspace};
+    Phase phases[]={{"liquid"},{"bubbleGas"},{"headspaceGas"}};
+    for(int i=0;i<3;++i) mesh.objects["thermophysicalTransport."+phases[i].name]=models[i];
+    Audit audit(mesh);
+    volScalarField y{0.23};
+    for(int i=0;i<3;++i) {
+        audit.capture(phases[i],y,i);
+        assert(audit.diffusion_.values[i]->value==models[i]->coefficient*y.value);
+        assert(models[i]->calls==1 && models[i]->corrections==0);
+    }
+    assert(y.value==0.23);
+    mesh.objects.erase("thermophysicalTransport.bubbleGas");
+    bool rejected=false;
+    try { audit.capture(phases[1],y,1); } catch(const std::out_of_range&) { rejected=true; }
+    assert(rejected);
+    RegisteredObject wrongType;
+    mesh.objects["thermophysicalTransport.bubbleGas"]=&wrongType;
+    rejected=false;
+    try { audit.capture(phases[1],y,1); } catch(const std::bad_cast&) { rejected=true; }
+    assert(rejected);
+}
+'''.replace('ACCESS',access[0])
+        compiler=shutil.which('g++')
+        if not compiler:
+            self.skipTest('g++ unavailable; transport access contract NOT compiled')
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)
+            (p/'test.cpp').write_text(code)
+            subprocess.run([compiler,'-std=c++14','-Wall','-Wextra','-Werror',str(p/'test.cpp'),'-o',str(p/'test')],check=True)
+            subprocess.run([str(p/'test')],check=True)
+
+    def test_audit_build_options_preserve_local_settings(self):
+        local='LIB_SRC=/test/OpenFOAM/src\nEXE_INC = -DLOCAL_BIOLOGY -I/local/headers\nEXE_LIBS = -L/local/lib -llocalModel\n'
+        modified=audit_make_options(local)
+        self.assertTrue(modified.startswith(local))
+        old=subprocess.check_output(['git','show','19410f47bbf398da0bbf8f8ccce931449de05c5d:OFsolvers/birdmultiphaseEulerFoam/putidaFoam/Make/options'],cwd=ROOT,text=True)
+        self.assertEqual(audit_make_options(old),(SOLVER/'Make/options').read_text())
+        make=shutil.which('make')
+        if not make:
+            self.skipTest('make unavailable; effective appended flags NOT checked')
+        recipe="\n.PHONY: sc1-print\nsc1-print:\n\t@printf '%s\\n' '$(EXE_INC)' '$(EXE_LIBS)'\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            makefile=Path(tmp)/'Makefile'
+            makefile.write_text(modified+recipe)
+            result=subprocess.check_output([make,'--no-print-directory','-s','-f',str(makefile),'sc1-print'],text=True)
+        includes,libraries=result.splitlines()
+        self.assertEqual(includes.split(),['-DLOCAL_BIOLOGY','-I/local/headers','-I/test/OpenFOAM/src/ThermophysicalTransportModels/lnInclude'])
+        self.assertEqual(libraries.split(),['-L/local/lib','-llocalModel','-lthermophysicalTransportModels'])
+
     def test_final_report_before_nominal_end_time(self):
         # Compile the actual report predicate from the solver against the
         # authoritative OF9 Time::running() stopping rule. This checks a real

@@ -4,6 +4,7 @@
 #define sc1ConservationAudit_H
 #include "fvCFD.H"
 #include "phaseSystem.H"
+#include "thermophysicalTransportModel.H"
 #include "velocityGroup.H"
 #include "sizeGroup.H"
 #include "sc1BudgetLedger.H"
@@ -159,7 +160,18 @@ public:
         external_.set(i,new fvScalarMatrix(source));
         const tmp<surfaceScalarField> flux=p.alphaRhoPhi();
         advection_.set(i,fvm::div(flux(),y,"div("+flux().name()+",Yi)").ptr());
-        diffusion_.set(i,p.divj(y).ptr());
+        // OF9 phaseModel has no divj interface. MovingPhaseModel delegates
+        // to this same registered, phase-grouped transport model. A missing
+        // object/type must fail rather than silently assuming zero diffusion.
+        const thermophysicalTransportModel& transport =
+            mesh_.lookupObject<thermophysicalTransportModel>
+            (
+                IOobject::groupName
+                (
+                    thermophysicalTransportModel::typeName, flux().group()
+                )
+            );
+        diffusion_.set(i,transport.divj(y).ptr());
         const volScalarField& alpha = p;
         tmp<fvScalarMatrix> reaction(alpha*p.R(y));
         reaction_.set(i,reaction.ptr());

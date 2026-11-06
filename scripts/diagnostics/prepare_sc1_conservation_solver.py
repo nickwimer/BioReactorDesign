@@ -91,6 +91,15 @@ def instrument(main, species):
     return main, species
 
 
+def audit_make_options(options):
+    # Append only the audit's direct dependency; retain all local flags/libs.
+    return options + '''
+# SC1 conservation audit: registered species-transport model access (OF9).
+EXE_INC += -I$(LIB_SRC)/ThermophysicalTransportModels/lnInclude
+EXE_LIBS += -lthermophysicalTransportModels
+'''
+
+
 def scratch(path):
     path = path.resolve()
     allowed = (Path('/scratch/nwimer').resolve(), Path('/kfs3/scratch/nwimer').resolve())
@@ -134,6 +143,7 @@ def main():
         (out/'solver/putidaFoam.C').write_text(modified[0])
         (out/'solver/YEqns.H').write_text(modified[1])
         (out/'solver/Make/files').write_text(make)
+        (out/'solver/Make/options').write_text(audit_make_options(originals['Make/options']))
         for name, content in headers.items():
             (out/'solver'/name).write_text(content)
         manifest = {'source': str(src), 'dependencies': {k: str(v) for k,v in dependencies.items()},

@@ -144,16 +144,47 @@ liquid, so it need not be zero.
 6. Only fixed-mesh, global-time, three-phase SC1 with active O2 in all phases
    is supported. Missing O2 hooks, moving/changing mesh or local timestepping
    stop this diagnostic; no zero/missing terms are silently substituted.
-7. No solver compilation or runtime results are available in this workspace.
-   The existing Kestrel case files, raw logs and experimental video are not
-   mounted here. The latest run conclusions remain those recorded in the
-   handoff, not a new independent analysis of raw cluster output.
+7. The first Kestrel build transcript is now available (see below), but there
+   is no successful audit build or CFD runtime result yet. The existing
+   Kestrel case files, raw simulation logs and experimental video are not
+   mounted here. The latest simulation conclusions remain those recorded in
+   the handoff, not a new independent analysis of raw cluster output.
 
 The follow-up source review corrected an OpenFOAM 9 API compatibility error:
 `Info` is a `messageStream`, so precision is set through `Info().precision()`
 on its underlying stream. This source correction is not a substitute for the
 pending Kestrel OpenFOAM build. A compiled regression now exercises the actual
 report predicate at times below, at and beyond OpenFOAM's stopping threshold.
+
+### First Kestrel build and diffusion-access correction (2026-11-06)
+
+The supplied build transcript at commit `19410f4` passed all seven diagnostic
+and ten analytical tests, then failed compiling `putidaFoam.C`:
+`phaseModel has no member named divj`. No CFD launched. Preserve its scratch
+root `/scratch/nwimer/sc1_conservation_audit_20261106T182403Z` and `build.log`.
+Torch old-style-cast and biological unused-variable messages shown alongside
+the error were warnings, not the reported build failure.
+
+`divj` exists on `MovingPhaseModel`, but not the abstract `phaseModel` reference
+held by the audit. The corrected audit looks up the existing phase-grouped
+`thermophysicalTransportModel` using the mass-flux group and calls its `divj`.
+This is the same delegate called by `MovingPhaseModel::divj`; no replacement
+diffusivity, correction call, source term or library rebuild is introduced.
+Missing or incompatible registered transport models fail rather than produce
+a zero diffusion term. The scratch preparer appends the required header path
+and direct `thermophysicalTransportModels` link flag to the copied local
+`Make/options`; it preserves all original flags and libraries.
+
+Nine local diagnostic tests now pass. New checks compile the actual lookup
+block against a strict mock interface (three phase groups, missing/wrong model
+rejection, no field correction) and evaluate appended build flags with GNU
+Make. These tests do not compile against OpenFOAM headers or validate its ABI.
+The corrected OpenFOAM build remains pending; prepare a new scratch root for
+the rebuild, then review linked libraries before any CFD launch.
+
+API evidence: [OF9 transport interface](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/thermophysicalTransportModel/thermophysicalTransportModel.H),
+[grouped object registration](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/thermophysicalTransportModel/thermophysicalTransportModel.C),
+and [library name](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/Make/files).
 
 ## Kestrel build gate — no CFD launch
 
