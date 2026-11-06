@@ -3,8 +3,10 @@
 **2026-11-06: OpenFOAM compilation and 19 checks passed on Kestrel at
 `6ac7e36`. The checkpoint mismatch was proved to be four Co location values;
 16 metadata checks and matched-case preparation passed at `289a606`.
-Preflight review is complete and the zero-control launch is next.
-MPI runtime validation remains pending. No new CFD results are claimed.**
+The zero-control audit completed on 52 ranks with status 0 and reproduces
+the old control's final diagnostics. Normal entrainment remains pending.
+The new budgets expose large correction terms and unresolved residuals;
+physical and conservation validation have not passed.**
 
 This continues the [session handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md),
 [entrainment results](sc1_headspace_reentrainment_trial.md),
@@ -543,6 +545,173 @@ The reader rejects missing initial states, incomplete logs, duplicate sessions,
 nonfinite output, incompatible initial inventories and unmatched report times.
 It independently checks reported mass-residual arithmetic. It never integrates
 old 0.1 s endpoint samples as if they were timestep data.
+
+## First control conservation result (2026-11-06)
+
+The uploaded command transcript reports **solver status 0**, `End` and
+`Finalising parallel run`. The log reader accepted the complete file. The
+control reached `31.6999975003429` from `31.1999823727831` in **10,279 steps**,
+an actual interval of `0.50001512756` s; use this duration for rates. Reported
+`ExecutionTime` is 3508.66 s. Preserve this completed control and its log.
+
+The limiter library resolved at
+`/home/nwimer/OpenFOAM9_RHEL9/user-9/platforms/linux64GccDPInt32Opt/lib/libalphaLimitVelocity.so`,
+SHA256 `e63f7be7cee3503d3d1c7b9bb5131c791e5645b07bff7e061a3cca9a5ce2d5ac`.
+The audit executable hash is unchanged. The final legacy bubble inventory
+`0.00961191 kg`, deposition `0.00985781 kg/s`, bubble–liquid transfer
+`9.5896e-05 kg/s`, headspace–liquid transfer `3.64407e-06 kg/s` and endpoint
+closure `0.00170228 kg/s` match the preserved zero-control record at displayed
+precision. The complete old/new trajectory comparison is still to be collected;
+the submitted tail contains only the final write.
+
+### Oxygen correction dominates the liquid budget
+
+| Cumulative liquid O2 term | mg over the actual interval |
+|---|---:|
+| External source (requested sink) | −248.931443 |
+| Interphase transfer | +49.046806 |
+| Measured final-PIMPLE species correction | +200.123373 |
+| Actual inventory change | +0.240884 |
+| Remaining inventory residual, after correction | +0.002147 |
+
+The measured correction offsets **80.393% of requested removal**. The remaining
+48.808070 mg is the net accounted sink after that correction, **not a measured
+biological uptake rate**. Average interphase supply is 0.09809065 g/s, versus
+requested removal 0.497848 g/s. Liquid O2 rises from approximately 19.3371 to
+19.5780 mg and final DO is `0.01958567 mg/L`. Direct pre-advance oxygen jumps
+and captured chemistry `R(O2)` are zero in every final cumulative phase record.
+
+The correction hook measures O2 immediately before/after `fluid.correctSpecies()`.
+The reviewed [OpenFOAM 9 normalise implementation](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/thermophysicalModels/reactionThermo/mixtures/basicSpecieMixture/basicSpecieMixture.C)
+clips active species to zero and assigns the default-species remainder; O2 is
+active and the liquid default is H2O. Thus the addition is consistent with
+negative-O2 clipping after the unrestricted saved-OUR sink. The installed
+base-mixture source and negative-cell statistics have not been included in
+this transcript, so distinguish this source-supported attribution from direct
+cellwise measurement. Hooks capture final PIMPLE only. Do not count correction
+as physical OTR or infer biological validity from the small corrected residual.
+
+### Phase-mass and gas-species closure remain unresolved
+
+| Phase | Mass residual (mg) | O2 residual (mg) |
+|---|---:|---:|
+| Liquid | −1168.686138 | +0.002147 |
+| Bubble gas | +386.460926 | −3.598547 |
+| Headspace gas | −394.800287 | +4.167649 |
+| Combined gas | −8.339360 | +0.569103 |
+| Total | −1177.025498 | +0.571250 |
+
+Bubble mass increased 486.600599 mg, whereas sampled injection/transfer/flux
+terms predict only 100.139673 mg. Its residual is 79.4% of the observed gain
+and 8.84% of injected gas. The opposite headspace residual makes phase
+allocation/source-stage consistency a leading hypothesis, not a proven cause.
+Liquid gained 355.705276 mg versus expected base addition 1475.344635 mg plus
+gas transfer 49.046778 mg. This constant-density liquid discrepancy deserves
+an actual alpha-source/flux audit even though it is small relative to 1000 kg.
+The final 0.1 s window still has bubble/headspace residuals +77.920/−79.686 mg
+and liquid −197.746 mg: the discrepancy is not confined to startup.
+
+The total sampled interphase mass integral is effectively zero
+(`3.7364e-20 kg`), as expected from equal/opposite source assembly. That does
+not prove the alpha equations used those same amounts. Total evaluated O2
+transfer imbalance is only +0.011744 mg; it does not explain the total O2
+residual +0.571250 mg. The integrated equation residual L1 is approximately
+`2.36e-5 mg`, much smaller again. Headspace boundary face-Y proxy transport
+agrees with the assembled advection integral to printed precision. Simply
+tightening linear species tolerances is not the supported next fix.
+
+Capture the actual alpha `Su/Sp` actions and subcycle fluxes, alpha-clamp
+changes, pressure-density inventory changes and species residual-alpha
+stabilization in the next targeted diagnostic revision, if the paired records
+confirm these discrepancies. Do not change coefficients while attributing them.
+
+### PB correction is not phase-mass removal
+
+The final `SC1_PB` reports cumulative correction `−0.007054524918 kg` in the
+moment `integral(alphaB*rhoB*sum(fi))`. This sums repeated normalization of
+size fractions, not removals from `alphaB*rhoB`. At the final step the moment
+changes from 9.612637089 g by −0.000730840 g to 9.611906249 g, close to actual
+final phase mass 9.611905230 g. The later pressure-density stage explains why
+these need not be exactly simultaneous quantities; it has not been separately
+measured. The cumulative correction exceeds integrated deposition 4.224152 g,
+so deposition alone has not explained it. PB solve/source moments, nonlinear
+convergence, stabilization, absent drift and scaling stages remain to be audited.
+Do not add this PB correction as a separate physical sink in the phase ledger.
+
+### Feed and outlet interpretation
+
+Printed `globalVars` confirms constant liquid density 1000 kg/m3, temperature
+303.15 K, surface tension 0.07 N/m and a 0.41-vvm feed converted with bottom
+hydrostatic gas density. Actual injection is 8.742768 g/s with O2 mass fraction
+**0.23**, as independently obtained from the captured mass/species sources.
+The `f_O2 1` transport-weighting entry is not evidence of pure-O2 injection.
+Clarify the experimental flow-meter reference pressure/temperature later:
+the same volume rate at 101325 Pa and 303.15 K gives about 7.9581 g/s, whereas
+the present bottom-pressure convention is about 9.86% higher. Leave this matched
+pair unchanged; neither convention is established as experimental truth here.
+
+The final gross headspace outlet flows are 1.1272244 kg/s inward and
+1.1358814 kg/s outward, with net outward 0.00865698 kg/s. The old pressure
+diagnostic's `headspaceOut` is signed net, so it agrees with the new gross
+ledger. Large bidirectional flow still needs physical boundary/domain-height
+validation; do not disable backflow merely to reduce the gross values.
+
+### Next: complete the unchanged normal diagnostic
+
+The runtime and endpoint-regression evidence support completing the matched
+normal diagnostic with the existing executable. This is not approval of
+conservation or entrainment physics. No rebuild or coefficient/schedule change
+is needed. Run once inside an active allocation, then return the summary and
+the extracted records from both logs. The final loop also prints the preserved
+old control's legacy records for trajectory comparison. It only reads logs.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+PAIRROOT=/scratch/nwimer/sc1_conservation_pair_20261106T201549Z
+AUDITEXE=/scratch/nwimer/sc1_conservation_audit_20261106T183120Z/bin/putidaFoamSC1ConservationAudit
+NORMAL="$PAIRROOT/normal"
+
+if source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" && module load libfabric; then
+    if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$AUDITEXE" || ! -x "$PY" \
+          || ! -d "$NORMAL/processors52/31.199982372783058" ]]; then
+        echo "Stopped: allocation, executable or prepared normal case missing."
+    elif [[ -e "$NORMAL/log.conservation" || -L "$NORMAL/log.conservation" ]]; then
+        echo "Stopped: existing normal log; preserve this case."
+    elif ! "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" "$PAIRROOT/control/log.conservation"; then
+        echo "Stopped: completed control log did not pass the reader."
+    else
+        (cd "$NORMAL" && set -C && \
+            srun -n 52 "$AUDITEXE" -parallel -fileHandler collated > log.conservation 2>&1)
+        SC1_STATUS=$?
+        echo "SC1 normal solver status: $SC1_STATUS"
+        "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" \
+            "$PAIRROOT/control/log.conservation" --normal "$NORMAL/log.conservation"
+        for SC1_CASE in control normal; do
+            printf '\nAUDIT RECORDS: %s\n' "$SC1_CASE"
+            awk '/^SC1_/ {if ($1 != "SC1_BOUNDARY" || /patch=outlet /) print}
+                 /^(BUBBLE_MASS_AUDIT|BUBBLE_STAGE_AUDIT|HEADSPACE_O2_AREA_AUDIT|HEADSPACE_ENTRAINMENT.*_AUDIT) / {print}' \
+                "$PAIRROOT/$SC1_CASE/log.conservation"
+        done
+        for SC1_LOG in /scratch/nwimer/sc1_headspace_entrainment_20261104/run_control_05/log*; do
+            if [[ -f "$SC1_LOG" ]]; then
+                printf '\nPRESERVED CONTROL: %s\n' "$SC1_LOG"
+                awk '/^BUBBLE_MASS_AUDIT / {print}' "$SC1_LOG"
+            fi
+        done
+        tail -n 30 "$NORMAL/log.conservation"
+    fi
+else
+    echo "Stopped: OpenFOAM environment setup failed."
+fi
+```
+
+If the reader rejects report-time matching, preserve both runs and return the
+records: investigate actual times rather than silently interpolating or rerunning.
+Do not rerun the completed control. A later biology implementation must distinguish
+requested from realized oxygen-limited uptake and preserve coupled reaction
+stoichiometry; the observed clipping is not permission to weaken OUR, tune OTR
+to match it, or change the four-hour update schedule.
 
 ## Decision after the paired audit
 

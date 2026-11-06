@@ -99,6 +99,32 @@ with the configured six alpha subcycles, species residual-alpha stabilization
 and final-iteration-only PB hooks in mind. See the
 [verified configuration and launch instructions](sc1_timestep_conservation_audit.md#matched-pair-preflight-reviewed-2026-11-06).
 
+**Zero-control audit completed (2026-11-06):** The new control in
+`/scratch/nwimer/sc1_conservation_pair_20261106T201549Z/control` completed
+with status 0, 10,279 steps and final time `31.6999975003429`. The final
+bubble inventory and four transfer/closure diagnostics reproduce the preserved
+control at displayed precision. The uploaded excerpt includes the cumulative
+and final-window ledger, but not the startup/all-write records.
+
+Over 0.500015 s the liquid source requested 248.931 mg O2 removal, transfer
+added 49.047 mg, and final-iteration species correction restored 200.123 mg
+(80.4% of the request). This is consistent with negative-O2 clipping in the
+reviewed OF9 `normalise()` path, not physical oxygen supply. The net accounted
+removal after correction is not independently validated biological uptake.
+Liquid O2 residual after including that correction is only 0.00215 mg, but
+bubble/headspace mass residuals are +386.461/−394.800 mg and liquid mass
+residual is −1168.686 mg. Do not call the case conservative or physically
+validated. The cumulative PB mass-moment correction −7.0545 g is repeated
+normalization of size fractions, not measured loss of actual phase mass.
+
+Next complete the already prepared **normal case unchanged**, using the same
+audit executable, while collecting both full audit-record excerpts and old
+control regression records. No rebuild, coefficient change or new biology
+schedule is justified. Then target unresolved alpha/source stages,
+residual-alpha species stabilization and pressure-density changes before
+interpreting entrainment benefits. Read the
+[control findings and next launch](sc1_timestep_conservation_audit.md#first-control-conservation-result-2026-11-06).
+
 ## 1. What we are trying to accomplish
 
 Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.
