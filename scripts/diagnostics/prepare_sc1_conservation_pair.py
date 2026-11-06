@@ -15,6 +15,7 @@ import shutil
 from prepare_sc1_conservation_solver import scratch
 from prepare_sc1_headspace_entrainment_trial import enclosing_brace_end
 from prepare_sc1_headspace_o2_trial import set_control_entry
+from sc1_checkpoint_metadata import COURANT_FILES, verify_courant_location_metadata
 
 CHECKPOINT = '31.199982372783058'
 
@@ -113,12 +114,23 @@ def enable_audit(text):
     return text[:start+1]+body+'\n    sc1ConservationAudit true;\n'+text[end:]
 
 
-def validate_pair(control, active, checkpoint):
+def validate_pair(control, active, checkpoint, allow_courant_location_metadata=False,
+                  metadata_proofs=None):
     evidence = {}
     for section in ('processors52/constant', f'processors52/{checkpoint}'):
         a,b=hashes(control/section),hashes(active/section)
         if a != b:
-            raise ValueError(f'Inputs are not identical: {section}; use --inspect-inputs (without --out) for a read-only file comparison')
+            if (not allow_courant_location_metadata or section!=f'processors52/{checkpoint}'
+                    or set(a)!=set(b)):
+                raise ValueError(f'Inputs are not identical: {section}; use --inspect-inputs (without --out) for a read-only file comparison')
+            for name in sorted(n for n in a if a[n]!=b[n]):
+                if name not in COURANT_FILES:
+                    raise ValueError(f'Non-Courant checkpoint file differs: {name}')
+                proof=verify_courant_location_metadata(control/section/name,active/section/name)
+                if proof['control_sha256']!=a[name] or proof['normal_sha256']!=b[name]:
+                    raise ValueError(f'Checkpoint changed between hashing and verification: {name}')
+                if metadata_proofs is not None:
+                    metadata_proofs[name]=proof
         evidence[section]=a
     for field in ('alpha.liquid','alpha.bubbleGas','alpha.headspaceGas',
                   'O2.liquid','O2.bubbleGas','O2.headspaceGas','f.bubbleGas'):
@@ -170,9 +182,13 @@ def main():
     parser.add_argument('--checkpoint',default=CHECKPOINT)
     parser.add_argument('--out',type=Path,help='Required for preparation; must not be used with --inspect-inputs')
     parser.add_argument('--inspect-inputs',action='store_true',help='Print raw input differences only; create no files or cases')
+    parser.add_argument('--allow-courant-location-metadata',action='store_true',
+                        help='Require complete equality except proved Co outer location values; copy the full control checkpoint to both new cases')
     args=parser.parse_args()
     if args.inspect_inputs and args.out is not None:
         parser.error('--inspect-inputs must not be combined with --out')
+    if args.inspect_inputs and args.allow_courant_location_metadata:
+        parser.error('--inspect-inputs is a raw report; do not combine with --allow-courant-location-metadata')
     if not args.inspect_inputs and args.out is None:
         parser.error('--out is required for case preparation')
     try:
@@ -190,7 +206,9 @@ def main():
         for src in (control,active):
             if src==out or src in out.parents or out in src.parents:
                 raise ValueError('Input/output paths overlap')
-        evidence=validate_pair(control,active,args.checkpoint)
+        metadata_proofs={}
+        evidence=validate_pair(control,active,args.checkpoint,
+                               args.allow_courant_location_metadata,metadata_proofs)
         contents=[]
         for src in (control,active):
             c=(src/'system/controlDict').read_text()
@@ -206,7 +224,10 @@ def main():
             dest=out/name
             dest.mkdir()
             for section in ('constant','system','processors52/constant',f'processors52/{args.checkpoint}'):
-                shutil.copytree(src/section,dest/section)
+                # The complete control state is copied unchanged into BOTH
+                # new cases, only after the other source has been verified.
+                origin=control if section.startswith('processors52/') else src
+                shutil.copytree(origin/section,dest/section)
             # Copy runtime model assets; omit prior logs and derived outputs.
             for path in src.iterdir():
                 if path.is_file() and (path.suffix in ('.pt','.txt','.onnx') or path.name.startswith('scaler_')):
@@ -217,10 +238,15 @@ def main():
                 if hashes(dest/section)!=expected:
                     raise ValueError(f'Copied state failed verification: {dest/section}')
         manifest={'checkpoint':args.checkpoint,'control_source':str(control),'normal_source':str(active),
+                  'initial_state_source':str(control),
+                  'courant_location_metadata_proofs':metadata_proofs,
                   'initial_state_sha256':evidence,'duration_s':0.5,
                   'physics':'unchanged from completed experiments','run_order':['control','normal']}
         (out/'comparison_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         print(f'Prepared matched, scratch-only cases: {out}/control and {out}/normal')
+        if metadata_proofs:
+            print('Verified complete Co files differ only in outer location values: '+', '.join(sorted(metadata_proofs)))
+        print(f'Both complete initial states copied unchanged from: {control}')
         print('Initial collated state and mesh hashes match. No CFD launched.')
         print('Run control first; review conservation and regression before normal.')
         return 0

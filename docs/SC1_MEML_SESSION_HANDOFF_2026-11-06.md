@@ -62,6 +62,21 @@ file-level hashes, sizes and bounded byte evidence. The equality requirement
 remains unchanged; do not strip headers, discard fields or silently replace
 either checkpoint. See the [inspection instructions](sc1_timestep_conservation_audit.md#checkpoint-mismatch-before-case-preparation-2026-11-06).
 
+**Mismatch narrowed (2026-11-06):** The uploaded inspection reports 36/36
+collated mesh files identical, 55/59 checkpoint files identical, all 12 system
+files identical, and only the expected `phaseProperties` difference among
+51 constant files. The four changed checkpoint files are `Co.liquid`,
+`Co.bubbleGas`, `Co.headspaceGas` and `Co.mixture`; each normal file is five
+bytes longer and first differs in its outer-header run-directory path.
+Their remaining bytes have not yet been independently verified on Kestrel.
+The new opt-in `--allow-courant-location-metadata` proves equality of the
+complete files except that one validated outer-header value, or refuses
+preparation. Only after proof, it copies the entire control checkpoint to
+both NEW cases and verifies every raw file hash. No original is altered and
+no field is omitted. Sixteen new regression tests pass locally. The successful
+solver executable is unchanged; no rebuild is needed. A new preflight shell
+script replaces the long pasted collection block.
+
 ## 1. What we are trying to accomplish
 
 Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.

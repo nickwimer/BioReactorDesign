@@ -265,96 +265,85 @@ later changed data, unequal lengths, read errors, escaped bounded output and
 CLI refusal of copy/write/preparation operations. These tests do not decode
 OpenFOAM fields or establish equality of the actual Kestrel checkpoints.
 
-### Next command after resolving the input mismatch
+### Courant-only mismatch and guarded common checkpoint (2026-11-06)
 
-Prepare a fresh pair and collect a text report for review. This reads the
-completed cases and creates new copies; it does not run CFD or rebuild the
-successful executable. The source comparisons use the successful build's
-dependency links. Empty diff output means identical; differences and missing
-files must be reviewed. The listed experimental library paths are the known
-trial paths and must be checked against the actual `controlDict` in the report.
-Review any additional included dictionaries or external paths it reveals.
+The next inspection report shows:
+
+| Input section | Raw agreement |
+|---|---|
+| Collated mesh | 36/36 files identical |
+| Checkpoint | 55/59 files identical; only four Co files differ |
+| Case constants | 50/51 identical; phaseProperties differs |
+| Numerical system | 12/12 files identical |
+
+The four files are `Co.liquid`, `Co.bubbleGas`, `Co.headspaceGas` and
+`Co.mixture`. Each normal file is five bytes longer, matching the length
+difference between `run_control_05` and `run_normalactive_05`. The first
+difference lies in an outer-header absolute location path. This is evidence
+for a metadata explanation, not yet a proof of the remaining bytes.
+
+The opt-in `--allow-courant-location-metadata` now permits preparation only if:
+
+1. File sets and all mesh bytes agree; every other checkpoint file is raw-identical.
+2. Each changed file is exactly one of those four names and has a flat, bounded
+   outer `FoamFile` header with binary format, `decomposedBlockData` class,
+   matching object name and one quoted location resolving to its actual file.
+3. The complete outer headers agree after replacing ONLY that location value
+   in memory, and every remaining byte through EOF agrees. Embedded per-rank
+   headers, binary payload, whitespace and all other metadata remain compared.
+4. The proof hashes agree with the preceding raw input hashes.
+
+There is no blanket exclusion of Co fields, broad header stripping, floating
+point decoding, physical-field tolerance or fallback. The ordinary mode
+retains strict byte equality. The new option does not modify the originals.
+After proof, the entire control mesh/checkpoint is copied unchanged to BOTH
+new cases, retaining all 59 checkpoint files. Every destination hash must
+match the control's raw map. Each case retains its own already validated
+physics configuration. The manifest records the common source, original Co
+hashes, validated locations and full header/tail proof hashes.
+
+Sixteen synthetic-container/regression tests pass locally, including changes
+after 4 MiB, malformed headers, additional metadata or payload changes,
+forbidden fields, missing files, strict default behavior and an end-to-end
+59-file copy with unchanged originals. These tests do not establish that the
+actual Kestrel Co tails match; the next preparation performs that proof.
+No solver recompilation or CFD launch is part of this step.
+
+### Next command: prove, prepare and collect evidence
+
+The preflight collector below replaces the earlier long pasted block. It
+writes a new `preflight.txt` only, refuses an existing report, and reads the
+prepared cases, source dependency links and known experimental library paths.
+It does not launch CFD. Compare those library paths against the actual
+`controlDict` in its output, and review all errors, included dictionaries,
+runtime model assets and external write/dependency paths. Empty source diffs
+mean identical files, not proof that a shared binary was built from that source.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
 PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+SC1_BRANCH=codex/sc1-headspace-bubble-audit-20261029
 AUDITROOT=/scratch/nwimer/sc1_conservation_audit_20261106T183120Z
 PAIRROOT="/scratch/nwimer/sc1_conservation_pair_$(date -u +%Y%m%dT%H%M%SZ)"
 
-if source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+if [[ "$(git -C "$REPO" branch --show-current)" == "$SC1_BRANCH" ]] \
+    && git -C "$REPO" pull --ff-only origin "$SC1_BRANCH" \
+    && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
     && module load libfabric \
-    && [[ -x "$AUDITROOT/bin/putidaFoamSC1ConservationAudit" ]] \
-    && "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" --out "$PAIRROOT"; then
-    (
-        git -C "$REPO" rev-parse HEAD
-        cat "$AUDITROOT/source_manifest.json"
-        sha256sum "$AUDITROOT/bin/putidaFoamSC1ConservationAudit"
-        for SC1_CASE in control normal; do
-            printf '\nINITIAL DIRECTORIES: %s\n' "$SC1_CASE"
-            ls -1 "$PAIRROOT/$SC1_CASE/processors52"
-            printf '\nCHECKPOINT FIELDS: %s\n' "$SC1_CASE"
-            ls -1 "$PAIRROOT/$SC1_CASE/processors52/31.199982372783058"
-            printf '\nROOT ASSET HASHES: %s\n' "$SC1_CASE"
-            for SC1_FILE in "$PAIRROOT/$SC1_CASE/"*; do
-                if [[ -f "$SC1_FILE" ]]; then sha256sum "$SC1_FILE"; fi
-            done
-        done
-
-        printf '\nCONTROL CONSTANT FILES\n'
-        ls -1 "$PAIRROOT/control/constant"
-        for SC1_FILE in \
-            "$PAIRROOT/control/system/controlDict" \
-            "$PAIRROOT/control/system/fvSchemes" \
-            "$PAIRROOT/control/system/fvSolution" \
-            "$PAIRROOT/control/constant/fvModels" \
-            "$PAIRROOT/control/constant/fvConstraints" \
-            "$PAIRROOT/control/constant/dynamicMeshDict" \
-            "$PAIRROOT/control/constant/"*Properties* \
-            "$PAIRROOT/control/constant/"*Transport*; do
-            printf '\nFILE: %s\n' "$SC1_FILE"
-            if [[ -f "$SC1_FILE" ]]; then cat "$SC1_FILE"; else echo "Not present"; fi
-        done
-        printf '\nCONTROL/NORMAL PHASE SETTINGS DIFFERENCES\n'
-        diff -u "$PAIRROOT/control/constant/phaseProperties" "$PAIRROOT/normal/constant/phaseProperties"
-
-        for SC1_REL in putidaFoam.C YEqns.H createFields.H bioReact.H phReact.H microbeModel.C; do
-            printf '\nSOLVER SOURCE DIFF: %s\n' "$SC1_REL"
-            diff -u "$REPO/OFsolvers/birdmultiphaseEulerFoam/putidaFoam/$SC1_REL" "$AUDITROOT/solver/$SC1_REL"
-        done
-        for SC1_REL in \
-            phaseSystems/PhaseSystems/PhaseTransferPhaseSystem/PhaseTransferPhaseSystem.C \
-            phaseSystems/PhaseSystems/InterfaceCompositionPhaseChangePhaseSystem/InterfaceCompositionPhaseChangePhaseSystem.C \
-            phaseSystems/PhaseSystems/PopulationBalancePhaseSystem/PopulationBalancePhaseSystem.C \
-            phaseSystems/phaseModel/MultiComponentPhaseModel/MultiComponentPhaseModel.C \
-            phaseSystems/phaseModel/MovingPhaseModel/MovingPhaseModel.C \
-            phaseSystems/phaseSystem/phaseSystemSolve.C \
-            phaseSystems/diameterModels/velocityGroup/velocityGroup.C \
-            phaseSystems/populationBalanceModel/populationBalanceModel/populationBalanceModel.C; do
-            printf '\nDEPENDENCY SOURCE DIFF: %s\n' "$SC1_REL"
-            diff -u "$REPO/OFsolvers/birdmultiphaseEulerFoam/$SC1_REL" "$AUDITROOT/$SC1_REL"
-        done
-
-        for SC1_LIB in \
-            /scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so \
-            /scratch/nwimer/sc1_headspace_entrainment_20261104/lib/libsc1HeadspaceEntrainmentModels.so; do
-            printf '\nEXPERIMENTAL LIBRARY: %s\n' "$SC1_LIB"
-            sha256sum "$SC1_LIB"
-            ldd "$SC1_LIB"
-        done
-    ) > "$PAIRROOT/preflight.txt" 2>&1
-
-    printf '\nPAIRROOT=%s\nREPORT=%s/preflight.txt\n' "$PAIRROOT" "$PAIRROOT"
-    echo "Cases prepared; evidence collected for review. No CFD launched."
-    cat "$PAIRROOT/preflight.txt"
+    && "$PY" "$REPO/scripts/diagnostics/test_sc1_checkpoint_metadata.py" \
+    && "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" \
+        --allow-courant-location-metadata --out "$PAIRROOT"; then
+    bash "$REPO/scripts/diagnostics/collect_sc1_conservation_preflight.sh" \
+        "$AUDITROOT" "$PAIRROOT"
 else
-    echo "Preparation stopped. Paste the output above; preserve any created directory."
+    echo "Preparation stopped. Paste the output; preserve any created directory."
 fi
 ```
 
-Return the preparation output and `preflight.txt`. If validation refuses the
-pair, preserve the output and inspect the stated mismatch; do not relax the
-checks or overwrite the completed runs. No scientific pass is inferred from
-successful copying or report collection.
+Return preparation output and `preflight.txt`. If a proof/configuration check
+fails, preserve its output and do not bypass the failure. Successful copying
+and report collection do not establish scientific validity. The zero-control
+launch follows only after input/source review.
 
 ## Kestrel build gate — no CFD launch
 
@@ -419,12 +408,15 @@ reaction definitions to identify the frozen biological sink explicitly.
 
 ```bash
 PAIRROOT=/scratch/nwimer/sc1_conservation_pair_20261106_v1
-"$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" --out "$PAIRROOT"
+"$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" \
+    --allow-courant-location-metadata --out "$PAIRROOT"
 ```
 
 The preparer reads the explicit original checkpoint from the **completed**
 `run_control_05` and `run_normalactive_05`. It hashes every initial collated
-field and mesh file and requires identical inputs. It retains each existing
+field and mesh file and requires identical inputs except the opt-in, fully
+proved Co outer-location exception described above. It copies the complete
+control state to both new cases and verifies raw target equality. It retains each existing
 phaseProperties and checks that only the established efficiency/velocity-gate
 switches differ; it does not regenerate or tune the physics. Constant files,
 including biology, and numerical settings must match. The original zero
