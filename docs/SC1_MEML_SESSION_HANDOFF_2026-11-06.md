@@ -77,6 +77,28 @@ no field is omitted. Sixteen new regression tests pass locally. The successful
 solver executable is unchanged; no rebuild is needed. A new preflight shell
 script replaces the long pasted collection block.
 
+**Matched pair ready (2026-11-06):** The next Kestrel transcript confirms all
+16 metadata regression tests passed and the four actual Co files differ only
+in the proved outer `location` value. Both new cases contain the complete,
+raw-identical control checkpoint and mesh. Use the existing pair
+`/scratch/nwimer/sc1_conservation_pair_20261106T201549Z`; its `preflight.txt`
+has been reviewed. The eight inspected dependency sources match the repository,
+and the existing executable and experimental libraries have recorded hashes
+and resolved dependencies. Preserve the intentional local biological/pH solver
+differences. The next action is the **52-rank zero-control launch**, with a
+runtime-library check for `libalphaLimitVelocity.so`; no rebuild or new pair
+is needed. No conservation simulation has launched yet.
+
+The actual case retains the saved-OUR explicit oxygen sink (`useMonadSink
+false`), 200-CFD-second biology triggers, four-hour biological update size and
+0.1-CFD-second pH triggers. Thus this 31.2–31.7 s comparison is a frozen-OUR
+diagnostic, not a nonreacting checkpoint. No new biological update is due
+during it. PB diameter drift is disabled; diffusion blending uses the default
+0.3/0.7 thresholds; foam area multiplier is zero. Interpret balance residuals
+with the configured six alpha subcycles, species residual-alpha stabilization
+and final-iteration-only PB hooks in mind. See the
+[verified configuration and launch instructions](sc1_timestep_conservation_audit.md#matched-pair-preflight-reviewed-2026-11-06).
+
 ## 1. What we are trying to accomplish
 
 Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.

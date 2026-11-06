@@ -1,7 +1,9 @@
 # SC1 timestep phase and O2 conservation audit
 
 **2026-11-06: OpenFOAM compilation and 19 checks passed on Kestrel at
-`6ac7e36`. Matched-case preparation stopped on a checkpoint byte mismatch;
+`6ac7e36`. The checkpoint mismatch was proved to be four Co location values;
+16 metadata checks and matched-case preparation passed at `289a606`.
+Preflight review is complete and the zero-control launch is next.
 MPI runtime validation remains pending. No new CFD results are claimed.**
 
 This continues the [session handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md),
@@ -425,15 +427,99 @@ Both copies use the same 0.5 s duration, write interval and audit switch.
 All data are copied, not hardlinked. Model asset files are copied if present
 at case root. Review any absolute external runtime-asset paths as before.
 
-Run **control only first**, never append to or truncate an existing log:
+### Matched-pair preflight reviewed (2026-11-06)
+
+The uploaded Kestrel transcript confirms the successful preparation at
+`289a606`, with all 16 metadata tests passing. The four complete Co payloads
+and all other checkpoint files passed equality checks. Both cases contain
+all 59 checkpoint files copied from the control, plus the identical collated
+mesh. The initial `processors52` directories contain only `constant` and
+`31.199982372783058`. No original run was changed and no CFD was launched.
+
+Reuse these existing artifacts:
+
+| Artifact | Location / SHA256 |
+|---|---|
+| Pair and preflight report | `/scratch/nwimer/sc1_conservation_pair_20261106T201549Z`, `preflight.txt` |
+| Audit build | `/scratch/nwimer/sc1_conservation_audit_20261106T183120Z` |
+| Executable | `e8b71ba803b23661fd137b82f3a42fe105e926eea4da170a74c2290edbc77dde` |
+| Film library | `f823c8a3a3c83067171882cae53dfce4f9988dbc34c07bae6f6d58668c77ab4d` |
+| Entrainment library | `27c8ce353108690a041454d2a38957b9c88862e2215f0f75e56fb6a3b3f847fb` |
+
+All eight compared dependency sources match the repository: phase transfer,
+interface-composition transfer, population-balance phase system,
+MultiComponentPhaseModel, MovingPhaseModel, phaseSystemSolve, velocityGroup
+and populationBalanceModel. `YEqns.H` also matches. Preserved local solver
+differences include restart clock initialization, skipping `wellMixed.H`,
+NH4OH configuration and biological/pH handling. Do not replace those sources.
+Executable and experimental-library `ldd` output has no missing dependencies.
+The generic `libalphaLimitVelocity.so` entry still needs its short launch-time
+lookup/dependency check below. The collector did not expand `globalVars`;
+print that unchanged case-local file with the launch evidence.
+
+The actual settings resolve several previously open questions:
+
+| Setting | Observed value and interpretation |
+|---|---|
+| Integration | Euler, maximum timestep `5e-5`, adaptive `maxCo 0.7`, six alpha subcycles, two outer/two pressure corrections; keep these for regression. |
+| Species | Upwind; tolerance `1e-12`, relative tolerance zero; equation residual alpha `1e-5` versus phase residual alpha `1e-6`. The residual-alpha stabilizer is in the captured equation but not separately itemized in the inventory budget. |
+| PB | One correction, `scale true`, final-iteration solve, source refresh every solve; no configured diameter drift. The 2 mm nucleus is exactly the f3 pivot. Final-iteration hooks do not measure every outer-iteration scaling action. |
+| Free surface / transfer | Liquid–headspace compression is configured. Headspace diameter is 10 mm. No `diffusiveMassTransfer` blending override, so default 0.3/0.7 applies. Film thickness 10 micrometres and foam multiplier zero remain experimental. |
+| External O2 | Sparger injects O2 mass fraction 0.23. Liquid `O2sink` uses the saved `our` field with `useMonadSink false`, an explicit source without an availability limiter. Clipping may compensate requested consumption exceeding supply; measure it. |
+| Schedule | `fluid_update_time 200` CFD seconds, `reaction_update_time 4` hours per biological update, `ph_update_time 0.1` CFD seconds. No biological update is due over this 31.2–31.7 s continuation; pH updates remain active. |
+
+Root ML asset lists are empty. The inspected loaders do not throw on missing
+files at startup; model inference is inside the biological update, and the
+local `wellMixed.H` call is skipped. This does not block this short diagnostic,
+but required model/scaler assets must be provided and verified before any
+future run crosses a biological update. Do not extend this run to test that.
+The frozen-OUR comparison is not the nonreacting 9.9 s validation release.
+
+Run **control only first**, inside the active allocation. This checks the
+remaining library, uses the existing build and pair, and refuses an existing
+log. Noclobber and the case working directory are confined to a subshell;
+there are no interactive shell-terminating commands. No pull or rebuild is
+needed for this launch because the current changes are documentation only.
 
 ```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+AUDITROOT=/scratch/nwimer/sc1_conservation_audit_20261106T183120Z
+PAIRROOT=/scratch/nwimer/sc1_conservation_pair_20261106T201549Z
 AUDITEXE="$AUDITROOT/bin/putidaFoamSC1ConservationAudit"
-if [[ -x "$AUDITEXE" && -d "$PAIRROOT/control/processors52" && ! -e "$PAIRROOT/control/log.conservation" ]]; then
-    (cd "$PAIRROOT/control" && srun -n 52 "$AUDITEXE" -parallel -fileHandler collated > log.conservation 2>&1)
-    SC1_STATUS=$?
-    echo "SC1 control solver status: $SC1_STATUS"
-    "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" "$PAIRROOT/control/log.conservation"
+CONTROL="$PAIRROOT/control"
+
+if source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" && module load libfabric; then
+    SC1_LIMITER=
+    IFS=: read -r -a SC1_LIBDIRS <<< "${LD_LIBRARY_PATH:-}"
+    for SC1_DIR in "${SC1_LIBDIRS[@]}" "${FOAM_USER_LIBBIN:-}" "${FOAM_SITE_LIBBIN:-}" "${FOAM_LIBBIN:-}"; do
+        if [[ -n "$SC1_DIR" && -f "$SC1_DIR/libalphaLimitVelocity.so" ]]; then
+            SC1_LIMITER="$SC1_DIR/libalphaLimitVelocity.so"
+            break
+        fi
+    done
+    if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$AUDITEXE" || ! -x "$PY" \
+          || ! -d "$CONTROL/processors52/31.199982372783058" \
+          || ! -f "$PAIRROOT/comparison_manifest.json" || ! -f "$PAIRROOT/preflight.txt" ]]; then
+        echo "Stopped: allocation or prepared artifacts missing."
+    elif [[ -e "$CONTROL/log.conservation" || -L "$CONTROL/log.conservation" ]]; then
+        echo "Stopped: existing log; preserve this case."
+    elif [[ -z "$SC1_LIMITER" ]]; then
+        echo "Stopped: libalphaLimitVelocity.so not found in OpenFOAM library paths."
+    elif ! SC1_DEPS=$(ldd "$SC1_LIMITER" 2>&1) || [[ "$SC1_DEPS" == *"not found"* ]]; then
+        printf 'Stopped: limiter dependencies unresolved.\n%s\n' "$SC1_DEPS"
+    else
+        sha256sum "$AUDITEXE" "$SC1_LIMITER"
+        cat "$CONTROL/constant/globalVars"
+        (cd "$CONTROL" && set -C && \
+            srun -n 52 "$AUDITEXE" -parallel -fileHandler collated > log.conservation 2>&1)
+        SC1_STATUS=$?
+        echo "SC1 control solver status: $SC1_STATUS"
+        "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" "$CONTROL/log.conservation"
+        tail -n 60 "$CONTROL/log.conservation"
+    fi
+else
+    echo "Stopped: OpenFOAM environment setup failed."
 fi
 ```
 
