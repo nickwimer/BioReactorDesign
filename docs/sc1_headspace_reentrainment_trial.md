@@ -1,12 +1,12 @@
 # SC1: conservative headspace-to-bubble entrainment — isolated development trial
 
-**Status (2026-11-04): the isolated experimental library has compiled
-successfully on Kestrel; zero-efficiency equivalence, 0.01-efficiency
-legacy gating, normal-velocity diagnostics, and an opt-in
-`normalGasIntoLiquid` 0.2 s runtime trial have completed successfully.
-The new model is numerically active, but it remains uncalibrated and
-its gas/species inventory conservation and 2 mm PB size distribution
-are not yet fully validated. No production change is authorized.**
+**Status (2026-11-06): isolated 52-rank numerical trials, including
+a full 0.5 s normal-inward entrainment sensitivity, have completed.
+The model produces positive local PB bubble birth but only a tiny OTR
+gain and no persistent bubble inventory improvement. Time-integrated
+gas and O₂ inventory conservation, unresolved foam morphology, and
+bubble-size physical validity remain unverified. This is not an
+approved production closure or common nonreacting checkpoint.**
 
 The previous headspace-liquid Henry/film model is compiled and runtime
 tested. The two 0.5-second baseline/foam trials showed total OTR only
@@ -868,6 +868,113 @@ stability, and endpoint residuals. The run is a
 short-term numerical sensitivity, **not** a
 validated physical closure or nonreacting 9.9 s
 checkpoint.
+
+## Full 0.5 s opt-in normal-inward trial completed; OTR remains low (2026-11-06)
+
+**Source:** User's Kestrel 52-rank `run_normalactive_05/log.normalactive05`
+output, from the same `31.199982372783058` collated source checkpoint
+as `run_control_05`, using
+`entrainmentVelocityCriterion normalGasIntoLiquid`,
+`entrainmentEfficiency 0.01`, `nucleationDiameter 0.002` m,
+`maxGlobalEntrainedKgS=0.002` kg/s, and
+`foamAreaMultiplier=0`. The Python preflight passed and the trial
+**completed with solver status 0** and 5 complete writes at t31.3–31.7 s.
+No production files were changed.
+
+At each of the five writes the model reported
+1,791–1,900 normal-inward eligible cells, ~0.160–0.169 m²
+eligible area, raw candidate 0.00255–0.00269 kg/s,
+and active global cap at exactly 0.002 kg/s
+(unblended candidate, NOT final dispersed bubble mass).
+`capScale` varied 0.743–0.784. Positive local
+**NET** bubbleGas creation allocated to the PB
+was 0.000208–0.000238 kg/s (arithmetic mean
+**0.00022310 kg/s = 0.2231 g/s**, ~11.2% of
+the gross unblended capped candidate).
+Global signed `bubbleGas↔headspaceGas`
+mass exchange remained net deposition
+(negative net bubble gain) of ~7–10 g/s.
+
+**Matched-time data against the original zero-efficiency
+`run_control_05`:**
+
+| Time (s) | Bubble inventory control (kg) | Active (kg) | Active-minus-control inventory (mg) | Active total OTR (g/s) | Active-minus-control OTR (mg/s) | Positive NET PB bubble birth (g/s) |
+|---|---:|---:|---:|---:|---:|---:|
+| 31.3 | 0.00933447 | 0.00934556 | +11.09 | 0.09751523 | +0.28156 | 0.227563 |
+| 31.4 | 0.00947528 | 0.00949945 | +24.17 | 0.09813113 | +0.40086 | 0.207738 |
+| 31.5 | 0.00950284 | 0.00955871 | +55.87 | 0.09899175 | +0.55778 | 0.238131 |
+| 31.6 | 0.00956277 | 0.00955865 | -4.12 | 0.09936397 | +0.31076 | 0.222635 |
+| 31.7 | 0.00961191 | 0.00948668 | -125.23 | 0.09991170 | +0.37163 | 0.219445 |
+
+Five-sample arithmetic mean total OTR:
+**0.098782756 g/s** active, **0.098398236 g/s**
+control, a difference **+0.000384520 g/s = +0.38452 mg/s**
+(~0.391% relative OTR increase, only +0.077
+percentage points of the earlier 0.498 g/s frozen OUR).
+The active OTR remains ~19.84% of frozen OUR.
+Headspace-liquid O₂ flux remains ~0.0036 g/s
+because the foam-area multiplier was held at zero.
+
+**Bubble holdup does not improve monotonically.**
+At 31.7 s the active trial has **125.23 mg less**
+bubble gas than the zero-entrainment control,
+despite all five PB positive NET birth diagnostics
+remaining >0. Changes in hydrodynamics,
+spatial deposition and transient transport can
+outweigh localized bubble production. Do NOT
+claim a persistent bubble inventory gain or
+that 2 g/s of gas was actually added to bubbles.
+
+**Population balance sanity:** last five
+`bubbleGas sizeGroups-sum volume fraction,
+min, max` values are `1 1 1`, and the
+last mean Sauter diameter is ~0.00120455 m,
+minimum ~0.00100252 m and maximum
+~0.00533129 m; stable and finite. These
+are *post-correction normalized* groups;
+not independent PB number/mass moment closure.
+
+**Conservation remains unvalidated.** Active
+sampled endpoint bubble budget residuals
+(t31.4–31.7) are 0.000429673,
+0.00153456, 0.00139368 and
+0.000140725 kg/s, versus zero-control
+0.000268565, 0.00185957, 0.00127999
+and 0.00170228 kg/s. The simple
+**trapezoidal approximation** to
+`injection - netHeadspaceDepositionLoss -
+netBubbleLiquidMassLoss - bubbleBoundaryOut`
+over 31.3–31.7 predicts bubble inventory
+change of approximately **-0.09007 g**
+in the active case, whereas the observed
+inventory change is **+0.14112 g**,
+a difference of **+0.23119 g**.
+The corresponding zero-control coarse
+trapezoid mismatch is **+0.38246 g**.
+These are **under-sampled, endpoint-rate
+approximations**, not a solver-discrete
+conservation defect proven by this test.
+They demonstrate that write-time fluxes
+alone are NOT accurate enough to certify
+conservation, even for the zero-entrainment
+control. A time-integrated per-timestep
+source/flux budget and gas O₂ species
+inventory are required.
+
+**Scientific decision:** the new model
+runs and creates localized bubble PB
+births, but the 0.5 s data show no
+meaningful oxygen-delivery improvement
+or lasting bubble holdup gain. Do not
+increase `entrainmentEfficiency` or
+`maxGlobalEntrainedKgS` to force
+agreement with OUR. The next priority
+is independent, time-resolved phase/gas-O₂
+conservation and hydrodynamic/foam
+validation around the upper impeller,
+before considering any production
+deployment or the common nonreacting
+9.9 s checkpoint.
 
 ## Validation gates
 
