@@ -5,6 +5,11 @@ no new Kestrel runs or experimental measurements. Source reviewed at
 `d7fc94d8f2ba763ade4257093ec2b817c56ecc70`, with diagnostic fixes accompanying
 this report. All experimental closures remain unapproved for production.
 
+**Subsequent build update:** The isolated audit at `6ac7e36` successfully
+compiled on Kestrel; all 19 local checks also passed there. No new CFD audit
+run has occurred. See the [build record](sc1_timestep_conservation_audit.md#successful-kestrel-build-2026-11-06)
+for the executable path, dependency evidence and remaining runtime checks.
+
 ## Recommendation
 
 Retain the three-field MEML architecture provisionally: resolved coherent

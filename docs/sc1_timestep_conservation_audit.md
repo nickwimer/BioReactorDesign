@@ -144,16 +144,16 @@ liquid, so it need not be zero.
 6. Only fixed-mesh, global-time, three-phase SC1 with active O2 in all phases
    is supported. Missing O2 hooks, moving/changing mesh or local timestepping
    stop this diagnostic; no zero/missing terms are silently substituted.
-7. The first Kestrel build transcript is now available (see below), but there
-   is no successful audit build or CFD runtime result yet. The existing
-   Kestrel case files, raw simulation logs and experimental video are not
-   mounted here. The latest simulation conclusions remain those recorded in
-   the handoff, not a new independent analysis of raw cluster output.
+7. Kestrel compilation now succeeds at `6ac7e36` (see build record below),
+   but there is no audit CFD runtime result yet. The existing Kestrel case
+   files, raw simulation logs and experimental video are not mounted here.
+   The latest simulation conclusions remain those recorded in the handoff,
+   not a new independent analysis of raw cluster output.
 
 The follow-up source review corrected an OpenFOAM 9 API compatibility error:
 `Info` is a `messageStream`, so precision is set through `Info().precision()`
-on its underlying stream. This source correction is not a substitute for the
-pending Kestrel OpenFOAM build. A compiled regression now exercises the actual
+on its underlying stream. That API correction alone was not proof of a
+successful OpenFOAM build. A compiled regression now exercises the actual
 report predicate at times below, at and beyond OpenFOAM's stopping threshold.
 
 ### First Kestrel build and diffusion-access correction (2026-11-06)
@@ -179,12 +179,135 @@ Nine local diagnostic tests now pass. New checks compile the actual lookup
 block against a strict mock interface (three phase groups, missing/wrong model
 rejection, no field correction) and evaluate appended build flags with GNU
 Make. These tests do not compile against OpenFOAM headers or validate its ABI.
-The corrected OpenFOAM build remains pending; prepare a new scratch root for
-the rebuild, then review linked libraries before any CFD launch.
+The corrected OpenFOAM build subsequently succeeded in a new scratch root,
+as recorded below; the failed tree remains preserved.
 
 API evidence: [OF9 transport interface](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/thermophysicalTransportModel/thermophysicalTransportModel.H),
 [grouped object registration](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/thermophysicalTransportModel/thermophysicalTransportModel.C),
 and [library name](https://github.com/OpenFOAM/OpenFOAM-9/blob/master/src/ThermophysicalTransportModels/Make/files).
+
+### Successful Kestrel build (2026-11-06)
+
+The supplied follow-up transcript confirms commit
+`6ac7e36b4efdd5833282d67853ed910b691a2bc0`, nine diagnostic tests and ten
+analytical tests passing on Kestrel, and successful `wmake` output at:
+
+```text
+/scratch/nwimer/sc1_conservation_audit_20261106T183120Z/bin/putidaFoamSC1ConservationAudit
+```
+
+The preparer resolved this root through `/kfs3/scratch/nwimer`. The executable's
+`ldd` listing has no `not found` entries: BiRD libraries resolve under
+`OpenFOAM9_RHEL9/user-9`, OpenFOAM libraries under `OpenFOAM9_RHEL9/OpenFOAM-9`,
+Torch under `/home/nwimer/libs/libtorch`, and MPI/libfabric resolve. The new
+`libthermophysicalTransportModels.so` direct dependency is present.
+
+No CFD launched. This validates compilation and dependency resolution only;
+the existing successful build can now be used without recompilation. Still
+inspect libraries loaded dynamically by `controlDict`, local source differences,
+actual O2 sources, biological initialization/schedule, numerical controls,
+function objects and any external asset/write paths before the control run.
+Hashing binaries records identity but does not prove which source built them.
+
+The pair preparer hashes/checks collated initial fields, mesh, constants and
+numerical settings before copying. Root model/scaler assets are copied but
+are not included in its matched-input validation: compare those assets across
+the new cases separately. Verify each new `processors52` contains only
+`constant` and `31.199982372783058`. This audit pair preserves the old reacting/
+frozen-OUR configuration deliberately; do not relabel it as the nonreacting
+9.9 s baseline. Any source/config mismatch is evidence to review, not an
+instruction to overwrite the local source or change biology settings.
+
+### Next command after the successful build
+
+Prepare a fresh pair and collect a text report for review. This reads the
+completed cases and creates new copies; it does not run CFD or rebuild the
+successful executable. The source comparisons use the successful build's
+dependency links. Empty diff output means identical; differences and missing
+files must be reviewed. The listed experimental library paths are the known
+trial paths and must be checked against the actual `controlDict` in the report.
+Review any additional included dictionaries or external paths it reveals.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+AUDITROOT=/scratch/nwimer/sc1_conservation_audit_20261106T183120Z
+PAIRROOT="/scratch/nwimer/sc1_conservation_pair_$(date -u +%Y%m%dT%H%M%SZ)"
+
+if source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric \
+    && [[ -x "$AUDITROOT/bin/putidaFoamSC1ConservationAudit" ]] \
+    && "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" --out "$PAIRROOT"; then
+    (
+        git -C "$REPO" rev-parse HEAD
+        cat "$AUDITROOT/source_manifest.json"
+        sha256sum "$AUDITROOT/bin/putidaFoamSC1ConservationAudit"
+        for SC1_CASE in control normal; do
+            printf '\nINITIAL DIRECTORIES: %s\n' "$SC1_CASE"
+            ls -1 "$PAIRROOT/$SC1_CASE/processors52"
+            printf '\nCHECKPOINT FIELDS: %s\n' "$SC1_CASE"
+            ls -1 "$PAIRROOT/$SC1_CASE/processors52/31.199982372783058"
+            printf '\nROOT ASSET HASHES: %s\n' "$SC1_CASE"
+            for SC1_FILE in "$PAIRROOT/$SC1_CASE/"*; do
+                if [[ -f "$SC1_FILE" ]]; then sha256sum "$SC1_FILE"; fi
+            done
+        done
+
+        printf '\nCONTROL CONSTANT FILES\n'
+        ls -1 "$PAIRROOT/control/constant"
+        for SC1_FILE in \
+            "$PAIRROOT/control/system/controlDict" \
+            "$PAIRROOT/control/system/fvSchemes" \
+            "$PAIRROOT/control/system/fvSolution" \
+            "$PAIRROOT/control/constant/fvModels" \
+            "$PAIRROOT/control/constant/fvConstraints" \
+            "$PAIRROOT/control/constant/dynamicMeshDict" \
+            "$PAIRROOT/control/constant/"*Properties* \
+            "$PAIRROOT/control/constant/"*Transport*; do
+            printf '\nFILE: %s\n' "$SC1_FILE"
+            if [[ -f "$SC1_FILE" ]]; then cat "$SC1_FILE"; else echo "Not present"; fi
+        done
+        printf '\nCONTROL/NORMAL PHASE SETTINGS DIFFERENCES\n'
+        diff -u "$PAIRROOT/control/constant/phaseProperties" "$PAIRROOT/normal/constant/phaseProperties"
+
+        for SC1_REL in putidaFoam.C YEqns.H createFields.H bioReact.H phReact.H microbeModel.C; do
+            printf '\nSOLVER SOURCE DIFF: %s\n' "$SC1_REL"
+            diff -u "$REPO/OFsolvers/birdmultiphaseEulerFoam/putidaFoam/$SC1_REL" "$AUDITROOT/solver/$SC1_REL"
+        done
+        for SC1_REL in \
+            phaseSystems/PhaseSystems/PhaseTransferPhaseSystem/PhaseTransferPhaseSystem.C \
+            phaseSystems/PhaseSystems/InterfaceCompositionPhaseChangePhaseSystem/InterfaceCompositionPhaseChangePhaseSystem.C \
+            phaseSystems/PhaseSystems/PopulationBalancePhaseSystem/PopulationBalancePhaseSystem.C \
+            phaseSystems/phaseModel/MultiComponentPhaseModel/MultiComponentPhaseModel.C \
+            phaseSystems/phaseModel/MovingPhaseModel/MovingPhaseModel.C \
+            phaseSystems/phaseSystem/phaseSystemSolve.C \
+            phaseSystems/diameterModels/velocityGroup/velocityGroup.C \
+            phaseSystems/populationBalanceModel/populationBalanceModel/populationBalanceModel.C; do
+            printf '\nDEPENDENCY SOURCE DIFF: %s\n' "$SC1_REL"
+            diff -u "$REPO/OFsolvers/birdmultiphaseEulerFoam/$SC1_REL" "$AUDITROOT/$SC1_REL"
+        done
+
+        for SC1_LIB in \
+            /scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so \
+            /scratch/nwimer/sc1_headspace_entrainment_20261104/lib/libsc1HeadspaceEntrainmentModels.so; do
+            printf '\nEXPERIMENTAL LIBRARY: %s\n' "$SC1_LIB"
+            sha256sum "$SC1_LIB"
+            ldd "$SC1_LIB"
+        done
+    ) > "$PAIRROOT/preflight.txt" 2>&1
+
+    printf '\nPAIRROOT=%s\nREPORT=%s/preflight.txt\n' "$PAIRROOT" "$PAIRROOT"
+    echo "Cases prepared; evidence collected for review. No CFD launched."
+    cat "$PAIRROOT/preflight.txt"
+else
+    echo "Preparation stopped. Paste the output above; preserve any created directory."
+fi
+```
+
+Return the preparation output and `preflight.txt`. If validation refuses the
+pair, preserve the output and inspect the stated mismatch; do not relax the
+checks or overwrite the completed runs. No scientific pass is inferred from
+successful copying or report collection.
 
 ## Kestrel build gate — no CFD launch
 

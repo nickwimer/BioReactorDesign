@@ -12,9 +12,10 @@
 ledger, final-PIMPLE O2 equation/source capture, PB pre/post-correction moments,
 fresh solver/case preparers and log comparison tool are now implemented. Nine
 local regression tests pass, including compilation/execution of the independent
-C++ accumulator. **The first Kestrel audit build failed on `phaseModel::divj`;
-the corrected build is pending. There are no new control/active balance logs
-or conservation conclusions.**
+C++ accumulator. **The corrected audit at `6ac7e36` now compiles on Kestrel;
+all nine diagnostic and ten analytical checks pass there, and executable
+dependencies resolve. There are no new control/active balance logs or
+conservation conclusions.**
 Read [the timestep audit design and build gate](sc1_timestep_conservation_audit.md)
 next. This work explicitly distinguishes timestep quadrature from fully
 discrete closure; full alpha/pressure/PB equation-level closure remains open.
@@ -39,6 +40,17 @@ and link flags appended to the preserved local build options. Two additional
 local checks pass. Preserve the failed scratch tree
 `/scratch/nwimer/sc1_conservation_audit_20261106T182403Z`; rebuild in a fresh
 tree. See the [build record](sc1_timestep_conservation_audit.md#first-kestrel-build-and-diffusion-access-correction-2026-11-06).
+
+**Successful build follow-up (2026-11-06):** The next uploaded transcript
+confirms `wmake` success at commit `6ac7e36`. Use the existing executable
+`/scratch/nwimer/sc1_conservation_audit_20261106T183120Z/bin/putidaFoamSC1ConservationAudit`;
+no further rebuild is currently needed. `ldd` reports no missing executable
+dependencies, including the added transport library. This does not inspect
+experimental libraries loaded later by `controlDict`. Next prepare a fresh
+matched pair and review case settings, runtime assets and loaded libraries
+before running the zero control. The matched audit retains the original
+31.199982372783058 state and biology settings; it is not yet the nonreacting
+9.9 s release checkpoint.
 
 ## 1. What we are trying to accomplish
 
