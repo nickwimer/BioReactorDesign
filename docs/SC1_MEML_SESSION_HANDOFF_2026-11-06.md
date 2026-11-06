@@ -8,6 +8,17 @@
 
 > **Instruction to the next assistant:** Read this handoff and the linked audit documents before changing anything. Review the actual BiRD source and trial outputs before forming new conclusions. Make **every code or documentation change as a Git commit pushed to the GitHub feature branch**. Do not leave work as an uncommitted patch, and do not modify the production CFD runs. Do not rerun already completed experiments without a reason.
 
+**Conservation instrumentation follow-up (2026-11-06):** An opt-in timestep
+ledger, final-PIMPLE O2 equation/source capture, PB pre/post-correction moments,
+fresh solver/case preparers and log comparison tool are now implemented. Six
+local regression tests pass, including compilation/execution of the independent
+C++ accumulator. **The OpenFOAM audit has not yet compiled or run on Kestrel;
+there are no new control/active balance logs or conservation conclusions.**
+Read [the timestep audit design and build gate](sc1_timestep_conservation_audit.md)
+next. This work explicitly distinguishes timestep quadrature from fully
+discrete closure; full alpha/pressure/PB equation-level closure remains open.
+All existing completed experiments and the biological schedule are preserved.
+
 ## 1. What we are trying to accomplish
 
 Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.

@@ -36,6 +36,7 @@ Description
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
 #include "phaseSystem.H"
+#include "sc1ConservationAudit.H"
 #include "phaseDynamicMomentumTransportModel.H"
 #include "pimpleControl.H"
 #include "pressureReference.H"
@@ -104,6 +105,12 @@ int main(int argc, char *argv[])
         os_timehist.open("timehist.dat");
     }
 
+    autoPtr<sc1ConservationAudit> sc1Conservation;
+    if (pimple.dict().lookupOrDefault<Switch>("sc1ConservationAudit", false))
+    {
+        sc1Conservation.reset(new sc1ConservationAudit(fluid, LTS));
+    }
+
     while (pimple.run(runTime))
     {
         #include "readDyMControls.H"
@@ -147,6 +154,7 @@ int main(int argc, char *argv[])
              prvs_ph_update_time=time;
         }
 	
+        if (sc1Conservation.valid()) sc1Conservation->beforeAdvance();
         runTime++;
         Info<< "Time = " << runTime.timeName() <<  nl << endl;
 	time=runTime.value();
@@ -163,8 +171,11 @@ int main(int argc, char *argv[])
 
                 if (pimple.thermophysics())
                 {
+                    if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->beforePB();
                     fluid.solve(rAUs, rAUfs);
+                    if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBSolve();
                     fluid.correct();
+                    if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBCorrect();
                     // Sample deposition at the same PIMPLE state as fluid.correct().
                     if
                     (
@@ -249,8 +260,11 @@ int main(int argc, char *argv[])
                     fvModels.correct();
                 }
 
+                if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->beforePB();
                 fluid.solve(rAUs, rAUfs);
+                if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBSolve();
                 fluid.correct();
+                if (sc1Conservation.valid() && pimple.finalPimpleIter()) sc1Conservation->afterPBCorrect();
                 // Sample deposition at the same PIMPLE state as fluid.correct().
                 if
                 (
@@ -321,6 +335,14 @@ int main(int argc, char *argv[])
             #include "bubbleMassAudit.H"
         }
 
+        if (sc1Conservation.valid())
+        {
+            sc1Conservation->sample
+            (
+                runTime.writeTime()
+             || runTime.value() + SMALL >= runTime.endTime().value()
+            );
+        }
         runTime.write();
 
         Info<< "ExecutionTime = "
