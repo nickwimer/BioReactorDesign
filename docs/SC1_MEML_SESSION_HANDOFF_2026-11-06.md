@@ -10,7 +10,7 @@
 
 **Conservation instrumentation follow-up (2026-11-06):** An opt-in timestep
 ledger, final-PIMPLE O2 equation/source capture, PB pre/post-correction moments,
-fresh solver/case preparers and log comparison tool are now implemented. Six
+fresh solver/case preparers and log comparison tool are now implemented. Seven
 local regression tests pass, including compilation/execution of the independent
 C++ accumulator. **The OpenFOAM audit has not yet compiled or run on Kestrel;
 there are no new control/active balance logs or conservation conclusions.**
@@ -18,6 +18,17 @@ Read [the timestep audit design and build gate](sc1_timestep_conservation_audit.
 next. This work explicitly distinguishes timestep quadrature from fully
 discrete closure; full alpha/pressure/PB equation-level closure remains open.
 All existing completed experiments and the biological schedule are preserved.
+
+**Reliability investigation follow-up (2026-11-06):** Read the
+[source review and recommended validation sequence](SC1_RELIABILITY_INVESTIGATION_2026-11-06.md).
+It identifies omitted simultaneous gas counterexchange in the net-only model,
+the need to validate deposition as free-surface disengagement, time-level and
+clipping contributions to conservation residuals, and exact configuration
+checks for capillarity and diffusive-transfer blending. Ten additional
+analytical counterexample tests pass; they do not validate the OpenFOAM
+implementation. The diagnostic stream API and terminal-interval predicate
+were corrected. No physical closure or production case was changed, and no
+new Kestrel simulation or experimental comparison has been performed.
 
 ## 1. What we are trying to accomplish
 

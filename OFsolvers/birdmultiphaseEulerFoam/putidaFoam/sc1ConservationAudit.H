@@ -101,7 +101,7 @@ public:
         std::array<scalar,5> m{}, o{}, v{};
         inventory(m,o,v);
         previousO_=o;
-        const unsigned oldPrecision = Info.precision(15);
+        const unsigned oldPrecision = Info().precision(15);
         for (label i=0; i<5; ++i)
         {
             ledgers_.emplace_back(mesh_.time().value(),m[i],o[i]);
@@ -113,7 +113,7 @@ public:
         Info<< "SC1_BALANCE_METHOD version=1 quadrature=rightEndpointEveryStep"
             << " exactDiscreteBudget=0 speciesStage=finalPimpleBeforeNormalization"
             << " boundaryOxygen=faceYProxy PBSource=preSolveProxy" << endl;
-        Info.precision(oldPrecision);
+        Info().precision(oldPrecision);
     }
 
     // After scheduled biology/pH updates, immediately before runTime++.
@@ -203,7 +203,7 @@ public:
             FatalErrorInFunction << "Moving/changing mesh unsupported by SC1 audit"
                 << exit(FatalError);
         const scalar t=mesh_.time().value(), dt=mesh_.time().deltaTValue();
-        const unsigned oldPrecision=Info.precision(15);
+        const unsigned oldPrecision=Info().precision(15);
         std::array<scalar,5> m{},o{},v{};
         inventory(m,o,v);
         const PtrList<volScalarField> sources(fluid_.dmdts());
@@ -320,7 +320,7 @@ public:
                 << " correctionNumberSum=" << pbCorrectionSum_[2] << endl;
         }
         previousO_=o;
-        Info.precision(oldPrecision);
+        Info().precision(oldPrecision);
     }
 };
 }

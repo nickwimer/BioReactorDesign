@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
             sc1Conservation->sample
             (
                 runTime.writeTime()
-             || runTime.value() + SMALL >= runTime.endTime().value()
+             || !runTime.running()
             );
         }
         runTime.write();

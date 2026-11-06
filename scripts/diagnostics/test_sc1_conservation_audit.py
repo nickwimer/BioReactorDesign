@@ -3,6 +3,7 @@
 import copy
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -16,6 +17,40 @@ SOLVER=ROOT/'OFsolvers/birdmultiphaseEulerFoam/putidaFoam'
 
 
 class AuditTests(unittest.TestCase):
+    def test_final_report_before_nominal_end_time(self):
+        # Compile the actual report predicate from the solver against the
+        # authoritative OF9 Time::running() stopping rule. This checks a real
+        # lost-final-interval case, not just presence of a source-code string.
+        source=(SOLVER/'putidaFoam.C').read_text()
+        predicate=re.search(r'sc1Conservation->sample\s*\((.*?)\);',source,re.S)
+        self.assertIsNotNone(predicate)
+        code=r'''
+#include <cassert>
+struct Runtime {
+    double t, end, dt;
+    bool write;
+    bool writeTime() const { return write; }
+    // OpenFOAM-9 src/OpenFOAM/db/Time/Time.C: no function-object side effects.
+    bool running() const { return t < end - 0.5*dt; }
+};
+bool report(const Runtime& runTime) { return PREDICATE; }
+int main() {
+    assert(report({0.96, 1.0, 0.1, false})); // terminal, below nominal end
+    assert(report({0.95, 1.0, 0.1, false})); // stopping threshold itself
+    assert(!report({0.94, 1.0, 0.1, false}));
+    assert(report({0.94, 1.0, 0.1, true}));  // ordinary selected write
+    assert(report({1.01, 1.0, 0.1, false})); // terminal overshoot
+}
+'''.replace('PREDICATE',predicate[1].strip())
+        compiler=shutil.which('g++')
+        if not compiler:
+            self.skipTest('g++ unavailable; final-report predicate NOT compiled')
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)
+            (p/'test.cpp').write_text(code)
+            subprocess.run([compiler,'-std=c++11','-Wall','-Wextra','-Werror',str(p/'test.cpp'),'-o',str(p/'test')],check=True)
+            subprocess.run([str(p/'test')],check=True)
+
     def test_compiled_production_ledger(self):
         # Tests the SAME C++ accumulator included by the solver, not a Python
         # reimplementation. An impulsive rate between writes exposes the old

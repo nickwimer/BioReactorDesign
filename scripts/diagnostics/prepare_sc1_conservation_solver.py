@@ -54,7 +54,7 @@ def instrument(main, species):
             sc1Conservation->sample
             (
                 runTime.writeTime()
-             || runTime.value() + SMALL >= runTime.endTime().value()
+             || !runTime.running()
             );
         }
         runTime.write();''')

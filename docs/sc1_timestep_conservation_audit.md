@@ -53,6 +53,9 @@ the first interval is included. It accumulates once per global timestep after
 PIMPLE, using actual `deltaT`, and prints at writes and at the configured end
 time (including a final partial write interval). It does not maintain a ledger
 across process restarts; use one uninterrupted process/log per trial.
+The final-report predicate uses `!runTime.running()`: OpenFOAM 9 normally stops
+when `t >= endTime - 0.5*deltaT`, which can precede the nominal `endTime`.
+It deliberately does not call `runTime.run()`, which executes function objects.
 
 | Record | Meaning |
 |---|---|
@@ -84,6 +87,16 @@ appear there. The liquid's two rates expose the sink without changing it.
 Any direct change from scheduled `bioReact.H`/`phReact.H` between steps is
 recorded as `oxygenJump`, not erroneously multiplied by CFD `deltaT`.
 The intentional four-hour biology schedule remains unchanged.
+
+For the reviewed OpenFOAM 9 `basicSpecieMixture::normalise()`, solved active
+species are clipped to nonnegative values and the default species is assigned
+`max(1-sum(active Yi),0)`. It does **not** rescale all active species to unit
+sum on each correction. If the local frozen-OUR source requests more O2 than
+is available, an explicit solve can become negative and this clipping restores
+it to zero. A positive O2 correction impulse must therefore be reported as
+clipping, not physical oxygen supply. Verify the actual Kestrel sink before
+attributing an observed impulse to this mechanism; keep scheduled biological
+updates unchanged and distinguish requested OUR from realized uptake.
 
 The actual unrelaxed species equation and actual transfer/external matrices
 are copied only for O2 in the final PIMPLE iteration. Their actions are
@@ -135,6 +148,12 @@ liquid, so it need not be zero.
    The existing Kestrel case files, raw logs and experimental video are not
    mounted here. The latest run conclusions remain those recorded in the
    handoff, not a new independent analysis of raw cluster output.
+
+The follow-up source review corrected an OpenFOAM 9 API compatibility error:
+`Info` is a `messageStream`, so precision is set through `Info().precision()`
+on its underlying stream. This source correction is not a substitute for the
+pending Kestrel OpenFOAM build. A compiled regression now exercises the actual
+report predicate at times below, at and beyond OpenFOAM's stopping threshold.
 
 ## Kestrel build gate — no CFD launch
 
