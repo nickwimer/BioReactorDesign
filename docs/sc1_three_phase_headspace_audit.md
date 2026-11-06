@@ -178,6 +178,65 @@ finite-difference inventory derivative is meaningful.
 The GitHub code is the baseline implementation, not proof of the final
 RHEL9 binary's source history.
 
+## 2x. Full 0.5 s normal-inward entrainment result: no sustained holdup or OTR recovery (2026-11-06)
+
+The opt-in `normalGasIntoLiquid` scratch trial
+`run_normalactive_05` completed successfully (52 ranks)
+from the same `31.199982372783058` source state as
+`run_control_05`. Five matched writes at t31.3–31.7 s:
+the model used a 0.01 entrainment coefficient,
+2 mm nominal nucleus, and a global **2 g/s
+unblended raw** gas entrainment cap (active at all times).
+
+The PB positive **NET** bubble creation was
+0.208–0.238 g/s, average **0.2231 g/s**, but
+**global** bubble↔headspace exchange was still
+net bubble loss through deposition. Bubble inventory
+relative to zero control (mg) at the five writes:
+**+11.09, +24.17, +55.87, -4.12, -125.23**.
+The final trial **contains less**, not more, bubble
+gas than the control. The last corrected PB size
+fraction sum remains `1 1 1`, mean Sauter diameter
+~1.205 mm and finite minimum/maximum ~1.003/5.331 mm.
+
+Five-sample mean modeled O₂ transfer:
+**0.098782756 g/s** active vs
+**0.098398236 g/s** control, gain
+**0.000384520 g/s = 0.38452 mg/s**,
+only ~0.39% relative and ~0.077 percentage
+points of the prior frozen biological OUR
+~0.498 g/s. Total modeled OTR remains
+~19.84% of biological uptake.
+Do not infer a substantive solution to the
+O₂ deficit or successful reproduction of
+experimental upper-impeller foam.
+
+Endpoint bubble-mass closure remains nonzero;
+a **coarse five-write trapezoidal** mass
+source/flux approximation over t31.3–31.7
+disagrees with observed bubble inventory change
+by +0.231 g (active), versus +0.382 g
+in the unchanged control. Neither is
+a discrete time-integrated conservation
+diagnostic because the source/fluxes vary
+between saves. Need a properly time-resolved
+gas/species budget before calibration or
+production use. BiRD's sizeGroup correction
+clamps and renormalizes size fractions, so
+post-correction sum=1 does not establish
+population moment conservation.
+
+**Decision:** hold the entrainment coefficient,
+nucleus diameter and global cap fixed. The
+next priority is conservative time-resolved
+gas/O₂ bookkeeping and physical validation
+of the free-surface, gas holdup and bubble
+size distribution against experimental
+observations. All original cases and
+production BiRD libraries remain unchanged.
+Full time-series: [entrainment trial audit]
+(sc1_headspace_reentrainment_trial.md).
+
 ## 2w. First normal-inward headspace entrainment runtime (2026-11-04)
 
 52-rank SCRATCH-only trial
