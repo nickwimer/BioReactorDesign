@@ -114,6 +114,49 @@ def enable_audit(text):
     return text[:start+1]+body+'\n    sc1ConservationAudit true;\n'+text[end:]
 
 
+def enable_alpha_audit(text):
+    """Opt in only in the explicit alpha solver dictionary of a NEW case."""
+    masked = re.sub(r'/\*.*?\*/|//[^\n]*', lambda m: ' '*len(m[0]), text, flags=re.S)
+    token_re = re.compile(r'"(?:\\.|[^"\\])*"|[{};]|[^\s{};]+')
+
+    def dictionaries(start, end):
+        tokens = list(token_re.finditer(masked, start, end))
+        found = []
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            if token[0].startswith(('#', '$')):
+                raise ValueError('Alpha audit requires explicit dictionaries without includes or inheritance')
+            if token[0] == '{':
+                if i == 0:
+                    raise ValueError('Unnamed dictionary in fvSolution')
+                close = enclosing_brace_end(text, token.start())
+                if close >= end:
+                    raise ValueError('Unbalanced dictionary in fvSolution')
+                found.append((tokens[i-1][0].strip('"'), token.start(), close))
+                while i < len(tokens) and tokens[i].start() <= close:
+                    i += 1
+                continue
+            if token[0] == '}':
+                raise ValueError('Unexpected closing brace in fvSolution')
+            i += 1
+        return found
+
+    solvers = [d for d in dictionaries(0, len(text)) if d[0] == 'solvers']
+    if len(solvers) != 1:
+        raise ValueError('Expected one explicit solvers dictionary')
+    _, start, end = solvers[0]
+    candidates = [d for d in dictionaries(start+1, end) if 'alpha' in d[0]]
+    if len(candidates) != 1 or candidates[0][0] not in ('alpha', 'alpha.*'):
+        raise ValueError('Expected one explicit alpha or "alpha.*" solver dictionary')
+    _, start, end = candidates[0]
+    if re.search(r'\bsc1AlphaAudit\b', masked[start+1:end]):
+        raise ValueError('Alpha audit already configured')
+    if re.search(r'[#\$]', masked[start+1:end]):
+        raise ValueError('Alpha audit requires explicit alpha controls')
+    return text[:end]+'\n        sc1AlphaAudit true;\n    '+text[end:]
+
+
 def validate_pair(control, active, checkpoint, allow_courant_location_metadata=False,
                   metadata_proofs=None):
     evidence = {}
@@ -184,6 +227,8 @@ def main():
                         help='New diagnostic duration in CFD seconds; default preserves the completed 0.5 s comparison')
     parser.add_argument('--out',type=Path,help='Required for preparation; must not be used with --inspect-inputs')
     parser.add_argument('--inspect-inputs',action='store_true',help='Print raw input differences only; create no files or cases')
+    parser.add_argument('--alpha-audit',action='store_true',
+                        help='Enable private-library alpha subcycle diagnostics in new cases; requires putidaFoamSC1AlphaAudit')
     parser.add_argument('--allow-courant-location-metadata',action='store_true',
                         help='Require complete equality except proved Co outer location values; copy the full control checkpoint to both new cases')
     args=parser.parse_args()
@@ -193,6 +238,8 @@ def main():
         parser.error('--inspect-inputs is a raw report; do not combine with --allow-courant-location-metadata')
     if args.inspect_inputs and args.duration != 0.5:
         parser.error('--duration only applies to new case preparation')
+    if args.inspect_inputs and args.alpha_audit:
+        parser.error('--alpha-audit only applies to new case preparation')
     if not args.inspect_inputs and args.out is None:
         parser.error('--out is required for case preparation')
     try:
@@ -219,7 +266,10 @@ def main():
             for key,value in (('startFrom','latestTime'),('endTime',f'{float(args.checkpoint)+args.duration:.14g}'),
                               ('writeControl','runTime'),('writeInterval','0.1')):
                 c=set_control_entry(c,key,value,insert_if_missing=(key=='writeControl'))
-            contents.append((c,enable_audit((src/'system/fvSolution').read_text())))
+            f=enable_audit((src/'system/fvSolution').read_text())
+            if args.alpha_audit:
+                f=enable_alpha_audit(f)
+            contents.append((c,f))
         # Don't equate trials with different hidden runtime control settings.
         if contents[0] != contents[1]:
             raise ValueError('Patched controlDict/fvSolution differ; review before running')
@@ -245,6 +295,7 @@ def main():
                   'initial_state_source':str(control),
                   'courant_location_metadata_proofs':metadata_proofs,
                   'initial_state_sha256':evidence,'duration_s':args.duration,
+                  'alpha_audit':args.alpha_audit,
                   'physics':'unchanged from completed experiments','run_order':['control','normal']}
         (out/'comparison_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         print(f'Prepared matched, scratch-only cases: {out}/control and {out}/normal')
@@ -252,6 +303,8 @@ def main():
             print('Verified complete Co files differ only in outer location values: '+', '.join(sorted(metadata_proofs)))
         print(f'Both complete initial states copied unchanged from: {control}')
         print('Initial collated state and mesh hashes match. No CFD launched.')
+        if args.alpha_audit:
+            print('Alpha subcycle audit enabled: requires putidaFoamSC1AlphaAudit and its private libbirdphaseSystem.')
         print('Run control first; review conservation and regression before normal.')
         return 0
     except (OSError,ValueError) as e:

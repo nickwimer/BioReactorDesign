@@ -282,6 +282,29 @@ class MatchedCheckpointCopyTests(unittest.TestCase):
                              pair.hashes(self.control / self.time_section))
         self.assertEqual({str(case): pair.hashes(case) for case in (self.control, self.normal)}, before)
 
+    def test_alpha_audit_is_explicit_and_only_changes_new_solver_controls(self):
+        settings = 'solvers { "alpha.*" { nAlphaCorr 1; nAlphaSubCycles 6; meanFluxReference true; } }\nPIMPLE {}\n'
+        for case in (self.control, self.normal):
+            (case / 'system/fvSolution').write_text(settings)
+        before = {str(case): pair.hashes(case) for case in (self.control, self.normal)}
+        destination = self.root / 'alpha_pair'
+        argv = ['prepare', '--control', str(self.control), '--active', str(self.normal),
+                '--out', str(destination), '--allow-courant-location-metadata',
+                '--duration', '0.1', '--alpha-audit']
+        with (patch.object(sys, 'argv', argv),
+              patch.object(pair, 'scratch', side_effect=lambda p: Path(p).resolve()),
+              contextlib.redirect_stdout(io.StringIO())):
+            self.assertEqual(pair.main(), 0)
+        manifest = json.loads((destination / 'comparison_manifest.json').read_text())
+        self.assertTrue(manifest['alpha_audit'])
+        for name, source in (('control', self.control), ('normal', self.normal)):
+            copied = destination / name
+            self.assertEqual(pair.hashes(copied/'constant'), pair.hashes(source/'constant'))
+            self.assertEqual(pair.hashes(copied/self.time_section), pair.hashes(self.control/self.time_section))
+            self.assertEqual((copied/'system/fvSolution').read_text(),
+                             pair.enable_alpha_audit(pair.enable_audit(settings)))
+        self.assertEqual({str(case): pair.hashes(case) for case in (self.control, self.normal)}, before)
+
     def test_unreviewed_duration_is_rejected_before_preparation(self):
         destination = self.root / "must_not_exist"
         with (patch.object(sys, "argv", ["prepare", "--out", str(destination), "--duration", "200"]),
@@ -315,6 +338,35 @@ class MatchedCheckpointCopyTests(unittest.TestCase):
             with self.assertRaises(SystemExit) as raised:
                 pair.main()
         self.assertEqual(raised.exception.code, 2)
+
+    def test_raw_inspection_rejects_alpha_audit(self):
+        with (patch.object(sys, 'argv', ['prepare', '--inspect-inputs', '--alpha-audit']),
+              contextlib.redirect_stderr(io.StringIO())):
+            with self.assertRaises(SystemExit) as raised:
+                pair.main()
+        self.assertEqual(raised.exception.code, 2)
+
+
+class AlphaControlsTests(unittest.TestCase):
+    def test_actual_quoted_alpha_pattern_and_comment_braces(self):
+        original = '// solvers { alpha { } }\nsolvers { "alpha.*" { nAlphaCorr 1; /* } */ } p { solver GAMG; } }\nPIMPLE {}'
+        result = pair.enable_alpha_audit(original)
+        self.assertIn('nAlphaCorr 1; /* } */ \n        sc1AlphaAudit true;', result)
+        self.assertEqual(result.replace('\n        sc1AlphaAudit true;\n    ', ''), original)
+
+    def test_plain_alpha_is_supported(self):
+        self.assertIn('sc1AlphaAudit true;', pair.enable_alpha_audit('solvers { alpha {} }'))
+
+    def test_missing_duplicate_ambiguous_and_inherited_controls_rejected(self):
+        for original in ('PIMPLE {}', 'solvers {}', 'solvers { alpha {} alpha {} }',
+                         'solvers { alpha {} "alpha.*" {} }', 'solvers {} solvers {}',
+                         'solvers { "alpha.+" {} }', 'solvers { nested { alpha {} } }',
+                         'solvers { alpha { sc1AlphaAudit false; } }',
+                         'solvers { alpha { "sc1AlphaAudit" false; } }',
+                         'solvers { alpha { $base; } }',
+                         'solvers { #include "alpha"\n alpha {} }'):
+            with self.subTest(original=original), self.assertRaises(ValueError):
+                pair.enable_alpha_audit(original)
 
 
 if __name__ == "__main__":

@@ -1,29 +1,35 @@
 # SC1 MEML oxygen-transfer investigation — new-session handoff
 
-**Updated:** 2026-11-06  
+**Updated:** 2026-11-07
+
 **Research system:** *Pseudomonas putida* SC1 stirred-tank simulation, OpenFOAM 9 / BiRD, NLR Kestrel  
 **GitHub branch:** `codex/sc1-headspace-bubble-audit-20261029`  
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-06):** Both conservation diagnostics in
-`/scratch/nwimer/sc1_conservation_pair_20261106T201549Z` completed with status
-0. The five control audit lines reproduce the old control exactly at displayed
-precision, and all initial inventories match. Report times differ by up to
-26.94 microseconds; the reader now offers explicit `--native-times` reporting
-without interpolation. The normal run's own-duration mean OTR improves only
-0.353%, and its native final bubble inventory is 125.23 mg lower. Both retain
-large clipping/correction and unresolved phase budgets. Read
-[the paired results and new stage-audit build gate](sc1_conservation_pair_results_2026-11-06.md)
-first. The new isolated instrumentation revision **compiled successfully on
-Kestrel at `4a1d7de`; all 50 checks pass there and executable dependencies
-resolve**. Reuse
-`/scratch/nwimer/sc1_stage_audit_20261106T231907Z/bin/putidaFoamSC1ConservationAudit`.
-Header hashes match the committed code, and original solver-source hashes and
-dependency paths match the earlier reviewed build. Next prepare a fresh 0.1 s
-pair and run its control only; stage-audit MPI validation remains pending.
-Preserve both completed runs; no coefficient or biology-schedule changes are
-approved.
+**Latest state (2026-11-07):** The revision-2 control in
+`/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` completed with status 0
+after 2,000 steps (0.1 s). Every v1 phase-budget field and legacy bubble record
+matches the original control at the same timestamp. The new ledger explains
+the oxygen residual to approximately 1.4e-9 mg: gas residuals mainly reflect
+post-species density updates, and liquid clipping cancels 80.574% of requested
+oxygen removal. The remaining liquid mass discrepancy is localized to alpha
+allocation: +123.514 mg observed versus +304.739 mg predicted by sampled
+sources. No physical cause is established yet. **Do not launch this pair's
+normal case.** Read [the result and private alpha-subcycle audit](sc1_alpha_subcycle_audit_2026-11-07.md)
+first. New diagnostic source is implemented for a copied phase-system library
+and unique `putidaFoamSC1AlphaAudit` executable; Kestrel compilation and MPI
+validation remain pending. Next build in a fresh scratch tree and verify all
+runtime dependencies use its private library before preparing/running a new
+short control. Preserve completed runs and the biological schedule.
+
+The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
+remains authoritative for the 0.5 s normal/control comparison: own-duration
+mean OTR improves only 0.353%, and normal's native final bubble inventory is
+125.23 mg lower. The diagnostic continuations retain frozen OUR; they are not
+the intended nonreacting 9.9 s checkpoint. Neither experimental closure is
+approved for production. Historical follow-ups below record earlier gates;
+the latest state above supersedes their pending-action instructions.
 
 > **Instruction to the next assistant:** Read this handoff and the linked audit documents before changing anything. Review the actual BiRD source and trial outputs before forming new conclusions. Make **every code or documentation change as a Git commit pushed to the GitHub feature branch**. Do not leave work as an uncommitted patch, and do not modify the production CFD runs. Do not rerun already completed experiments without a reason.
 

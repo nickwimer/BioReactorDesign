@@ -12,11 +12,14 @@ size remain unchanged.
 This continues the [handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md) and
 [timestep audit](sc1_timestep_conservation_audit.md).
 
-**Latest follow-up:** The revision-2 stage audit built successfully on Kestrel
-at `4a1d7de`, with all 50 checks passing. Use the existing
-`/scratch/nwimer/sc1_stage_audit_20261106T231907Z` build. No stage-audit CFD run
-has launched yet. The next action is the
-[fresh 0.1 s control launch](#successful-stage-audit-build-and-short-control-launch).
+**Latest follow-up (2026-11-07):** The revision-2 short control completed with
+status 0 and reproduced every original control budget field. It resolves the
+oxygen residual attribution and confirms negative-O2 clipping. The remaining
+mass discrepancy is localized to alpha allocation. Read the
+[new result and private alpha-subcycle build gate](sc1_alpha_subcycle_audit_2026-11-07.md).
+The launch block later in this document has already been executed; preserve
+`/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` and leave its normal
+case unrun. The new private alpha library still requires Kestrel compilation.
 
 ## Initial-state and regression checks
 
