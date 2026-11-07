@@ -1,0 +1,4 @@
+resolvedHeadspaceFilm.C
+
+# Dedicated SC1 scratch library. Never overwrite user/production BiRD libs.
+LIB = /scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels

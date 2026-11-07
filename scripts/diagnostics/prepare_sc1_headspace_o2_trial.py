@@ -1,0 +1,478 @@
+#!/usr/bin/env python3
+"""Create a scratch-only SC1 trial case with bounded headspace-liquid O2 transfer.
+
+Default source is the existing scratch bubble-audit continuation, NEVER the
+production case. Copies only the most recent collated time and mesh and
+adds the Henry / diffusive / heat-transfer pair to a scratch phaseProperties.
+Does not compile OpenFOAM, change production files, or start CFD.
+
+Run after compiling the separate libsc1HeadspaceFilmModels.so in scratch.
+"""
+
+import argparse
+import math
+import re
+import shutil
+from pathlib import Path
+
+SOURCE = Path("/scratch/nwimer/sc1_bubble_audit_20261029/run")
+TRIAL = Path("/scratch/nwimer/sc1_headspace_o2_trial_20261103/run")
+LIBRARY = Path(
+    "/scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/"
+    "libsc1HeadspaceFilmModels.so"
+)
+
+
+def require_scratch(path: Path) -> Path:
+    real = path.resolve()
+    scratch = Path("/scratch/nwimer").resolve()
+    if real == scratch or not real.is_relative_to(scratch):
+        raise ValueError(f"Must remain inside {scratch}: {real}")
+    return real
+
+
+def matching_list_closer(text: str, start: int, keyword: str) -> int:
+    """Find the matching ')' of a known '(', respecting comments/strings."""
+    depth = 0
+    state = "plain"
+    pos = start
+    while pos < len(text):
+        char = text[pos]
+        next_char = text[pos + 1] if pos + 1 < len(text) else ""
+        if state == "line":
+            if char == "\n":
+                state = "plain"
+        elif state == "block":
+            if char == "*" and next_char == "/":
+                state = "plain"
+                pos += 1
+        elif state == "quote":
+            if char == "\\":
+                pos += 1
+            elif char == '"':
+                state = "plain"
+        else:
+            if char == "/" and next_char == "/":
+                state = "line"
+                pos += 1
+            elif char == "/" and next_char == "*":
+                state = "block"
+                pos += 1
+            elif char == '"':
+                state = "quote"
+            elif char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth == 0:
+                    return pos
+        pos += 1
+    raise ValueError(f"Unterminated list in {keyword}")
+
+
+def find_keyword_list(text: str, keyword: str) -> tuple[int, int] | None:
+    """Find one phaseProperties keyword (...) list (original behavior)."""
+    rex = re.compile(
+        r"(?m)^[ \t]*" + re.escape(keyword)
+        + r"[ \t]*(?:\n[ \t]*)?\("
+    )
+    found = list(rex.finditer(text))
+    if not found:
+        return None
+    if len(found) != 1:
+        raise ValueError(f"Expected one list for {keyword}, found {len(found)}")
+    start = found[0].end() - 1
+    return (start, matching_list_closer(text, start, keyword))
+
+
+def append_list_entry(text: str, keyword: str, entry: str) -> str:
+    position = find_keyword_list(text, keyword)
+    if position is None:
+        return text.rstrip() + f"\n\n{keyword}\n(\n{entry}\n);\n"
+    _, closing = position
+    return text[:closing] + "\n" + entry + "\n" + text[closing:]
+
+
+def section_body(text: str, keyword: str) -> str:
+    bounds = find_keyword_list(text, keyword)
+    if bounds is None:
+        raise ValueError(f"Missing source dictionary list {keyword}")
+    return text[bounds[0] + 1 : bounds[1]]
+
+
+def pair_exists(section: str, phase1: str, direction: str, phase2: str) -> bool:
+    return bool(
+        re.search(
+            r"\(\s*" + re.escape(phase1)
+            + r"\s+" + re.escape(direction)
+            + r"\s+" + re.escape(phase2) + r"\s*\)",
+            section,
+        )
+    )
+
+
+def model_dictionary(report: bool, foam_multiplier: float) -> str:
+    return """    {
+        type resolvedHeadspaceFilm;
+        headspacePhase headspaceGas;
+        liquidPhase liquid;
+        bubblePhase bubbleGas;
+
+        // kL = D_O2 / filmThickness. Pilot value; NOT calibrated.
+        filmThickness 1e-5;
+
+        // Geometrically resolved macro-interface only by default.
+        // Explore bounded foam enhancement after baseline smoke test.
+        foamAreaMultiplier %.8g;
+        foamDiameter 0.003;
+        foamYMin 0.65;
+        foamYMax 1.05;
+        foamRMax 0.30;
+        foamAxisX 0;
+        foamAxisZ 0;
+
+        minInterfaceAlpha 0.02;
+        fullInterfaceAlpha 0.10;
+        maxBubbleAlpha 0.10;
+        maxAreaDensity 2000;
+        reportArea %s;
+    }""" % (foam_multiplier, "true" if report else "false")
+
+
+def install_phase_models(original: str, foam_multiplier: float = 0.0) -> str:
+    if not math.isfinite(foam_multiplier) or not 0 <= foam_multiplier <= 10:
+        raise ValueError("foam_multiplier must be between 0 and 10.")
+
+    phase_system = re.search(
+        r"(?m)^\s*type\s+([^;]+);", original
+    )
+    if not phase_system or "interfaceCompositionPhaseChange" not in phase_system[1]:
+        raise ValueError("Case is not the expected interface-composition phase system.")
+
+    if "bubbleGas" not in original or "headspaceGas" not in original:
+        raise ValueError("Expected bubbleGas and headspaceGas phases missing.")
+
+    if "( bubbleGas in headspaceGas )" not in original and not re.search(
+        r"\(\s*bubbleGas\s+in\s+headspaceGas\s*\)", original
+    ):
+        raise ValueError("Expected existing bubble-to-headspace deposition not found.")
+
+    # Preserve the exact solubility and species constants of the active
+    # bubble-liquid Henry model, instead of inventing He_O2 numbers.
+    old_liquid = section_body(original, "interfaceComposition.liquid")
+    m = re.search(
+        r"\(\s*liquid\s+and\s+bubbleGas\s*\)\s*\{",
+        old_liquid,
+    )
+    if not m:
+        raise ValueError("Missing existing (liquid and bubbleGas) Henry model.")
+    start = m.start()
+    depth = 0
+    close = -1
+    for i in range(m.end() - 1, len(old_liquid)):
+        if old_liquid[i] == "{":
+            depth += 1
+        elif old_liquid[i] == "}":
+            depth -= 1
+            if depth == 0:
+                close = i + 1
+                break
+    if close < 0:
+        raise ValueError("Unclosed bubble-liquid Henry model.")
+
+    henry_entry = old_liquid[start:close]
+    if not re.search(r"\bspecies\s*\(\s*O2\s*\)", henry_entry):
+        raise ValueError("Existing bubble-liquid Henry model is not O2-only.")
+    if not re.search(r"\btype\s+Henry\s*;", henry_entry):
+        raise ValueError("Expected unmodified Henry O2 model.")
+
+    if pair_exists(old_liquid, "liquid", "and", "headspaceGas"):
+        raise ValueError("A headspace-liquid composition model already exists; abort.")
+
+    updated = append_list_entry(
+        original, "interfaceComposition.liquid",
+        henry_entry.replace("bubbleGas", "headspaceGas"),
+    )
+
+    mass_key = "diffusiveMassTransfer.liquid"
+    for dispersed, continuous, report in (
+        ("headspaceGas", "liquid", True),
+        ("liquid", "headspaceGas", False),
+    ):
+        body = section_body(updated, mass_key)
+        if pair_exists(body, dispersed, "in", continuous):
+            raise ValueError(
+                f"Model already exists: ({dispersed} in {continuous})"
+            )
+        entry = (
+            f"    ({dispersed} in {continuous})\n"
+            + model_dictionary(report, foam_multiplier)
+        )
+        updated = append_list_entry(updated, mass_key, entry)
+
+    # TwoResistanceHeatTransferPhaseSystem requires heat-transfer models
+    # on BOTH phase sides of every interface-composition pair.
+    for phase, model1, model2 in (
+        ("headspaceGas", "spherical", "RanzMarshall"),
+        ("liquid", "RanzMarshall", "spherical"),
+    ):
+        key = f"heatTransfer.{phase}"
+        for direction, model in (
+            (("headspaceGas", "liquid"), model1),
+            (("liquid", "headspaceGas"), model2),
+        ):
+            body = section_body(updated, key) if find_keyword_list(updated, key) else ""
+            if pair_exists(body, direction[0], "in", direction[1]):
+                continue
+            entry = (
+                f"    ({direction[0]} in {direction[1]})\n"
+                "    {\n"
+                f"        type {model};\n"
+                "        residualAlpha 1e-4;\n"
+                "    }"
+            )
+            updated = append_list_entry(updated, key, entry)
+
+    return updated
+
+
+def root_dictionary_matches(
+    text: str, statement: re.Pattern[str]
+) -> list[tuple[int, int]]:
+    """Match only root-scope OpenFOAM dictionary statements.
+
+    An SC1 controlDict can contain function objects with their own
+    writeControl/writeInterval settings. A multiline regular expression
+    alone must never treat these nested settings as solver controls.
+    Track quoted strings, line/block comments, and {}/() nesting before
+    examining each beginning-of-line keyword.
+    """
+    matches: list[tuple[int, int]] = []
+    braces = 0
+    parentheses = 0
+    state = "plain"
+    offset = 0
+
+    for line in text.splitlines(keepends=True):
+        if state == "plain" and braces == 0 and parentheses == 0:
+            found = statement.match(text, offset)
+            if found:
+                matches.append(found.span())
+
+        pos = 0
+        while pos < len(line):
+            char = line[pos]
+            next_char = line[pos + 1] if pos + 1 < len(line) else ""
+
+            if state == "line_comment":
+                if char == "\n":
+                    state = "plain"
+            elif state == "block_comment":
+                if char == "*" and next_char == "/":
+                    state = "plain"
+                    pos += 1
+            elif state == "quote":
+                if char == "\\":
+                    pos += 1
+                elif char == '"':
+                    state = "plain"
+            else:
+                if char == "/" and next_char == "/":
+                    state = "line_comment"
+                    pos += 1
+                elif char == "/" and next_char == "*":
+                    state = "block_comment"
+                    pos += 1
+                elif char == '"':
+                    state = "quote"
+                elif char == "{":
+                    braces += 1
+                elif char == "}":
+                    braces -= 1
+                elif char == "(":
+                    parentheses += 1
+                elif char == ")":
+                    parentheses -= 1
+
+                if braces < 0 or parentheses < 0:
+                    raise ValueError(
+                        "Unbalanced top-level controlDict delimiters."
+                    )
+            pos += 1
+
+        # splitlines(keepends=True) can return a final line without \n.
+        if state == "line_comment":
+            state = "plain"
+        offset += len(line)
+
+    if braces != 0 or parentheses != 0 or state in ("quote", "block_comment"):
+        raise ValueError(
+            "Unbalanced or unterminated controlDict blocks/quotes/comments."
+        )
+
+    return matches
+
+
+def top_level_control_matches(text: str, key: str) -> list[tuple[int, int]]:
+    statement = re.compile(
+        r"(?m)^[ \t]*" + re.escape(key) + r"[ \t]+[^;\n]*;"
+    )
+    return root_dictionary_matches(text, statement)
+
+
+def top_level_list_bounds(text: str, keyword: str) -> tuple[int, int] | None:
+    """Locate one root-level list, ignoring nested function-object libs."""
+    statement = re.compile(
+        r"(?m)^[ \t]*" + re.escape(keyword)
+        + r"[ \t]*(?:\n[ \t]*)?\("
+    )
+    matches = root_dictionary_matches(text, statement)
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError(
+            f"Expected at most one TOP-LEVEL {keyword} list, "
+            f"found {len(matches)}"
+        )
+    opening = matches[0][1] - 1
+    return opening, matching_list_closer(text, opening, keyword)
+
+
+def set_control_entry(
+    text: str,
+    key: str,
+    value: str,
+    *,
+    insert_if_missing: bool = False,
+) -> str:
+    """Replace a root solver setting, or explicitly add an optional one."""
+    matches = top_level_control_matches(text, key)
+
+    if not matches and insert_if_missing:
+        # Only this newly generated scratch file gets an added setting.
+        return text.rstrip() + f"\n\n{key}    {value};\n"
+    if len(matches) != 1:
+        raise ValueError(
+            f"Expected exactly one TOP-LEVEL {key} in controlDict, "
+            f"found {len(matches)}"
+        )
+
+    start, end = matches[0]
+    return text[:start] + f"{key}    {value};" + text[end:]
+
+
+def add_library_to_control(text: str, library: Path) -> str:
+    lib = str(library.resolve())
+    if lib in text:
+        raise ValueError("controlDict already references trial library.")
+    pair = top_level_list_bounds(text, "libs")
+    if pair is None:
+        return text.rstrip() + '\n\nlibs ("' + lib + '");\n'
+    _, closing = pair
+    return text[:closing] + '\n    "' + lib + '"\n' + text[closing:]
+
+
+def latest_collated_time(root: Path) -> tuple[str, float]:
+    times = []
+    for item in (root / "processors52").iterdir():
+        if item.is_dir():
+            try:
+                value = float(item.name)
+            except ValueError:
+                continue
+            times.append((item.name, value))
+    if not times:
+        raise ValueError(f"No numeric collated times in {root}")
+    return max(times, key=lambda pair: pair[1])
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source", type=Path, default=SOURCE)
+    parser.add_argument("--out", type=Path, default=TRIAL)
+    parser.add_argument("--library", type=Path, default=LIBRARY)
+    parser.add_argument(
+        "--foam-multiplier", type=float, default=0,
+        help="Optional bounded subgrid foam area (0 = geometric only).",
+    )
+    parser.add_argument(
+        "--duration", type=float, default=0.2,
+        help="Very short diagnostic-only CFD advance (s), not equilibrium.",
+    )
+    args = parser.parse_args()
+
+    try:
+        src = require_scratch(args.source)
+        dst = require_scratch(args.out)
+        lib = require_scratch(args.library)
+
+        if src == dst or src in dst.parents or dst in src.parents:
+            raise ValueError("Source and trial paths may not overlap.")
+        if dst.exists():
+            raise FileExistsError(f"Trial output exists; refusing overwrite: {dst}")
+        if args.duration <= 0 or args.duration > 0.5:
+            raise ValueError("Diagnostic duration must be >0 and <=0.5 s.")
+
+        start_name, start_value = latest_collated_time(src)
+        for field in ("O2.headspaceGas", "O2.liquid", "alpha.headspaceGas"):
+            if not (src / "processors52" / start_name / field).is_file():
+                raise FileNotFoundError(
+                    f"Missing critical field at selected collated time: {field}"
+                )
+
+        original = (src / "constant/phaseProperties").read_text()
+        updated_phase = install_phase_models(original, args.foam_multiplier)
+
+        original_control = (src / "system/controlDict").read_text()
+        control = set_control_entry(
+            original_control, "startFrom", "latestTime"
+        )
+        control = set_control_entry(
+            control, "endTime", f"{start_value + args.duration:.10f}"
+        )
+        control = set_control_entry(
+            control, "writeControl", "runTime", insert_if_missing=True
+        )
+        control = set_control_entry(
+            control, "writeInterval", "0.1"
+        )
+        control = add_library_to_control(control, lib)
+
+        # Create only after all model validation has succeeded.
+        dst.mkdir(parents=True, exist_ok=False)
+        shutil.copytree(src / "constant", dst / "constant")
+        shutil.copytree(src / "system", dst / "system")
+        (dst / "processors52").mkdir()
+        shutil.copytree(
+            src / "processors52/constant",
+            dst / "processors52/constant",
+        )
+        shutil.copytree(
+            src / "processors52" / start_name,
+            dst / "processors52" / start_name,
+        )
+
+        (dst / "constant/phaseProperties").write_text(updated_phase)
+        (dst / "system/controlDict").write_text(control)
+
+        print(f"Trial case prepared: {dst}")
+        print(f"  Starting collated checkpoint: {start_name}")
+        print(f"  End time: {start_value + args.duration:.10f}")
+        print(f"  Experimental dynamic library: {lib}")
+        print("  Existing bubble-liquid Henry/transfer retained unchanged.")
+        print("  Headspace-liquid Henry + two film orientations added.")
+        print(
+            f"  Foam area multiplier: {args.foam_multiplier:g}"
+            " (0 = geometric-area baseline)."
+        )
+        print("  Production case and source scratch continuation untouched.")
+        print("  Library compiled separately; trial runtime remains unverified.")
+        return 0
+    except (OSError, ValueError, FileNotFoundError) as err:
+        print(f"Trial preparation stopped: {err}")
+        print("No production case was modified.")
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
