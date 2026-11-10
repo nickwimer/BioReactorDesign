@@ -3,10 +3,15 @@
 No OpenFOAM compilation or CFD is claimed by these tests.
 """
 import copy
+from contextlib import redirect_stdout
+import io
 import difflib
 import json
 import os
 from pathlib import Path
+import re
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -89,6 +94,74 @@ class Instrumentation(unittest.TestCase):
         for transform,source in ((phase_source,self.phase),(solver_source,self.main),(pressure_source,self.pressure)):
             with self.assertRaises(ValueError): transform(transform(source))
         with self.assertRaises(ValueError): phase_source(self.phase.replace(' *= alphaVoid/sumAlphaMoving;', ' *= 1;'))
+
+
+class FieldAssignmentCompatibility(unittest.TestCase):
+    """Compile actual initialization statements against OF9's void-assignment contract.
+
+    This targeted regression does not substitute for an OpenFOAM header build.
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.compiler=shutil.which('g++') or shutil.which('c++')
+        if not cls.compiler:
+            raise unittest.SkipTest('A C++ compiler is required for the assignment regression')
+        header=(harness.HERE/'include/sc1PhaseFractionAudit.H').read_text()
+        cls.initialization=header.split('sourceAlpha_[i]=entry_[i];\n',1)[1].split('\n        }',1)[0]
+
+    def compile(self, initialization, run=False):
+        code=r'''
+#include <cassert>
+#include <vector>
+struct scalarField
+{
+    std::vector<double> cells;
+    scalarField() = default;
+    scalarField(unsigned n, double value) : cells(n,value) {}
+    void operator=(const scalarField& other) { cells=other.cells; }
+};
+struct Phase { unsigned size() const { return 3; } };
+int main()
+{
+    const Phase phase;
+    std::vector<scalarField> base_(2),dgdt_(2),requested_(2);
+    for (unsigned i=0;i<2;++i)
+    {
+INITIALIZATION
+    }
+    for (const auto* fields : {&base_,&dgdt_,&requested_})
+        for (const auto& field : *fields)
+        {
+            assert(field.cells.size()==phase.size());
+            for (double value : field.cells) assert(value==0);
+        }
+}
+'''.replace('INITIALIZATION',initialization)
+        with tempfile.TemporaryDirectory() as tmp:
+            source=Path(tmp)/'assignment.C'; source.write_text(code)
+            executable=Path(tmp)/'assignment'
+            result=subprocess.run([self.compiler,'-std=c++14','-Wall','-Wextra','-Werror',
+                                   str(source),'-o',str(executable)],text=True,capture_output=True)
+            if run and result.returncode==0:
+                subprocess.run([str(executable)],check=True)
+            return result
+
+    def test_observer_initialization_compiles_and_sizes_all_fields(self):
+        result=self.compile(self.initialization,run=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_regression_reproduces_rejected_chained_assignment(self):
+        result=self.compile('base_[i]=dgdt_[i]=requested_[i]=scalarField(phase.size(),0);')
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('void',result.stderr)
+
+    def test_new_observer_headers_have_no_chained_assignments(self):
+        for name in ('sc1PhaseFractionAudit.H','sc1TwoFieldStages.H'):
+            header=(harness.HERE/'include'/name).read_text()
+            # Ignore comments/strings; detect assignment to another assignment's result.
+            clean=re.sub(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"','',header,flags=re.S)
+            chained=re.search(r'(?<![=!<>])=\s*[A-Za-z_]\w*(?:\[[^\]\n]+\])?\s*=(?!=)',clean)
+            self.assertIsNone(chained,name)
 
 
 class Fixtures(unittest.TestCase):
@@ -245,6 +318,20 @@ class Isolation(unittest.TestCase):
                 (out/'bin'/harness.APP).write_bytes(b'fake binary')
                 installed_lib.write_bytes(b'changed installed')
                 with self.assertRaisesRegex(ValueError,'Installed binary changed'): harness.verify_build(out)
+
+    def test_failure_output_includes_first_error_before_long_note_tail(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); output=io.StringIO()
+            def fail(command,**kwargs):
+                kwargs['stdout'].write('observer.H:70: error: assignment from void\n'+
+                                       'note: candidate declaration\n'*100)
+                return SimpleNamespace(returncode=2)
+            with patch.object(harness.subprocess,'run',side_effect=fail), redirect_stdout(output):
+                with self.assertRaises(ValueError): harness.execute(['wmake','libso'],root,root/'build.log',{})
+            self.assertIn('First compiler errors:',output.getvalue())
+            self.assertIn('observer.H:70: error: assignment from void',output.getvalue())
+            self.assertTrue((root/'build.log').is_file())
 
     def test_runtime_environment_does_not_change_parent(self):
         before=dict(os.environ)

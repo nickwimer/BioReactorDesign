@@ -2,8 +2,9 @@
 
 ## Status and purpose
 
-Implemented locally; OpenFOAM compilation and CFD execution on Kestrel are
-**pending**. This is a numerical test harness, not a corrected SC1 reactor
+Implemented locally. The first Kestrel build stopped at the observer's field
+initialization; that defect is corrected, and a **fresh build and CFD execution
+remain pending**. This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
 
@@ -119,7 +120,38 @@ logs are created exclusively. Mesh generation, mesh checks and initialization
 occur only in the new cases. The initialized input files are hashed before
 CFD and compared afterward. Completed/failed cases are preserved.
 
-## First Kestrel step: build only
+## First Kestrel build: assignment compatibility correction
+
+The user ran the build at commit `a0f19295d7a399de16ae2e73579850d3bcd73c46`
+in `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T222049Z`.
+The first two library commands completed; the third, `phaseSystems`, failed
+with status 2 while compiling `phaseSystemSolve.C`. The transcript identifies
+this observer initialization:
+
+```cpp
+base_[i]=dgdt_[i]=requested_[i]=scalarField(phase.size(),0);
+```
+
+OpenFOAM 9's `Field::operator=` returns `void`. The assignment chain therefore
+attempted to assign a `void` result to another field. This is an assistant-
+introduced compile error, not evidence about the physical model or conservation.
+The three fields are now initialized in separate statements. No equations,
+case settings or biological scheduling were changed by the correction.
+
+The new targeted C++ regression extracts the actual initialization statements
+and compiles/runs them against a field type with that same void-assignment
+contract. It also confirms that the previous chain is rejected by the compiler.
+This is an API-contract regression, **not an OpenFOAM compilation**. Both new
+observer headers were checked for additional chained assignments. Failure
+reporting now prints the first compiler errors as well as the final 60 log
+lines, preserving the full log on disk.
+
+No CFD launched, no case was prepared, and full build/runtime verification did
+not run. Preserve the failed directory and its `log.build.phaseSystems`.
+The next action is the corrected build in a **new timestamped directory**;
+do not patch the failed copy or rerun into it.
+
+## Next Kestrel step: fresh build only
 
 Use the existing allocation. SSH is explicit in the pull command; no change
 to `origin` and no move to another node is required by this workflow.
@@ -154,10 +186,11 @@ supported next stages, not claims that they have already been run.
 
 ## Validation and remaining work
 
-204 local SC1 tests pass, including 22 new tests covering paired fixtures,
+208 local SC1 tests pass, including 26 harness tests covering paired fixtures,
 source/hook placement, retained phase equations, private preparation, runtime
 linkage rejection, attempted/modified case rejection, source-run gating and
-malformed/nonconservative audit streams. The shared standalone C++ MULES
+malformed/nonconservative audit streams, void-assignment compatibility and
+useful compiler-error output. The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. **No OpenFOAM installation is available in this workspace, so
 these results do not claim that the new OpenFOAM headers compile.**

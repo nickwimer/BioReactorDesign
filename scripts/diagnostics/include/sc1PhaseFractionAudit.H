@@ -67,7 +67,10 @@ public:
             check(phase.index()==i,"Noncontiguous phase indices");
             entry_[i]=phase.primitiveField(); rho_[i]=phase.rho()().primitiveField();
             sourceAlpha_[i]=entry_[i];
-            base_[i]=dgdt_[i]=requested_[i]=scalarField(phase.size(),0);
+            // OpenFOAM Field::operator= returns void: do not chain assignments.
+            base_[i]=scalarField(phase.size(),0);
+            dgdt_[i]=scalarField(phase.size(),0);
+            requested_[i]=scalarField(phase.size(),0);
         }
     }
     void originalSource(const phaseModel& phase, const volScalarField::Internal& su)

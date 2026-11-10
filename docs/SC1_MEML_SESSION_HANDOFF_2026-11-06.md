@@ -56,10 +56,17 @@ setting. A new dynamically sized alpha observer measures rescaling as well as
 the other existing alpha stages; a separate timestep observer captures actual
 phase masses, boundary mass fluxes and assembled pressure sources. All six
 required project libraries are rebuilt privately with the nonreacting solver.
-All 204 local SC1 tests pass, including 22 new harness tests. No OpenFOAM
-compilation or CFD result is claimed. Follow the [build-only command and
+**The first Kestrel build failed** at `a0f1929` in
+`/kfs3/scratch/nwimer/sc1_two_field_build_20261110T222049Z`, after the first two
+library commands completed. The third failed in the observer's chained field
+initialization: OpenFOAM `Field::operator=` returns void. The assignments are
+now separate; the two new headers were checked for similar chains. A targeted
+C++ regression reproduces the old failure and passes with the actual corrected
+initialization. All 208 local SC1 tests pass, including 26 harness tests.
+Full OpenFOAM compilation and runtime verification remain pending; no CFD
+launched. Preserve the failed build. Follow the [fresh build-only command and
 test requirements](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md); the next
-user action is that private build, not another archive diagnostic or reactor
+user action is a new private build, not another archive diagnostic or reactor
 spin-up. The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 

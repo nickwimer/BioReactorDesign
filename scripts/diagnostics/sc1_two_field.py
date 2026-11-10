@@ -160,7 +160,11 @@ def execute(command, cwd, log, env):
     with log.open('x') as output:
         result=subprocess.run(list(map(str,command)),cwd=cwd,env=env,stdout=output,stderr=subprocess.STDOUT)
     if result.returncode:
-        print('\n'.join(log.read_text(errors='replace').splitlines()[-60:]),flush=True)
+        lines=log.read_text(errors='replace').splitlines()
+        errors=[line for line in lines if re.search(r'\b(?:fatal )?error:',line)]
+        if errors:
+            print('First compiler errors:\n'+'\n'.join(errors[:8]),flush=True)
+        print('\n'.join(lines[-60:]),flush=True)
         raise ValueError(f'Command failed ({result.returncode}); preserve {log}')
 
 
