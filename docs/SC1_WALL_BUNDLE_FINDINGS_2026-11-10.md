@@ -138,7 +138,7 @@ has diffuse/multicrossing structure. In MEML's core no sector has a downward
 0.9 crossing in the sampled height window. None of this proves connected
 foam, literal blade wetting or a validated vortex.
 
-## 5. Initial fill remains the next small evidence gap
+## 5. Prescribed-fill check completed: the EMM prescription is near 1000 L
 
 Neither archived root listing contains 0, orig0, 0.org or 0.orig. The saved
 setFields dictionaries are available:
@@ -148,7 +148,7 @@ setFields dictionaries are available:
   box y=1.0124–1.0249 m overrides it with alphaL=0.5814257.
 
 Those values and a nominal level are insufficient to know the initialized
-volume without integrating the actual mesh. The new
+volume without integrating the actual mesh. The
 `estimate_sc1_prescribed_fill.py` applies those exact, hash-verified archived
 rules to the existing 9.9 s VTK meshes. It does not call setFields or change
 any field. It reports a VTK-center estimate plus conservative box-selection
@@ -165,30 +165,77 @@ the historical flux/source budget. The different nonzero liquid feeds also
 mean that a perfectly constant liquid inventory is not automatically the
 correct physical expectation.
 
-Run once in the existing allocation (no OpenFOAM environment/build needed):
+The user's complete terminal transcript confirms status **0** after a
+fast-forward to `e863cc126596ddefc82302683665130cd6df7a1c`, on the same
+allocated node `x1005c4s2b1n0`. The report is
+`/kfs3/scratch/nwimer/sc1_prescribed_fill_20261110T215018Z`.
+These values are transcribed from that output; the new report JSON has not
+been separately downloaded. The helper changed no fields or dictionaries
+and performed no conversion, compilation or CFD. **Do not rerun it.**
 
-```bash
-REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
-PY=/scratch/nwimer/.conda-envs/of-post/bin/python
-SC1_FILLROOT="/scratch/nwimer/sc1_prescribed_fill_$(date -u +%Y%m%dT%H%M%SZ)"
+| Quantity (L) | EMM | MEML_BASE |
+|---|---:|---:|
+| Archived prescribed fill, VTK-center estimate | 999.182377 | 999.741417 |
+| Cell-box selection lower bound | 999.1823768183433 | 993.2477135221618 |
+| Cell-box selection upper bound | 1010.1063013106522 | 1004.4051400593838 |
+| Existing 9.9 s field integral | 1151.076505 | 999.812137 |
+| 9.9 s inventory minus prescribed center estimate | +151.894128 | +0.070720 |
 
-if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$PY" ]]; then
-    echo "Stopped: active allocation or Python missing."
-elif [[ "$(git -C "$REPO" branch --show-current)" != "codex/sc1-headspace-bubble-audit-20261029" ]]; then
-    echo "Stopped: repository is on a different branch."
-elif git -C "$REPO" diff --quiet \
-    && git -C "$REPO" diff --cached --quiet \
-    && git -C "$REPO" pull --ff-only origin codex/sc1-headspace-bubble-audit-20261029; then
-    PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/estimate_sc1_prescribed_fill.py" \
-        --report /scratch/nwimer/sc1_wall_preflight_20261110T212232Z/report.json \
-        --out "$SC1_FILLROOT"
-    echo "Prescribed-fill check status: $?"
-else
-    echo "Stopped before analysis. Preserve existing files and paste the output."
-fi
-```
+EMM exceeds even the upper cell-selection bound by **140.970204 L**. Under
+the stated centroid/mesh assumptions, the archived fill prescription cannot
+account for the observed high inventory. These are selection bounds, not
+confidence intervals; they do not include VTK integration error or verify
+the historical initialization actually executed. In particular, the
+151.894128 L difference is **not a measured time-zero-to-9.9 s gain**.
 
-## Implementation direction after the fill check
+At their archived constant rates, the explicit liquid feeds would contribute
+only **0.012700413 L** (EMM) and **0.029210940 L** (MEML) over 9.9 s. This
+arithmetic is a scale comparison, not an integrated physical budget: actual
+source activation, boundary transport, interphase mass transfer and density
+changes are still unaccounted for. Neither the EMM discrepancy nor the small
+MEML difference can be assigned to rescaling from these data alone.
+
+MEML's 9.9 s inventory is within its selection bounds. Its +0.070720 L
+difference is smaller than the selection uncertainty and is not evidence of
+a measured conservation residual. Its wall-side rise and central depression
+remain separate unresolved validation requirements.
+
+The successful pull also corrects the earlier network diagnosis. The prior
+`Could not resolve host: github.com` error does not establish a compute-node
+network restriction; the retry succeeded from the same allocated node. The
+transcript still identifies the fetch URL as HTTPS, so it does not demonstrate
+that the remote was changed to SSH. The user requires SSH for Git operations;
+honor that preference in future Kestrel commands without inventing a need to
+move to a login node or repeat the completed fill check.
+
+## Next implementation: a controlled two-field conservation test
+
+The prescribed-fill question is resolved as far as the available archive
+permits. Do not delay the controlled test to repeat this estimate, and do not
+claim that the missing historical time-zero/flux record has been recovered.
+The next implementation should first isolate the phase-sum correction on a
+small fixed mesh:
+
+1. Use a fresh, nonreacting two-field case with a measured initial inventory,
+   known boundaries and no PBM, sparging or interphase transfer for the first
+   closed/source-free test. Then add a known source in a separate test with
+   physically compatible pressure/outflow treatment.
+2. Compare no-reference and gas-reference variants with otherwise identical
+   mesh, initial fields, sources, boundary conditions and numerical settings.
+   Measure both phases; liquid retention alone cannot certify gas conservation.
+3. Record actual limited boundary flux, physical and assembled alpha sources,
+   implicit source response, rescaling/reference reconstruction, clamping and
+   pressure/density changes. Distinguish subcycle/outer-iteration accounting
+   from the net accepted timestep; do not sum repeated outer iterations as
+   successive physical evolution.
+4. Require bounded fractions, phase-sum consistency and phase-mass closure
+   before attempting a reactor spin-up. A closed source-free pass alone does
+   not test the already observed transfer/source-coupling defect.
+
+This is the next implementation target, **not an existing runnable case**.
+The current diagnostic library is explicitly restricted to three named
+phases with headspaceGas as reference. It cannot be reused for this comparison
+by renaming fields or disabling its guard.
 
 Use a common verified mesh, measured liquid fill and physically justified
 vent/MRF/shaft treatment. Start a controlled two-field numerical baseline

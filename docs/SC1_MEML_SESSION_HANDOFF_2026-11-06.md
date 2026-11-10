@@ -38,10 +38,28 @@ branch) and its empty compression table also omits the resolved capillary-force
 path. MEML additionally changes the liquid outlet to slip, turbulence, source
 layout and fill initialization. These are concrete mechanisms/confounders,
 not a quantitative attribution of the old 151 L anomaly or proof of a fix.
-The next small executable check estimates the archived fill prescriptions on
-the existing VTK meshes, with centroid-selection uncertainty bounds; it runs
-no CFD. The new helper passes six focused tests. A two-field solver/case is
-still to be implemented and validated separately.
+**The prescribed-fill check is now complete, status 0**, at
+`/kfs3/scratch/nwimer/sc1_prescribed_fill_20261110T215018Z`; do not rerun it.
+EMM's archived prescription gives 999.182377 L, with cell-selection bounds
+999.182377–1010.106301 L, versus 1151.076505 L in the 9.9 s field. Thus the
+observed inventory exceeds even that upper bound by 140.970204 L. MEML's
+estimate is 999.741417 L, bounds 993.247714–1004.405140 L, versus 999.812137 L
+at 9.9 s. These are not recovered time-zero values or closed conservation
+budgets; VTK integration error is outside the selection bounds. Prescribed
+overfilling does not explain EMM under these assumptions. The rescaling,
+boundary/source and pressure/density contributions still need measurement.
+The next implementation is a small, isolated nonreacting two-field conservation
+test comparing no-reference and gas-reference settings with a phase-count-
+independent ledger, followed by known-source tests before reactor spin-up.
+A runnable two-field solver/case has not yet been implemented or validated.
+See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
+
+**Git transport correction:** the earlier hostname-resolution failure was
+followed by a successful pull on the same allocated node; do not assert a
+compute-node network restriction. That successful transcript still used an
+HTTPS fetch URL. The user explicitly requires SSH for Git operations; future
+Kestrel instructions must honor this and need not move the user to a login
+node on the basis of the one failed lookup.
 
 **Preceding source-probe result:** The probe in
 `/scratch/nwimer/sc1_source_probe_control_20261110T194214Z` completed successfully:
