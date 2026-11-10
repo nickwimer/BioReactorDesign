@@ -31,9 +31,17 @@ rotating-wall assignment hypothesis for these meshes. Their partial
 zone expansion. EMM retains an elevated bulk level plus wall-side rise;
 MEML retains elevated wall-side liquid and a deep central depression despite
 near-1000 L inventory. Phase count remains optional and neither surface is
-physically validated. Do not rerun the preflight. **Next retrieve its existing
-`evidence.tar.gz`** to inspect the saved configurations and detailed sector
-profiles; only the terminal summary has reached the assistant so far.
+physically validated. Do not rerun the preflight. **The full evidence bundle
+has now been received and inspected.** See [the configuration findings](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md).
+EMM lacks a reference phase (selecting the inspected solver's alpha-rescaling
+branch) and its empty compression table also omits the resolved capillary-force
+path. MEML additionally changes the liquid outlet to slip, turbulence, source
+layout and fill initialization. These are concrete mechanisms/confounders,
+not a quantitative attribution of the old 151 L anomaly or proof of a fix.
+The next small executable check estimates the archived fill prescriptions on
+the existing VTK meshes, with centroid-selection uncertainty bounds; it runs
+no CFD. The new helper passes six focused tests. A two-field solver/case is
+still to be implemented and validated separately.
 
 **Preceding source-probe result:** The probe in
 `/scratch/nwimer/sc1_source_probe_control_20261110T194214Z` completed successfully:

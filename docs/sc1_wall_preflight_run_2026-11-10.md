@@ -60,13 +60,13 @@ of connected films, droplets or a unique sharp surface. EMM occupies 44/50
 height bins per sector, versus MEML's 50/50. Inspect the full profiles and mesh
 coordinates before interpreting missing sampling bins as a geometric limit.
 
-**Immediate next step:** retrieve the existing `evidence.tar.gz` from this
-completed report directory. The pasted terminal summary does not contain
+**Bundle follow-up completed:** the existing `evidence.tar.gz` has now been
+received and inspected; see the [full configuration findings](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md).
+The preceding pasted terminal summary did not contain
 the saved U/alpha/pressure boundary entries, full phase/numerical settings,
-initialization dictionaries or individual sector profiles. The bundle has not
-yet been provided to the assistant. Read it before requesting another Kestrel
-diagnostic or implementing a supposed fix; resolve referenced includes if
-their contents are not captured. The t=0 inventory and historical integrated
+initialization dictionaries or individual sector profiles. Active globalVars
+was included in the bundle; the source-conditioned conclusions and remaining
+provenance limits are now documented. The t=0 inventory and historical integrated
 flux/source budgets also remain unestablished. No new simulation is needed
 to retrieve this evidence, and no production settings are changed.
 
