@@ -234,8 +234,10 @@ small fixed mesh:
 
 This target is now implemented as an isolated small-case harness; see the
 [two-field test and build-only instructions](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md).
-Its 22 new tests pass within the 204-test SC1 suite. **OpenFOAM compilation
-and CFD validation remain pending on Kestrel.** It is not an SC1 reactor case.
+After the field-assignment correction, 26 harness tests pass within the
+208-test SC1 suite. **The corrected private build and runtime verification
+passed on Kestrel** in `sc1_two_field_build_20261110T224950Z`; the closed
+pair's first CFD runs are next. It is not an SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard.

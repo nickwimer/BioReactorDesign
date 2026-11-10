@@ -48,8 +48,8 @@ at 9.9 s. These are not recovered time-zero values or closed conservation
 budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
-**The isolated two-field test harness is now implemented; Kestrel build/run
-validation is pending.** It compares no-reference and gas-reference settings
+**The isolated two-field test harness now builds and passes runtime-library
+verification on Kestrel; CFD execution is pending.** It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
 setting. A new dynamically sized alpha observer measures rescaling as well as
@@ -63,11 +63,17 @@ initialization: OpenFOAM `Field::operator=` returns void. The assignments are
 now separate; the two new headers were checked for similar chains. A targeted
 C++ regression reproduces the old failure and passes with the actual corrected
 initialization. All 208 local SC1 tests pass, including 26 harness tests.
-Full OpenFOAM compilation and runtime verification remain pending; no CFD
-launched. Preserve the failed build. Follow the [fresh build-only command and
-test requirements](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md); the next
-user action is a new private build, not another archive diagnostic or reactor
-spin-up. The existing three-field executable is not used for these cases.
+**The corrected build at `a5989c1` subsequently passed all six library builds,
+the solver build and runtime verification** in
+`/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`. The executable
+SHA-256 is `1483c42b8bb3aeb37be743eafbd70f1b3e59d3ed053388ccd54f7c63a044f1f5`;
+all seven binary hashes are recorded in the test document. No CFD launched.
+Preserve both builds and **do not rebuild**. Follow the [fresh case preparation
+and closed-pair launch command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-prepare-fresh-cases-and-run-only-the-closed-pair).
+It creates four case dictionaries but launches only the two closed periodic
+transport cases, serially, 256 cells and 100 steps each. No Git pull is needed;
+the scripts are already present. The source pair remains gated and unlaunched.
+The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
 **Git transport correction:** the earlier hostname-resolution failure was
@@ -89,8 +95,8 @@ feasibility remains unproved. No source addback or physical correction is approv
 
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
-boundaries and MRF setup. The small numerical harness above is implemented
-but awaits Kestrel compilation. A matched SC1 reactor candidate is not ready
+boundaries and MRF setup. The small numerical harness above is compiled and
+runtime-verified, but awaits its first CFD runs. A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory
 does not establish that phase count caused it; t=0 and boundary/source budgets

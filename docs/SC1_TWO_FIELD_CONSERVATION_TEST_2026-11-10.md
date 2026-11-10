@@ -2,9 +2,10 @@
 
 ## Status and purpose
 
-Implemented locally. The first Kestrel build stopped at the observer's field
-initialization; that defect is corrected, and a **fresh build and CFD execution
-remain pending**. This is a numerical test harness, not a corrected SC1 reactor
+**The corrected private build and runtime verification passed on Kestrel.**
+Use `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`; no rebuild
+is needed. No CFD has launched yet. The next action is the closed periodic
+two-field pair. This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
 
@@ -148,41 +149,82 @@ lines, preserving the full log on disk.
 
 No CFD launched, no case was prepared, and full build/runtime verification did
 not run. Preserve the failed directory and its `log.build.phaseSystems`.
-The next action is the corrected build in a **new timestamped directory**;
-do not patch the failed copy or rerun into it.
+The fresh corrected build described below has now succeeded. Do not patch
+or rerun the failed copy.
 
-## Next Kestrel step: fresh build only
+## Corrected Kestrel build completed
 
-Use the existing allocation. SSH is explicit in the pull command; no change
-to `origin` and no move to another node is required by this workflow.
+The user's complete terminal transcript records a successful SSH pull to
+`a5989c12737567e3afe706e537d358a1907244e1`, six successful `wmake libso`
+commands, one successful `wmake`, and:
+
+`SC1 two-field private build and runtime verification: PASS (no CFD launched)`
+
+The verified build is
+`/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`.
+The verifier checks the original/private source hashes, unchanged installed
+project libraries, private dependency resolution, mandatory observer symbols
+and executable availability. Its saved `build_verified.json` is checked again
+when preparing and launching cases. The following hashes are transcribed from
+the user's output; this session has not independently downloaded the binaries.
+
+| Artifact relative to the verified build | SHA-256 |
+|---|---|
+| `bin/birdTwoFieldConservation` | `1483c42b8bb3aeb37be743eafbd70f1b3e59d3ed053388ccd54f7c63a044f1f5` |
+| `lib/libbirdeulerianInterfacialCompositionModels.so` | `ab19f4a19b344e30829b1662f88d2c45dac65022f83193b5f4321ab8e2841649` |
+| `lib/libbirdeulerianInterfacialModels.so` | `3dfd2332b13b1689fc465bee880e9df9aee4bc0d5f9fff9ac94c446b07b71232` |
+| `lib/libbirdphaseSystem.so` | `5b5157c4b970e9272d012b85805f040b22366a9f14a41b511244a2c469b10558` |
+| `lib/libbirdmultiphaseMomentumTransportModels.so` | `24b10084e0fb998a7297e5a9eae62157cca6681a4a0e959a264695933e9c2451` |
+| `lib/libbirdmultiphaseReactions.so` | `859f19614ad51ab765b1cf8451b10803dfcb1ce7aa3525a903e17ea7deae56a9` |
+| `lib/libbirdmultiphaseSystems.so` | `148f86c6cb4bd316c0da8e241d27bb75c6e11eb060f8ad21a593b45f3d14fad6` |
+
+This establishes compilation and static runtime dependency verification, not
+case-startup success or conservation. Preserve both the successful build and
+the preceding failed build. No rebuild, new solver instrumentation or physics
+change is needed before the closed pair.
+
+## Next Kestrel step: prepare fresh cases and run only the closed pair
+
+Use the existing allocation. The required scripts are already present at
+`a5989c1`, so this command needs no Git pull or other network access. It creates
+four fresh case dictionaries but launches only `closed_no_reference` and
+`closed_gas_reference`, serially, with 256 cells and 100 timesteps each.
+The two source cases remain unattempted.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
-TWOFIELD_BUILD="/scratch/nwimer/sc1_two_field_build_$(date -u +%Y%m%dT%H%M%SZ)"
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+TWOFIELD_BUILD=/scratch/nwimer/sc1_two_field_build_20261110T224950Z
+TWOFIELD_CASES="/scratch/nwimer/sc1_two_field_cases_$(date -u +%Y%m%dT%H%M%SZ)"
 
-if [[ -n "${SLURM_JOB_ID:-}" ]] \
+if [[ -n "${SLURM_JOB_ID:-}" && -x "$PY" ]] \
     && [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
     && git -C "$REPO" diff --quiet \
     && git -C "$REPO" diff --cached --quiet \
-    && git -C "$REPO" pull --ff-only git@github.com:nickwimer/BioReactorDesign.git codex/sc1-headspace-bubble-audit-20261029 \
     && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
-    && module load libfabric; then
-    bash "$REPO/scripts/diagnostics/build_sc1_two_field.sh" "$TWOFIELD_BUILD"
+    && module load libfabric \
+    && PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
+        prepare-cases --build-root "$TWOFIELD_BUILD" --out "$TWOFIELD_CASES"; then
+    PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
+        run --root "$TWOFIELD_CASES" --pair closed --run
 else
-    echo "Setup stopped. Preserve existing directories and paste the output."
+    echo "Preparation stopped. Preserve any created directory and paste the output."
 fi
 ```
 
-The command builds six libraries and one solver; it launches no CFD. It prints
-`TWOFIELD_BUILD` before compilation, each build command, failure-log tails if
-needed, and binary hashes after successful runtime verification. Preserve a
-failed build rather than rerunning into the same destination.
+Paste the complete output, including `TWOFIELD_CASES`, both case summaries and
+any error text. The command first rechecks build hashes/linkage, then generates
+and checks the small meshes, initializes the fields and runs each fresh case.
+It saves `log.solver` and `result.json` in each completed case. If any stage
+fails, preserve the partial case root and do not repeat the command to launch
+another pair before reviewing that failure.
 
-After that build has been reviewed, prepare a **fresh** case root with
-`sc1_two_field.py prepare-cases --build-root BUILD --out NEW_CASE_ROOT`, then
-run `sc1_two_field.py run --root NEW_CASE_ROOT --pair closed --run`. The source
-pair uses `--pair source` only after the closed results pass. These are the
-supported next stages, not claims that they have already been run.
+A completed pair may still report `screen_pass: false`; process completion is
+not numerical acceptance. Review both phase inventories, rescaling,
+source/flux accounting, phase bounds and the recorded residuals. The later
+source-pair command is `sc1_two_field.py run --root CASE_ROOT --pair source
+--run`, and remains gated on successful closed-pair numerical screening.
+No source-pair launch is included above.
 
 ## Validation and remaining work
 
@@ -192,8 +234,9 @@ linkage rejection, attempted/modified case rejection, source-run gating and
 malformed/nonconservative audit streams, void-assignment compatibility and
 useful compiler-error output. The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
-checks pass. **No OpenFOAM installation is available in this workspace, so
-these results do not claim that the new OpenFOAM headers compile.**
+checks pass. Local tests alone did not prove OpenFOAM compatibility; the
+subsequent successful Kestrel build above now supplies that compilation
+evidence. CFD startup and numerical conservation remain untested.
 
 A pass in these small cases would justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,
