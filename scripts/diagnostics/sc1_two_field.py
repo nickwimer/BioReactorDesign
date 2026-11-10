@@ -255,7 +255,11 @@ def run_pair(root, pair):
         execute([Path(m['build'])/'bin'/APP],case,case/'log.solver',env)
         after=case_input_hashes(case)
         if after!=initialized: raise ValueError('Initial fields or dictionaries changed during solve')
-        report=summarize((case/'log.solver').read_text(),name)
+        try:
+            report=summarize((case/'log.solver').read_text(),name)
+        except ValueError as error:
+            raise ValueError(f'{error}; preserve {case / "log.solver"}; '
+                             'reanalyze the saved log without rerunning CFD') from error
         report['log_sha256']=sha(case/'log.solver')
         write_json(case/'result.json',report)
         print(json.dumps(report,indent=2),flush=True)

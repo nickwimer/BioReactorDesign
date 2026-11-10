@@ -241,8 +241,13 @@ case stopped before timestepping on legacy pressure-limit syntax. The second
 attempt loaded the corrected pressure constraint and initialized inventories,
 then stopped in the first alpha solve on a missing `alpha.gas` controls entry;
 no timestep completed. The generator now uses `"alpha.*"` for system and phase
-lookups, with 29 harness tests passing. Preserve both failed case roots and
-reuse the verified build for fresh closed-pair cases. It is not an
+lookups. The third attempt (`sc1_two_field_cases_20261110T233431Z`) returned
+from its first solver successfully but failed report coverage. The reporter's
+exact-float time keys can reproduce that failure on complete synthetic data;
+bounded timestamp matching and detailed coverage diagnostics now pass 34
+harness tests. The actual log still needs read-only analysis to establish the
+cause and conservation result. Preserve all attempts; do not rerun CFD or
+rebuild to address this reporting failure. It is not an
 SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

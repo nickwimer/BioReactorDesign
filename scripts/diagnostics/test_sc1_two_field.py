@@ -19,7 +19,7 @@ from unittest.mock import patch
 import sc1_two_field as harness
 from sc1_two_field_cases import CASES, DT, OUTERS, SOURCE_KG_S, STEPS, SUBCYCLES, case_files, foam
 from sc1_two_field_instrument import phase_source, pressure_source, solver_source
-from sc1_two_field_report import TERMS, STAGES, summarize
+from sc1_two_field_report import TERMS, STAGES, TIME_KEY_TOLERANCE, parse, summarize, unique
 from sc1_wall_mesh import Reader
 
 
@@ -253,6 +253,57 @@ class Reporting(unittest.TestCase):
         for case in CASES:
             report=summarize(render(records(case)),case)
             self.assertTrue(report['screen_pass'],report['errors'])
+
+    def test_printed_time_roundoff_preserves_all_four_budgets(self):
+        for case in CASES:
+            with self.subTest(case=case):
+                rows=records(case)
+                baseline=summarize(render(rows),case)
+                changed=0
+                for kind,row in rows:
+                    if row['t_s']>0:
+                        # Different observers can print slightly different times.
+                        row['t_s']+=1e-16 if kind=='SC1_PHASE_TERM' else -1e-16
+                        changed+=1
+                report=summarize(render(rows),case)
+                self.assertTrue(report['screen_pass'],report['errors'])
+                self.assertEqual(report['phases'],baseline['phases'])
+                self.assertEqual(report['timeKeyNormalization']['adjustedRecords'],changed)
+                self.assertLess(report['timeKeyNormalization']['maxAdjustment_s'],TIME_KEY_TOLERANCE)
+
+    def test_time_key_normalization_retains_raw_record(self):
+        rows=parse('SC1_TWO_STEP t_s=0.0720000000000001 phase=gas mass_kg=0.0005\n')
+        original=copy.deepcopy(rows['SC1_TWO_STEP'])
+        indexed=unique(rows['SC1_TWO_STEP'],('t_s','phase'))
+        self.assertEqual(rows['SC1_TWO_STEP'],original)
+        self.assertEqual(indexed[(0.072,'gas')]['t_s'],0.0720000000000001)
+
+    def test_near_duplicate_time_keys_are_rejected(self):
+        rows=copy.deepcopy(self.baseline)
+        duplicate=copy.deepcopy(next(r for k,r in rows if k=='SC1_TWO_STEP'))
+        duplicate['t_s']+=1e-16
+        rows.append(('SC1_TWO_STEP',duplicate))
+        with self.assertRaisesRegex(ValueError,'Duplicate record'):
+            summarize(render(rows),CASES[0])
+
+    def test_off_grid_and_out_of_range_times_are_rejected_with_evidence(self):
+        for time in (0,0.001+4*TIME_KEY_TOLERANCE,0.0015,0.101,1e300):
+            with self.subTest(time=time):
+                rows=copy.deepcopy(self.baseline)
+                next(r for k,r in rows if k=='SC1_TWO_STEP')['t_s']=time
+                with self.assertRaisesRegex(ValueError,
+                        r'steps: expected=200 observed=200 missing=1 unexpected=1'):
+                    summarize(render(rows),CASES[0])
+
+    def test_coverage_failure_names_missing_steps_and_alpha_calls(self):
+        rows=[(k,r) for k,r in self.baseline if not(
+            k in ('SC1_TWO_STEP','SC1_PHASE_SOLVE') and r['phase']=='gas' and r['t_s']==0.001)]
+        with self.assertRaises(ValueError) as caught:
+            summarize(render(rows),CASES[0])
+        message=str(caught.exception)
+        self.assertIn('steps: expected=200 observed=199 missing=1 unexpected=0',message)
+        self.assertIn('alpha_calls: expected=400 observed=398 missing=2 unexpected=0',message)
+        self.assertIn("missing_examples=[(0.001, 'gas')]",message)
 
     def test_missing_or_duplicate_records_rejected(self):
         with self.assertRaises(ValueError): summarize(render(self.baseline[:-1]),CASES[0])

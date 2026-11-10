@@ -49,9 +49,10 @@ budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
 **The isolated two-field test harness builds and passes runtime-library
-verification on Kestrel. Two attempts stopped on case-dictionary errors now
-corrected: first the pressure-limit placement, then phase-specific alpha
-controls. No timestep has completed.** It compares no-reference and gas-reference settings
+verification on Kestrel. After two corrected dictionary errors, the third
+attempt's first solver returned successfully, but the report rejected record
+coverage. Reanalyze the saved log before further CFD; conservation is unverified.**
+It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
 setting. A new dynamically sized alpha observer measures rescaling as well as
@@ -88,14 +89,28 @@ because `fvSolution/solvers` had only literal `alpha`, not a match for
 `alpha.gas`. No timestep completed. The momentum-transfer implicit-pressure
 check and MULES both look up phase-specific alpha fields. The generator now
 uses `"alpha.*"`, matching `alpha`, `alpha.gas` and `alpha.liquid` with the same
-controls. Only that dictionary key changes; all 29 harness tests pass, including
+controls. Only that dictionary key changed; all 29 harness tests passed, including
 lookup coverage and reproduction of the old missing-phase-key failure.
-Preserve both failed case roots. Reuse the verified build without recompilation.
-Pull the correction over SSH and follow the [fresh case preparation
-and closed-pair launch command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-prepare-fresh-cases-and-run-only-the-closed-pair).
-It creates four case dictionaries but launches only the two closed periodic
-transport cases, serially, 256 cells and 100 steps each. The source pair remains
-gated and unlaunched. The second closed case in the failed root was not launched.
+
+**The third attempt**, at `d7b1b2e`, created
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`.
+`closed_no_reference` returned from the solver with status 0, then reporting
+rejected `Incomplete or unexpected initial/step/alpha-call records`.
+The harness reached this check after verifying unchanged initial inputs and
+finding its library marker and solver `End`. The raw log has not been supplied;
+record coverage, final time and conservation remain unverified. No `result.json`
+was written. The other closed case and both source cases were not launched.
+
+An exact-float timestamp comparison reproduces this rejection on an otherwise
+complete synthetic stream. The reporter now matches times only within 1e-12 s
+of the prescribed grid, retains raw values, rejects matched-key duplicates,
+and prints coverage counts plus missing/unexpected examples. This is a confirmed
+parser weakness, but its role in the actual Kestrel failure remains a hypothesis.
+All 34 harness tests pass. **Do not rebuild or rerun the first case.** Preserve
+all attempted roots and follow the [read-only saved-log analysis command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-reanalyze-the-saved-log-only).
+The source pair remains gated. The existing pair runner deliberately refuses
+attempted roots, so review the saved result before implementing a verified
+continuation for the unattempted gas-reference case.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
@@ -119,7 +134,8 @@ feasibility remains unproved. No source addback or physical correction is approv
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
-runtime-verified, but awaits successful timestepping after its dictionary fixes.
+runtime-verified; the first solver now returned successfully, but its saved
+audit stream awaits valid coverage and budget analysis.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory

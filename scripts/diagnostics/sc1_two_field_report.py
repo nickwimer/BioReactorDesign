@@ -13,6 +13,9 @@ TERMS = ('mulesChange oldTimeReset explicitSu implicitSp divergence equationResi
 STAGES = ('alpha', 'modelCorrect', 'transportPressure', 'endOuter')
 KINDS = ('SC1_TWO_INITIAL', 'SC1_PHASE_SOLVE', 'SC1_PHASE_TERM', 'SC1_TWO_STAGE', 'SC1_TWO_STEP')
 TEXT_KEYS = {'phase', 'term', 'stage'}
+# Match only printed-time roundoff around the prescribed 0.001 s grid.
+# This is one billionth of a timestep, not permission to omit or merge records.
+TIME_KEY_TOLERANCE = 1e-12
 
 
 def parse(text):
@@ -39,14 +42,38 @@ def parse(text):
     return rows
 
 
+def time_key(value):
+    """Canonicalize near-grid times for indexing; retain all raw record values."""
+    if DT-TIME_KEY_TOLERANCE <= value <= END+TIME_KEY_TOLERANCE:
+        step = round(value/DT)
+        target = round(step*DT, 12)
+        if 1 <= step <= STEPS and abs(value-target) <= TIME_KEY_TOLERANCE:
+            return target
+    return value
+
+
 def unique(rows, fields):
     result = {}
     for row in rows:
-        key = tuple(row[k] for k in fields)
+        key = tuple(time_key(row[k]) if k=='t_s' else row[k] for k in fields)
         if key in result:
             raise ValueError('Duplicate record: '+repr(key))
         result[key] = row
     return result
+
+
+def require_coverage(groups):
+    failures = []
+    for name, observed, expected in groups:
+        observed = set(observed)
+        missing, unexpected = sorted(expected-observed), sorted(observed-expected)
+        if missing or unexpected:
+            failures.append(
+                f'{name}: expected={len(expected)} observed={len(observed)} '
+                f'missing={len(missing)} unexpected={len(unexpected)} '
+                f'missing_examples={missing[:3]!r} unexpected_examples={unexpected[:3]!r}')
+    if failures:
+        raise ValueError('Incomplete or unexpected audit records; '+'; '.join(failures))
 
 
 def close(a, b, tol=1e-12):
@@ -70,15 +97,18 @@ def summarize(text, case):
     phases = ('gas', 'liquid')
     expected_steps = {(t,p) for t in times for p in phases}
     expected_solves = {(t,p,o) for t in times for p in phases for o in range(1,OUTERS+1)}
-    if set(initial) != {(p,) for p in phases} or set(steps) != expected_steps or set(solves) != expected_solves:
-        raise ValueError('Incomplete or unexpected initial/step/alpha-call records')
     reference = case.endswith('gas_reference')
     expected_terms = {(t,p,o,j) for t,p,o in expected_solves
                       for j in (('referenceSubcycle','referenceFinal') if reference and p=='gas' else TERMS)}
     expected_stages = {(t,p,o,s) for t,p,o in expected_solves for s in STAGES}
     expected_stages |= {(t,p,OUTERS,'endStep') for t in times for p in phases}
-    if set(terms) != expected_terms or set(stages) != expected_stages:
-        raise ValueError('Incomplete or unexpected alpha-term/stage records')
+    require_coverage((
+        ('initial', initial, {(p,) for p in phases}),
+        ('steps', steps, expected_steps),
+        ('alpha_calls', solves, expected_solves),
+        ('alpha_terms', terms, expected_terms),
+        ('stages', stages, expected_stages),
+    ))
     errors = []
     def require(condition, message):
         if not condition and message not in errors:
@@ -138,5 +168,10 @@ def summarize(text, case):
             **sums, residualL1_kg=residual_l1,screenTolerance_kg=tolerance,
             finalOuterRescaleVolume_m3=sum(terms.get((t,p,OUTERS,'rescale'),{}).get('volume_m3',0) for t in times),
             finalOuterSplitVolume_m3=sum(terms.get((t,p,OUTERS,'splitAtSourceAlpha'),{}).get('volume_m3',0) for t in times))
+    adjustments = [abs(r['t_s']-time_key(r['t_s']))
+                   for kind in KINDS[1:] for r in rows[kind]]
     return dict(case=case,complete=True,screen_pass=not errors,errors=errors,steps=STEPS,phases=summary,
+                timeKeyNormalization=dict(tolerance_s=TIME_KEY_TOLERANCE,
+                    adjustedRecords=sum(d>0 for d in adjustments),
+                    maxAdjustment_s=max(adjustments,default=0)),
                 meaning='Numerical screening only; not SC1 reactor, free-surface, oxygen or biology validation.')

@@ -8,7 +8,11 @@ is needed. The first attempt stopped on a legacy pressure-limit entry. After
 that correction, the second attempt initialized both phase inventories and
 entered the first timestep, but stopped on missing `alpha.gas` solver controls
 before completing a step. The generator now covers both the system-level and
-phase-specific alpha lookups. The next action is the closed pair in fresh cases.
+phase-specific alpha lookups. The third attempt at `d7b1b2e` returned from the
+first solver successfully, then failed record-coverage validation. **The next
+action is read-only analysis of that saved log, not another CFD run.** Its root
+is `/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`; the gas-reference
+case and source pair remain unlaunched. Conservation is not yet established.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -96,6 +100,12 @@ missing/duplicate records, nonfinite values, wrong source integrals, wrong
 initial inventory and unsupported timestep/iteration counts. It independently
 checks the main accounting identities and agreement between alpha and solver
 stage observations.
+
+For record indexing only, timestamps within 1e-12 s of the prescribed grid are
+matched to that grid. Raw values remain intact, and duplicate detection runs
+on the matched keys. Off-grid times and missing/extra records still fail.
+Reports expose the number of adjusted keys and maximum adjustment. This
+timestamp representation tolerance does not change the physical tolerances below.
 
 The following are declared **numerical screening tolerances**, not experimental
 acceptance criteria:
@@ -259,16 +269,76 @@ subcycles, corrections, audit switch, flux settings, limiter defaults and
 screening tolerances are unchanged. Each pair still differs only by
 `referencePhase gas;`. **Reuse the verified build; no compiled source changed.**
 
-All 29 harness tests pass. New fixture-contract tests resolve the system and
+All 29 harness tests passed at that correction. New fixture-contract tests resolve the system and
 phase field names for all four cases and reproduce the failed phase lookups
 with a literal `alpha` key. These restricted Python checks are not native
 OpenFOAM dictionary or CFD tests. Source review also checked the selected
 pressure/momentum controls and schemes: the pure isothermal laminar fixtures
 do not solve energy, species or turbulence transport equations; implicit
-phase pressure defaults to false. Successful timestepping still requires the
-fresh Kestrel run below.
+phase pressure defaults to false. The subsequent attempt is recorded below.
 
-## Next Kestrel step: prepare fresh cases and run only the closed pair
+## Third attempt: solver returned, report coverage rejected
+
+The attempt at `d7b1b2e` created
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`.
+The transcript reports `blockMesh`, `checkMesh`, `setFields`, the private
+solver command, then `Incomplete or unexpected initial/step/alpha-call records`.
+In the harness this error occurs only after the solver returned status 0,
+initial input hashes remained unchanged, and the report found the unique
+library marker and solver `End` without a fatal-error marker. The full log
+has not yet been supplied; the final time, record counts and budgets remain
+unverified. No `result.json` was written, and the remaining three cases were
+not launched.
+
+Review found that record keys used exact floating-point time comparisons.
+Changing a complete synthetic stream's `0.072` to `0.0720000000000001`
+reproduces the same rejection. This demonstrates a parser defect, **not yet
+the cause of the Kestrel log's rejection**. Record indexing now accepts only
+times within 1e-12 s of the prescribed grid (one billionth of a timestep).
+It preserves raw values and rejects duplicate matched keys, genuinely off-grid
+times, and missing or extra records. Coverage errors now name each affected
+record family, expected/observed counts and bounded missing/unexpected examples.
+No solver, case input, mass-budget tolerance or required record count changed.
+
+All 34 harness tests pass, including roundoff-equivalent streams for all four
+cases with identical budgets, raw-time preservation, near-duplicate rejection,
+off-grid rejection and actionable coverage diagnostics. The next read-only
+analysis will either produce the existing run's report or expose the remaining
+coverage problem. Preserve all three attempted roots and the verified build.
+
+## Next Kestrel step: reanalyze the saved log only
+
+No allocation, OpenFOAM environment setup, rebuild, preparation or solver
+launch is required by `analyze`. Pull the reporting change over SSH and run:
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+SC1_LOG=/scratch/nwimer/sc1_two_field_cases_20261110T233431Z/closed_no_reference/log.solver
+
+if [[ -x "$PY" && -r "$SC1_LOG" ]] \
+    && [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
+    && git -C "$REPO" diff --quiet \
+    && git -C "$REPO" diff --cached --quiet \
+    && git -C "$REPO" pull --ff-only git@github.com:nickwimer/BioReactorDesign.git codex/sc1-headspace-bubble-audit-20261029; then
+    PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
+        analyze --log "$SC1_LOG" --case closed_no_reference
+else
+    echo "Analysis setup stopped. Preserve the existing case and paste the output."
+fi
+```
+
+Paste the complete report or rejection text. This command prints to the
+terminal and does not change the case or create `result.json`. A passing report
+does not complete the paired comparison. Review it before arranging an
+evidence-preserving continuation of the unattempted gas-reference case; the
+current `run --pair closed` intentionally refuses the already attempted root.
+The source pair remains gated and unlaunched.
+
+## Fresh closed-pair launch reference (not the current next action)
+
+The command below is retained as the original launch recipe. **Do not execute
+it to address the current reporting failure; use the saved-log analysis above.**
 
 Use the existing allocation and pull the corrected generator over SSH. Reuse
 the already verified build. The command creates four fresh case dictionaries but launches only `closed_no_reference` and
@@ -313,20 +383,22 @@ No source-pair launch is included above.
 
 ## Validation and remaining work
 
-All 29 local harness tests pass after the phase-specific alpha correction.
-The preceding 208-test SC1 suite passed before these fixture-only corrections.
+All 34 local harness tests pass after the reporting correction.
+The preceding 208-test SC1 suite passed before these fixture/reporting corrections.
 The harness tests cover paired fixtures,
 source/hook placement, retained phase equations, private preparation, runtime
 linkage rejection, attempted/modified case rejection, source-run gating and
 malformed/nonconservative audit streams, void-assignment compatibility and
 useful compiler-error output, the OF9 pressure-dictionary contract and
-system/phase alpha-control lookup coverage.
+system/phase alpha-control lookup coverage, timestamp matching and strict
+coverage diagnostics.
 The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
-evidence. The two CFD attempts exposed the corrected dictionary errors;
-successful timestepping and numerical conservation remain unproved.
+evidence. The first two CFD attempts exposed corrected dictionary errors.
+The third solver process returned successfully, but complete audit coverage
+and numerical conservation remain unverified pending saved-log analysis.
 
 A pass in these small cases would justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,
