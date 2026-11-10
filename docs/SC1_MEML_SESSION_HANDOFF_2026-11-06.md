@@ -24,11 +24,14 @@ first. The alpha/species accounting closes; the unresolved issue is the
 source/flux/pressure formulation's physical consistency and coupling, not an
 unattributed ledger error. No experimental closure is approved.
 
-**Next action: one fresh observer control; no rebuild.** The source-probe
+**Current action: observer control reported running; await output.** The user
+reports launching the fresh probe control using the guarded command. Its
+timestamped case path and completion output have not yet been supplied; do not
+launch a second probe or repeat that command. The source-probe
 build `/scratch/nwimer/sc1_alpha_source_probe_20261110T191459Z` compiled and
 passed runtime verification, including unchanged installed library/original
-sources and private linkage of the solver and trial extensions. No CFD with
-this build has been supplied. Read [the verified build and one-shot run
+sources and private linkage of the solver and trial extensions. No completed
+CFD result with this build has been supplied. Read [the verified build and one-shot run
 instructions](sc1_alpha_source_probe_run_2026-11-10.md). The new launcher pins
 the successful binaries, copies the original manifest checkpoint into one
 fresh case, retains all baseline physics/numerics/biology, enables only the
@@ -36,6 +39,16 @@ observer and checks legacy-record regression. All **162 local SC1 tests pass**.
 The observer classifies source deficits and whether restoring the raw source
 at fixed flux would violate phase bounds. Individual feasibility is necessary
 but not proof of a conservative coupled correction.
+
+**External-reference follow-up:** The [OpenFOAM benchmark and literature review](SC1_EXTERNAL_BENCHMARKS_2026-11-10.md)
+identifies pinned upstream BiRD OF13 MRF/rotating-mesh oxygen/PBM tutorials,
+newer HZDR code/case archives, stirred-tank PBM validation and free-surface
+experiments. Newer alpha source code retains the capped Su/Sp structure, so a
+version upgrade is not an established fix. The closest hybrid paper explicitly
+left gas morphology transfer and froth to future work. Use the references to
+guide isolated numerical and hydrodynamic benchmarks; none validates SC1 or
+changes the ongoing diagnostic run. No code or simulation change accompanies
+this research follow-up.
 
 Do not rerun the completed `four_outer`, `half_dt`, or either case in
 `/scratch/nwimer/sc1_alpha_pair_20261110T155635Z`. Preserve the existing verified

@@ -1,5 +1,10 @@
 # SC1 source-probe build verified; fresh control run ready
 
+**Status update:** The user reports that the probe control is running. Its
+case path and completion log have not yet been supplied. Do not repeat the
+launch block below. Await that result; the [external benchmark review](SC1_EXTERNAL_BENCHMARKS_2026-11-10.md)
+provides references for interpreting it and selecting subsequent tests.
+
 ## Verified build, no new CFD result
 
 `Pasted text(20261110-192420).txt` confirms successful private phase-library
