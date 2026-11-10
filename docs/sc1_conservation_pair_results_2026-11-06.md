@@ -19,7 +19,10 @@ mass discrepancy is localized to alpha allocation. Read the
 [new result and private alpha-subcycle build gate](sc1_alpha_subcycle_audit_2026-11-07.md).
 The launch block later in this document has already been executed; preserve
 `/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` and leave its normal
-case unrun. The new private alpha library still requires Kestrel compilation.
+case unrun. **Build follow-up (2026-11-10):** The private alpha library and
+solver compiled successfully, and runtime verification passed. Reuse
+`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` for the next fresh short
+control; see the linked alpha-audit document for verified hashes and commands.
 
 ## Initial-state and regression checks
 

@@ -1,13 +1,13 @@
 # SC1 MEML oxygen-transfer investigation — new-session handoff
 
-**Updated:** 2026-11-07
+**Updated:** 2026-11-10
 
 **Research system:** *Pseudomonas putida* SC1 stirred-tank simulation, OpenFOAM 9 / BiRD, NLR Kestrel  
 **GitHub branch:** `codex/sc1-headspace-bubble-audit-20261029`  
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-07):** The revision-2 control in
+**Latest state (2026-11-10):** The revision-2 control in
 `/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` completed with status 0
 after 2,000 steps (0.1 s). Every v1 phase-budget field and legacy bubble record
 matches the original control at the same timestamp. The new ledger explains
@@ -17,11 +17,17 @@ oxygen removal. The remaining liquid mass discrepancy is localized to alpha
 allocation: +123.514 mg observed versus +304.739 mg predicted by sampled
 sources. No physical cause is established yet. **Do not launch this pair's
 normal case.** Read [the result and private alpha-subcycle audit](sc1_alpha_subcycle_audit_2026-11-07.md)
-first. New diagnostic source is implemented for a copied phase-system library
-and unique `putidaFoamSC1AlphaAudit` executable; Kestrel compilation and MPI
-validation remain pending. Next build in a fresh scratch tree and verify all
-runtime dependencies use its private library before preparing/running a new
-short control. Preserve completed runs and the biological schedule.
+first. The private alpha library and unique `putidaFoamSC1AlphaAudit` executable
+**built successfully on Kestrel** in
+`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`. Runtime verification passed:
+the executable, film and entrainment libraries resolve the private phase-system
+library; original sources and installed library remain unchanged. Reuse this
+build; do not rebuild. See the [verified hashes and control-only launch](sc1_alpha_subcycle_audit_2026-11-07.md#successful-kestrel-build-reported-2026-11-10).
+No alpha-audit CFD result exists yet. Next recheck the build in the new shell,
+prepare a fresh 0.1 s alpha-audit pair, and run only its control. Preserve
+completed runs and the biological schedule. The transcript shows allocation
+19721806 was released and a new allocation 19805193 was granted; allocation
+availability is transient and must not be assumed from this document.
 
 The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
 remains authoritative for the 0.5 s normal/control comparison: own-duration

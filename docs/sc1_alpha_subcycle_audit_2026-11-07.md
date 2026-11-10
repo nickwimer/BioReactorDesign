@@ -152,11 +152,16 @@ their timing, not an inferred defect in `massSource` or an arbitrary alpha fix.
 
 ## Build gate and subsequent run gate
 
+This section records the original build gate. Compilation has since passed;
+use the verified existing build in the next section rather than rebuilding.
+
 All **105 local SC1 diagnostic tests pass**, including 32 new alpha
 source-transformation, isolation/provenance, linkage and runtime-verifier
 checks, plus the extended case-copy suite. The standalone arithmetic helper is
 compiled and executed locally. This environment has no matching OpenFOAM 9
-build; **private-library compilation and MPI validation are pending on Kestrel**.
+build. At implementation time, private-library compilation and MPI validation
+were pending on Kestrel. The successful build is recorded below; MPI validation
+remains pending.
 
 Use a new `/scratch/nwimer/sc1_alpha_audit_<UTC>` destination with
 `prepare_sc1_alpha_audit.py --out ...`. Build the copied `phaseSystems` using
@@ -185,3 +190,105 @@ and subcycle/outer counts. Only after the control explains the discrepancy
 should the matched normal case run. Free-surface/foam validation against
 experimental evidence and the nonreacting 9.9 s checkpoint remain subsequent
 work; neither closure is approved for production.
+
+## Successful Kestrel build reported 2026-11-10
+
+The user supplied successful link output and `SC1 runtime verification: PASS
+(no solver launched)` for
+`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`, canonicalized to
+`/kfs3/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`.
+Reuse these artifacts; no new implementation pass or rebuild is required
+before the short control. The shown unused-variable warnings did not prevent
+linking. The excerpt does not contain a new test-suite transcript, so the
+105-test result above remains the recorded local validation.
+
+| Artifact | SHA256 |
+|---|---|
+| `bin/putidaFoamSC1AlphaAudit` | `43aeeef4984dd016ba94664bfe64fb498458237a6ab925e15a2322357a49ca96` |
+| `lib/libbirdphaseSystem.so` (private) | `bc6d9da6e63caf8392917fd318d41097f1a488826730b36be33f0e41e9b6dd15` |
+| Installed `libbirdphaseSystem.so` (unchanged) | `222553b342e1414a857034e5613c9c5ce8202ca883764b3dd77ed001ef1828a6` |
+| Film extension | `f823c8a3a3c83067171882cae53dfce4f9988dbc34c07bae6f6d58668c77ab4d` |
+| Entrainment extension | `27c8ce353108690a041454d2a38957b9c88862e2215f0f75e56fb6a3b3f847fb` |
+| Velocity limiter | `e63f7be7cee3503d3d1c7b9bb5131c791e5645b07bff7e061a3cca9a5ce2d5ac` |
+
+The verifier confirmed all 182 original phase-source files, 184 private
+phase-source files and 34 prepared solver-source files match their preparation
+manifests. The mandatory exported/required marker checks passed. The executable,
+film extension and entrainment extension all resolve this exact private
+`libbirdphaseSystem.so`. The limiter has no phase-system dependency and passed
+its extra-library check. These are build/provenance and dependency checks;
+the solver has not yet exercised the new audit under MPI.
+
+The transcript shows the old allocation was explicitly relinquished after
+verification. The later SSH disconnect is not a compiler or CFD failure.
+A fresh allocation, 19805193 on x1005c4s2b1n0, was granted in the new shell.
+Treat that information as transient; require an active allocation at launch
+and re-source OpenFOAM/load libfabric in the new shell.
+
+### Fresh control-only launch
+
+The following command rechecks both binary hashes and runtime dependencies
+before preparing new cases. It copies the full verified common checkpoint,
+enables both diagnostics, retains the existing physics and biological schedule,
+and launches only the new control with 52 ranks. The private library path is
+scoped to each solver process; it is not exported into the interactive shell.
+Log creation uses noclobber in a subshell. Failure returns to the prompt and
+leaves any partial case untouched.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+ALPHAROOT=/scratch/nwimer/sc1_alpha_audit_20261107T001119Z
+ALPHAEXE="$ALPHAROOT/bin/putidaFoamSC1AlphaAudit"
+PAIRROOT="/scratch/nwimer/sc1_alpha_pair_$(date -u +%Y%m%dT%H%M%SZ)"
+SC1_EXE_SHA=43aeeef4984dd016ba94664bfe64fb498458237a6ab925e15a2322357a49ca96
+SC1_LIB_SHA=bc6d9da6e63caf8392917fd318d41097f1a488826730b36be33f0e41e9b6dd15
+
+if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$ALPHAEXE" || ! -x "$PY" ]]; then
+    echo "Stopped: active allocation, built executable or Python missing."
+elif source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric \
+    && printf '%s  %s\n' "$SC1_EXE_SHA" "$ALPHAEXE" \
+        "$SC1_LIB_SHA" "$ALPHAROOT/lib/libbirdphaseSystem.so" | sha256sum -c - \
+    && "$PY" "$REPO/scripts/diagnostics/verify_sc1_alpha_runtime.py" \
+        --root "$ALPHAROOT" \
+        --loaded-library /scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so \
+        --loaded-library /scratch/nwimer/sc1_headspace_entrainment_20261104/lib/libsc1HeadspaceEntrainmentModels.so \
+        --extra-library "$FOAM_USER_LIBBIN/libalphaLimitVelocity.so" \
+    && "$PY" "$REPO/scripts/diagnostics/prepare_sc1_conservation_pair.py" \
+        --allow-courant-location-metadata --duration 0.1 --alpha-audit --out "$PAIRROOT"; then
+    echo "PAIRROOT=$PAIRROOT"
+    git -C "$REPO" rev-parse HEAD
+    CONTROL="$PAIRROOT/control"
+    (cd "$CONTROL" && set -C && \
+        srun -n 52 env LD_LIBRARY_PATH="$ALPHAROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+        "$ALPHAEXE" -parallel -fileHandler collated > log.conservation 2>&1)
+    SC1_STATUS=$?
+    echo "SC1 alpha-control solver status: $SC1_STATUS"
+    if [[ "$SC1_STATUS" -eq 0 ]]; then
+        "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" \
+            "$CONTROL/log.conservation" --native-times
+    fi
+    awk '/^SC1_/ {if ($1 != "SC1_BOUNDARY" || /patch=outlet /) print}
+         /^(BUBBLE_MASS_AUDIT|BUBBLE_STAGE_AUDIT|HEADSPACE_ENTRAINMENT_PB_AUDIT) / {print}' \
+        "$CONTROL/log.conservation"
+    tail -n 30 "$CONTROL/log.conservation"
+else
+    echo "Stopped before launch. Preserve any created directory and paste the output."
+fi
+```
+
+Return the pair path, solver status, summary, complete emitted audit records,
+and final log lines. Preserve both outer-index alpha blocks, not only a short
+tail. At unchanged stepping, expect approximately 2,000 physical steps,
+4,000 alpha solves, final `callInStep=2`, and six MULES subcycles per solve
+for each of liquid and bubbleGas (zero for reconstructed headspaceGas).
+Counters are expectations to verify, not assumptions to impose on the result.
+
+First compare all legacy control budget fields with the existing 0.1 s control
+at the same actual timestamp. Then inspect the alpha equation and source
+decomposition remainders, unassigned inventory changes, boundary-volume check,
+old-time resets, source actions and clamping. All-outer totals and final-outer
+terms must remain distinguished. Leave every normal case unrun until the
+control's accounting is understood. This reacting-state diagnostic is still
+not the intended nonreacting 9.9 s release checkpoint.
