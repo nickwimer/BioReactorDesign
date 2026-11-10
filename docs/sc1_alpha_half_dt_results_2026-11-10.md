@@ -1,5 +1,10 @@
 # SC1 half-timestep result and local source-feasibility implementation
 
+**Build follow-up:** The new source-probe build compiled and passed runtime
+verification at `/scratch/nwimer/sc1_alpha_source_probe_20261110T191459Z`.
+Read [the verified build and fresh-control launch instructions](sc1_alpha_source_probe_run_2026-11-10.md)
+for the current action. Reuse that build; the build block below is historical.
+
 ## Completed numerical sensitivity checks
 
 `Pasted text(20261110-190007).txt` records status 0, `End` and parallel
@@ -159,11 +164,10 @@ tests preserve original sources/biology, reject reused/redirected destinations
 and changed headers, verify mandatory linkage, and stop after a failed phase
 build. **This is not an OpenFOAM compilation or a new CFD result.**
 
-## Next action: build only
+## Historical build instructions (completed; do not repeat)
 
-The old known binaries remain usable for preserved experiments. The new
-observer requires a **fresh build root**. Do not rebuild the completed alpha
-audit tree, prepare another numerical pair, or launch a solver yet.
+The following was the build-only gate before the successful transcript.
+It is retained as history. Use the follow-up above for the current run step.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit

@@ -24,21 +24,24 @@ first. The alpha/species accounting closes; the unresolved issue is the
 source/flux/pressure formulation's physical consistency and coupling, not an
 unattributed ledger error. No experimental closure is approved.
 
-**Next action: build only.** A new opt-in source-feasibility observer and
-private-build wrapper are implemented. All **147 local SC1 tests pass**.
-Use `build_sc1_alpha_source_probe.sh` with a new scratch root after pulling the
-branch; the linked document has the short command. It preserves all equations,
-biology, original sources and existing builds, creates no cases and launches
-no CFD. OpenFOAM compilation/runtime verification on Kestrel is still pending.
-The new observer will classify the local source deficits and whether restoring
-the raw source at fixed flux would violate phase bounds. Individual feasibility
-is necessary but not proof of a conservative coupled correction.
+**Next action: one fresh observer control; no rebuild.** The source-probe
+build `/scratch/nwimer/sc1_alpha_source_probe_20261110T191459Z` compiled and
+passed runtime verification, including unchanged installed library/original
+sources and private linkage of the solver and trial extensions. No CFD with
+this build has been supplied. Read [the verified build and one-shot run
+instructions](sc1_alpha_source_probe_run_2026-11-10.md). The new launcher pins
+the successful binaries, copies the original manifest checkpoint into one
+fresh case, retains all baseline physics/numerics/biology, enables only the
+observer and checks legacy-record regression. All **162 local SC1 tests pass**.
+The observer classifies source deficits and whether restoring the raw source
+at fixed flux would violate phase bounds. Individual feasibility is necessary
+but not proof of a conservative coupled correction.
 
 Do not rerun the completed `four_outer`, `half_dt`, or either case in
 `/scratch/nwimer/sc1_alpha_pair_20261110T155635Z`. Preserve the existing verified
-build `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`. After the new build
-passes, a fresh probe control will gather measurements absent from all old logs
-and check observational regression. No further blind dt/outer/coefficient sweep
+build `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and the new verified
+source-probe build. The fresh probe control will gather measurements absent
+from all old logs and check observational regression. No further blind dt/outer/coefficient sweep
 is requested. Older launch blocks are historical; allocation availability must
 be checked rather than inferred from transcripts.
 
