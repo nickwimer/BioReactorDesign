@@ -184,79 +184,74 @@ hydrodynamics, a nonreacting validation case, experimental free-surface/foam
 evidence and a suitable oxygen-limited biological source treatment remain
 separate acceptance requirements before the 9.9 s release checkpoint.
 
-## Guarded normal-only command
+## Normal preflight stop and corrected launcher
 
-This rechecks source/library provenance, confirms the normal case has only
-the original time directory, hashes its initial state against the preparation
-manifest, and verifies settings against the completed control. The verifier
-prints binary hashes; they must remain the recorded executable
-`43aeeef4984dd016ba94664bfe64fb498458237a6ab925e15a2322357a49ca96` and private library
-`bc6d9da6e63caf8392917fd318d41097f1a488826730b36be33f0e41e9b6dd15`.
-The run creates a new log with noclobber and scopes the private library path
-to the solver process. It does not modify or rerun control.
+The next user transcript confirms the private runtime verifier passed again.
+The normal time-directory check, both binary hashes and all normal initial-state
+hashes passed. The following `validate_pair(control, normal, checkpoint)` then
+stopped on a raw checkpoint difference. **The normal simulation did not launch
+and this failed preflight did not modify either case.**
+
+That inline command incorrectly reused the fresh-input comparison after the
+control had executed. The preparation manifest is the immutable initial-state
+reference. A copied file can legitimately retain the original source's outer
+location, while its completed peer can acquire a current-case location if a
+diagnostic writes it again. The supplied generic error does **not** identify
+which files changed or prove that only location metadata differs. A Courant
+header rewrite is a hypothesis to test, not an established finding.
+
+The replacement `scripts/diagnostics/run_sc1_alpha_normal.py` is read-only by
+default. With explicit `--run`, it launches only after all checks pass:
+
+1. Both binary hashes must equal those used by the completed control, and
+   original-source integrity/private runtime dependency checks must pass.
+2. Every normal mesh/checkpoint byte must still match the preparation manifest,
+   including all four Courant files. No normal-file metadata exception exists.
+3. The control's mesh and every non-Courant checkpoint file must still match
+   that manifest. Missing/extra files also stop the launcher.
+4. For changed control Courant files only, parse the outer headers and verify
+   that the completed header identifies its current file and the pristine
+   copy still identifies its manifest-recorded original source. Every other
+   header byte and the entire binary tail must match. A changed payload,
+   whitespace, type, extra header entry or unexpected location is rejected.
+5. Case settings/biology must match apart from the established entrainment
+   switches. The completed control log, original normal time directory, absent
+   normal logs and active allocation are required.
+
+The existing raw inspection and fresh-case preparation rules remain strict.
+No source file or checkpoint is normalized or repaired. This is a Python
+workflow correction; **reuse the existing compiled solver and private library**.
+If the mismatch is not proved location-only, the launcher stops and names the
+affected file. Do not manually bypass that failure.
+
+All **119 local SC1 tests pass**, including 14 new prepared-pair lifecycle
+and launcher checks. Tests reproduce the failed old comparison after a
+synthetic location rewrite, prove the complete unchanged payload, and reject
+changed physical fields, Co payload/header changes, missing/extra files,
+changed biology, unexpected time directories and existing logs. A mocked
+launcher verifies process-local library paths and exclusive log creation;
+no OpenFOAM simulation was executed locally.
+
+The long inline shell/Python block is superseded by this committed launcher:
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
 PY=/scratch/nwimer/.conda-envs/of-post/bin/python
-ALPHAROOT=/scratch/nwimer/sc1_alpha_audit_20261107T001119Z
-ALPHAEXE="$ALPHAROOT/bin/putidaFoamSC1AlphaAudit"
-PAIRROOT=/scratch/nwimer/sc1_alpha_pair_20261110T155635Z
-NORMAL="$PAIRROOT/normal"
 
-if [[ -z "${SLURM_JOB_ID:-}" || ! -x "$ALPHAEXE" || ! -x "$PY" ]]; then
-    echo "Stopped: active allocation, executable or Python missing."
-elif [[ -e "$NORMAL/log.conservation" || -L "$NORMAL/log.conservation" ]]; then
-    echo "Stopped: normal log already exists; preserve this case."
-elif source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
-    && module load libfabric \
-    && "$PY" "$REPO/scripts/diagnostics/verify_sc1_alpha_runtime.py" \
-        --root "$ALPHAROOT" \
-        --loaded-library /scratch/nwimer/sc1_headspace_o2_trial_20261103/lib/libsc1HeadspaceFilmModels.so \
-        --loaded-library /scratch/nwimer/sc1_headspace_entrainment_20261104/lib/libsc1HeadspaceEntrainmentModels.so \
-        --extra-library "$FOAM_USER_LIBBIN/libalphaLimitVelocity.so" \
-    && "$PY" - "$REPO" "$PAIRROOT" "$ALPHAROOT" <<'SC1_CHECK'
-import json, sys
-from pathlib import Path
-sys.path.insert(0, str(Path(sys.argv[1]) / "scripts/diagnostics"))
-from prepare_sc1_conservation_pair import hashes, validate_pair
-from prepare_sc1_alpha_audit import sha256
-build = Path(sys.argv[3])
-assert sha256(build / "bin/putidaFoamSC1AlphaAudit") == "43aeeef4984dd016ba94664bfe64fb498458237a6ab925e15a2322357a49ca96", "Executable changed"
-assert sha256(build / "lib/libbirdphaseSystem.so") == "bc6d9da6e63caf8392917fd318d41097f1a488826730b36be33f0e41e9b6dd15", "Private library changed"
-root = Path(sys.argv[2])
-manifest = json.loads((root / "comparison_manifest.json").read_text())
-checkpoint = "31.199982372783058"
-assert manifest["checkpoint"] == checkpoint and manifest["alpha_audit"] is True
-assert manifest["duration_s"] == 0.1
-times = sorted(p.name for p in (root / "normal/processors52").iterdir()
-               if p.is_dir() and p.name[0].isdigit())
-assert times == [checkpoint], "Normal case has unexpected time directories"
-for section, expected in manifest["initial_state_sha256"].items():
-    assert hashes(root / "normal" / section) == expected, "Normal initial state changed"
-validate_pair(root / "control", root / "normal", checkpoint)
-assert (root / "control/system/controlDict").read_bytes() == (root / "normal/system/controlDict").read_bytes()
-print("Normal initial state and matched settings verified; no CFD launched yet.")
-SC1_CHECK
-then
-    echo "NORMAL=$NORMAL"
-    (cd "$NORMAL" && set -C && \
-        srun -n 52 env LD_LIBRARY_PATH="$ALPHAROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-        "$ALPHAEXE" -parallel -fileHandler collated > log.conservation 2>&1)
-    SC1_STATUS=$?
-    echo "SC1 alpha-normal solver status: $SC1_STATUS"
-    if [[ "$SC1_STATUS" -eq 0 ]]; then
-        "$PY" "$REPO/scripts/diagnostics/summarize_sc1_conservation.py" \
-            "$PAIRROOT/control/log.conservation" --normal "$NORMAL/log.conservation" --native-times
-    fi
-    awk '/^SC1_/ {if ($1 != "SC1_BOUNDARY" || /patch=outlet /) print}
-         /^(BUBBLE_MASS_AUDIT|BUBBLE_STAGE_AUDIT|HEADSPACE_ENTRAINMENT_PB_AUDIT) / {print}' \
-        "$NORMAL/log.conservation"
-    tail -n 30 "$NORMAL/log.conservation"
+if [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
+    && git -C "$REPO" pull --ff-only \
+    && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric; then
+    "$PY" "$REPO/scripts/diagnostics/run_sc1_alpha_normal.py" \
+        --pair-root /scratch/nwimer/sc1_alpha_pair_20261110T155635Z \
+        --audit-root /scratch/nwimer/sc1_alpha_audit_20261107T001119Z --run
 else
-    echo "Stopped before launch. Preserve this pair and paste the output."
+    echo "Setup stopped; paste the output."
 fi
 ```
 
-Return all emitted audit records and the solver status/tail. Preserve both
-outer-index blocks. Any failed preflight or run leaves this pair in place;
-do not overwrite or restart the normal case in place.
+Omit `--run` for a read-only check. With it present, a successful preflight
+launches the unused normal case once, prints solver status, compares both
+logs at their native times, and emits both alpha outer-iteration blocks.
+Return the complete output. Any failed check or run preserves the pair;
+do not overwrite or restart an attempted normal run in place.

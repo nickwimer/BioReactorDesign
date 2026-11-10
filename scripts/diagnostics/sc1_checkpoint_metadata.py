@@ -14,7 +14,7 @@ HEADER_LIMIT=8192
 TOKEN=re.compile(rb'\s+|/\*.*?\*/|//[^\r\n]*|"(?:\\.|[^"\\])*"|[{};]|[^\s{};"]+',re.S)
 
 
-def outer_header(stream, path):
+def outer_header(stream, path, expected_location_file=None):
     prefix=stream.read(HEADER_LIMIT)
     position=0
 
@@ -64,7 +64,10 @@ def outer_header(stream, path):
         raise ValueError(f'Expected one unescaped quoted location: {path}')
     value,start,end=values[0]
     location=value[1:-1].decode('ascii')
-    if not Path(location).is_absolute() or Path(location).resolve()!=path.resolve():
+    expected=path if expected_location_file is None else Path(expected_location_file)
+    if expected_location_file is not None and not expected.is_absolute():
+        raise ValueError('Expected location must be an absolute file path')
+    if not Path(location).is_absolute() or Path(location).resolve()!=expected.resolve():
         raise ValueError(f'Outer location does not identify its source file: {path}')
     header=prefix[:position]
     normalized=header[:start+1]+b'<SC1_SOURCE_FILE_LOCATION>'+header[end-1:]
@@ -73,13 +76,29 @@ def outer_header(stream, path):
 
 def verify_courant_location_metadata(control_file, normal_file):
     """Return proof only for an allowed name and complete remaining-byte match."""
+    return _verify_courant_locations(control_file, normal_file)
+
+
+def verify_copied_courant_location_metadata(completed_file, pristine_copy, copied_from):
+    """Prove a rewritten location against a manifest-verified unchanged copy.
+
+    The caller must first hash pristine_copy against the preparation manifest.
+    Its unchanged header still names copied_from; the completed file must name
+    its own current path. No payload, whitespace or other header changes pass.
+    """
+    if Path(copied_from).name != Path(pristine_copy).name:
+        raise ValueError('Copied source name does not match the Courant file')
+    return _verify_courant_locations(completed_file, pristine_copy, copied_from)
+
+
+def _verify_courant_locations(control_file, normal_file, normal_location_file=None):
     control_file,normal_file=Path(control_file),Path(normal_file)
     if control_file.name not in COURANT_FILES or normal_file.name!=control_file.name:
         raise ValueError('Metadata exception is restricted to the four observed Co files')
     before=[p.stat() for p in (control_file,normal_file)]
     with control_file.open('rb') as a,normal_file.open('rb') as b:
         header_a,normalized_a,location_a=outer_header(a,control_file)
-        header_b,normalized_b,location_b=outer_header(b,normal_file)
+        header_b,normalized_b,location_b=outer_header(b,normal_file,normal_location_file)
         if normalized_a!=normalized_b:
             raise ValueError(f'Co header differs beyond its location value: {control_file.name}')
         digest_a=hashlib.sha256(header_a)

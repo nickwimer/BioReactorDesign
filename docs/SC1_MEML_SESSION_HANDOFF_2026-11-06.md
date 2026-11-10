@@ -24,6 +24,15 @@ using the same build/checkpoint/settings. No rebuild or new pair is needed.
 The prior hold on this normal case is superseded by this successful control;
 older experiments, including the older stage-2 normal case, remain untouched.
 
+**Normal-launch follow-up:** The inline preflight stopped before launching:
+the normal mesh/checkpoint still matches the preparation manifest, but the
+completed control's checkpoint is no longer byte-identical. The error did not
+identify the changed files. Use the committed `run_sc1_alpha_normal.py` launcher
+from the linked result document. It proves any completed-control Courant
+location rewrite against the unchanged normal copy and rejects every other
+change; a metadata cause is not assumed. All 119 local checks pass. No solver
+rebuild, new pair or control rerun is needed. The normal case remains unrun.
+
 Reuse `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and its unique
 `putidaFoamSC1AlphaAudit` executable. Binary hashes, original-source integrity,
 private library resolution and initial-state equality passed before the control.

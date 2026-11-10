@@ -179,6 +179,12 @@ def validate_pair(control, active, checkpoint, allow_courant_location_metadata=F
                   'O2.liquid','O2.bubbleGas','O2.headspaceGas','f.bubbleGas'):
         if field not in evidence[f'processors52/{checkpoint}']:
             raise ValueError(f'Missing required checkpoint field: {field}')
+    validate_settings(control, active)
+    return evidence
+
+
+def validate_settings(control, active):
+    """Compare case settings without treating a completed checkpoint as pristine."""
     # Hold all constants, including microbeUpdateProperties, fixed except
     # the already established entrainment configuration in phaseProperties.
     a,b=hashes(control/'constant'),hashes(active/'constant')
@@ -214,7 +220,6 @@ def validate_pair(control, active, checkpoint, allow_courant_location_metadata=F
         normalized.append(' '.join(p.split()))
     if normalized[0]!=normalized[1]:
         raise ValueError('phaseProperties differs beyond the three established entrainment switches')
-    return evidence
 
 
 def main():
