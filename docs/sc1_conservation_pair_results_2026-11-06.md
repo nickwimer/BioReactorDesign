@@ -12,22 +12,14 @@ size remain unchanged.
 This continues the [handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md) and
 [timestep audit](sc1_timestep_conservation_audit.md).
 
-**Latest follow-up (2026-11-07):** The revision-2 short control completed with
-status 0 and reproduced every original control budget field. It resolves the
-oxygen residual attribution and confirms negative-O2 clipping. The remaining
-mass discrepancy is localized to alpha allocation. Read the
-[new result and private alpha-subcycle build gate](sc1_alpha_subcycle_audit_2026-11-07.md).
-The launch block later in this document has already been executed; preserve
-`/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` and leave its normal
-case unrun. **Build follow-up (2026-11-10):** The private alpha library and
-solver compiled successfully, and runtime verification passed. Reuse
-`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` for the next fresh short
-control; see the linked alpha-audit document for verified hashes and commands.
-**Alpha-control result (2026-11-10):** That fresh control has now completed and
-reproduced all legacy budgets. Source splitting and implicit source evolution
-explain the dominant liquid discrepancy. See the
-[new results and matched normal launch](sc1_alpha_control_results_2026-11-10.md);
-do not repeat a completed control.
+**Latest follow-up (2026-11-10):** The revision-2 control resolved oxygen
+residual attribution, and both subsequent private alpha-audit cases are now
+complete. Source splitting and implicit source evolution explain the dominant
+liquid discrepancy. Read [the matched alpha results and numerical convergence
+checks](sc1_alpha_pair_results_2026-11-10.md) before running anything. Reuse the
+existing private build for the fresh four-outer-iteration diagnostic. All
+launch blocks later in this document are historical; do not repeat completed
+runs. Leave the older stage-pair normal case unrun.
 
 ## Initial-state and regression checks
 

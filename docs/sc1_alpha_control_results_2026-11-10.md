@@ -1,5 +1,10 @@
 # SC1 alpha-subcycle control: result and next matched experiment
 
+**Superseded launch state:** The matched normal case has now completed
+successfully. Read [the pair results and next numerical test](sc1_alpha_pair_results_2026-11-10.md).
+Both alpha cases are complete; do not rerun the historical launch block below.
+The control measurements and derivation remain valid.
+
 ## Completed run and observational regression
 
 The uploaded `Pasted text(20261110-161201).txt` records a successful

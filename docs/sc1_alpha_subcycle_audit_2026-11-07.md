@@ -1,11 +1,13 @@
 # SC1 stage-control result and private alpha-subcycle audit
 
-**Latest result (2026-11-10):** The private alpha control completed successfully
-and exactly reproduced the earlier diagnostic records. Its new ledger attributes
-the dominant mass discrepancy to source splitting and implicit source evolution.
-Read [the control results and normal-only launch](sc1_alpha_control_results_2026-11-10.md)
-first. The build/control instructions below are historical; reuse the existing
-build and run only the unused normal case in the completed control's pair.
+**Latest result (2026-11-10):** Both private alpha-audit cases completed
+successfully and reproduced earlier results. Source splitting and implicit
+source evolution explain the dominant liquid discrepancy; entrainment raises
+mean OTR by only 0.147875% in the matched 0.1 s interval. Read
+[the completed pair and numerical convergence checks](sc1_alpha_pair_results_2026-11-10.md)
+first. The build/control instructions below are historical. Reuse the verified
+build for the fresh four-outer-iteration diagnostic; do not rerun either
+completed alpha case or launch the older stage-pair normal case.
 
 ## Completed control and regression
 

@@ -7,38 +7,34 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-10):** The private alpha-audit control in
-`/scratch/nwimer/sc1_alpha_pair_20261110T155635Z/control` completed with status 0
-after 2,000 steps (0.1 s), reproducing every earlier initial/phase budget,
-mass-stage, oxygen-stage and legacy bubble record at displayed precision.
-The liquid shortfall is now attributed: final-outer source splitting contributes
-−96.4384 mg, implicit source evolution −82.0951 mg and mixture coupling
-−2.69138 mg. These reduce +304.73869 mg pressure input to +123.51377 mg actual
-source action; alpha clamping contributes only −0.0000312 mg. Alpha equation
-and inventory accounting close at rounding scale relative to the discrepancy.
-The bubble source split contributes +79.7773 mg; complete physical gas-budget
-attribution still includes density/pressure/transport coupling. Read
-[the control results and matched normal launch](sc1_alpha_control_results_2026-11-10.md)
-first. Next run the **existing unused normal case in this same alpha pair**
-using the same build/checkpoint/settings. No rebuild or new pair is needed.
-The prior hold on this normal case is superseded by this successful control;
-older experiments, including the older stage-2 normal case, remain untouched.
+**Latest state (2026-11-10):** Both cases in
+`/scratch/nwimer/sc1_alpha_pair_20261110T155635Z` are now complete with status 0,
+2,000 steps and identical 0.1 s intervals. The normal-launch preflight proved
+all four completed-control Courant mismatches were outer-location-only changes;
+all other bytes matched. Both runs reproduce the earlier v1 results at the
+same timestamp. **Do not rerun either completed alpha case.** Read
+[the completed pair and numerical convergence checks](sc1_alpha_pair_results_2026-11-10.md)
+first; this supersedes the older normal-launch instructions.
 
-**Normal-launch follow-up:** The inline preflight stopped before launching:
-the normal mesh/checkpoint still matches the preparation manifest, but the
-completed control's checkpoint is no longer byte-identical. The error did not
-identify the changed files. Use the committed `run_sc1_alpha_normal.py` launcher
-from the linked result document. It proves any completed-control Courant
-location rewrite against the unchanged normal copy and rejects every other
-change; a metadata cause is not assumed. All 119 local checks pass. No solver
-rebuild, new pair or control rerun is needed. The normal case remains unrun.
+The final-outer liquid source split contributes −96.4384 mg in control and
+−94.2928 mg in normal; implicit source evolution contributes −82.0951 and
+−66.4337 mg. These dominate the liquid mass discrepancies. Alpha bounds
+clamping is only about −0.0000312 mg. Normal entrainment increases mean OTR
+by only 0.143123 mg/s (0.147875%). Its 17.6552 mg greater liquid mass gain is
+mostly a changed numerical source response. O2 clipping still cancels about
+80.56–80.57% of requested removal. Complete gas-budget attribution still
+requires density/pressure/transport coupling; no closure is approved.
 
-Reuse `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and its unique
-`putidaFoamSC1AlphaAudit` executable. Binary hashes, original-source integrity,
-private library resolution and initial-state equality passed before the control.
-Oxygen clipping still cancels 80.574% of requested removal; the biological
-schedule remains unchanged. The transcript shows allocation 19805193, but
-allocation availability is transient and must be checked at launch.
+**Next action:** Use the new `sc1_alpha_convergence.py` to prepare fresh
+zero-entrainment numerical variants from the original hash-verified checkpoint
+and completed control configuration. Run **four_outer only** (outer count 2→4,
+otherwise identical); leave the prepared half-timestep case unrun until review.
+The completed control is the baseline. All 131 local SC1 tests pass.
+No numerical-variant CFD has yet run. Reuse
+`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and its verified
+`putidaFoamSC1AlphaAudit`; no rebuild is needed. Preserve the biological
+schedule and all previous cases. Allocation availability must be checked at
+launch rather than inferred from the transcript.
 
 The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
 remains authoritative for the 0.5 s normal/control comparison: own-duration
