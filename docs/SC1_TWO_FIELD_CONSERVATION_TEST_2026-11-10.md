@@ -4,8 +4,9 @@
 
 **The corrected private build and runtime verification passed on Kestrel.**
 Use `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`; no rebuild
-is needed. No CFD has launched yet. The next action is the closed periodic
-two-field pair. This is a numerical test harness, not a corrected SC1 reactor
+is needed. The first closed-case solver process stopped during startup on a
+legacy pressure-limit dictionary entry, before any timestep. The generator is
+now corrected; the next action is the closed pair in fresh cases. This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
 
@@ -183,11 +184,48 @@ case-startup success or conservation. Preserve both the successful build and
 the preceding failed build. No rebuild, new solver instrumentation or physics
 change is needed before the closed pair.
 
+## First closed-pair attempt: pressure dictionary correction
+
+The first attempt created
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T231637Z`.
+`blockMesh`, `checkMesh` and `setFields` completed for `closed_no_reference`.
+The solver process then exited with status 1 while constructing its pressure
+reference, before the timestep loop. The other closed case and both source
+cases were not launched. Preserve this complete case root and its
+`closed_no_reference/log.solver`; do not edit or restart it.
+
+The assistant-generated `system/fvSolution/PIMPLE` incorrectly contained
+`pMin 1000;`. Foundation OF9's
+[pressureReference constructor](https://cpp.openfoam.org/v9/pressureReference_8C_source.html)
+explicitly rejects this legacy entry. The case generator now retains
+`pRefCell 0; pRefValue 100000;` in PIMPLE and places the pressure floor in
+`system/fvConstraints` as:
+
+```foam
+limitp
+{
+    type limitPressure;
+    min 1000;
+}
+```
+
+The [OF9 constraint reader](https://cpp.openfoam.org/v9/fvConstraints_8C_source.html)
+reads that system dictionary; the existing BiRD side-sparger tutorial uses the
+same format. The compiled pressure equation already calls
+`fvConstraints.constrain(p)`. **No solver or library rebuild is needed.**
+
+The generator change affects only `system/fvSolution` and
+`system/fvConstraints` in each of the four small cases. Each pair still differs
+only in `referencePhase gas;`. A new regression parses the PIMPLE and constraint
+entries for every case, rejects all six obsolete pressure/density-limit keys,
+and verifies the preserved reference and the intended minimum pressure.
+All 27 two-field harness tests pass. This fixes the observed startup error;
+it does not establish successful timestepping or conservation.
+
 ## Next Kestrel step: prepare fresh cases and run only the closed pair
 
-Use the existing allocation. The required scripts are already present at
-`a5989c1`, so this command needs no Git pull or other network access. It creates
-four fresh case dictionaries but launches only `closed_no_reference` and
+Use the existing allocation and pull the corrected generator over SSH. Reuse
+the already verified build. The command creates four fresh case dictionaries but launches only `closed_no_reference` and
 `closed_gas_reference`, serially, with 256 cells and 100 timesteps each.
 The two source cases remain unattempted.
 
@@ -201,6 +239,7 @@ if [[ -n "${SLURM_JOB_ID:-}" && -x "$PY" ]] \
     && [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
     && git -C "$REPO" diff --quiet \
     && git -C "$REPO" diff --cached --quiet \
+    && git -C "$REPO" pull --ff-only git@github.com:nickwimer/BioReactorDesign.git codex/sc1-headspace-bubble-audit-20261029 \
     && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
     && module load libfabric \
     && PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
@@ -228,15 +267,19 @@ No source-pair launch is included above.
 
 ## Validation and remaining work
 
-208 local SC1 tests pass, including 26 harness tests covering paired fixtures,
+All 27 local harness tests pass after the pressure-dictionary correction.
+The preceding 208-test SC1 suite passed before this fixture-only change.
+The harness tests cover paired fixtures,
 source/hook placement, retained phase equations, private preparation, runtime
 linkage rejection, attempted/modified case rejection, source-run gating and
 malformed/nonconservative audit streams, void-assignment compatibility and
-useful compiler-error output. The shared standalone C++ MULES
+useful compiler-error output, and the OF9 pressure-dictionary contract.
+The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
-evidence. CFD startup and numerical conservation remain untested.
+evidence. The first CFD startup exposed the corrected dictionary error;
+successful timestepping and numerical conservation remain unproved.
 
 A pass in these small cases would justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,

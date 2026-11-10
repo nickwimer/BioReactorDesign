@@ -66,7 +66,7 @@ wallDist { method meshWave; }
     "U.*" {{ solver smoothSolver; smoother symGaussSeidel; tolerance 1e-12; relTol 0; }}
 }}
 PIMPLE {{ nOuterCorrectors {OUTERS}; nCorrectors 2; nNonOrthogonalCorrectors 0;
-          pRefCell 0; pRefValue 100000; pMin 1000; }}
+          pRefCell 0; pRefValue 100000; }}
 relaxationFactors {{ equations {{ ".*" 1; }} }}
 ''')
     put('constant/g', 'dimensions [0 1 -2 0 0 0 0];\nvalue (0 0 0);', 'uniformDimensionedVectorField')
@@ -92,7 +92,11 @@ virtualMass (); heatTransfer (); phaseTransfer (); lift (); wallLubrication (); 
 {{ type massSource; selectionMode all; massFlowRate {SOURCE_KG_S};
    phase liquid; rho thermo:rho.liquid;
    fieldValues {{ U.liquid (0 0 0); T.liquid 300; }} }}''')
-    put('system/fvConstraints', '')
+    put('system/fvConstraints', '''limitp
+{
+    type limitPressure;
+    min 1000;
+}''')
     for phase, density, cp, mu, mw in [('gas', 1, 1000, 1.8e-5, 28.97), ('liquid', 1000, 4180, .001, 18.015)]:
         put(f'constant/thermophysicalProperties.{phase}', f'''thermoType
 {{ type heRhoThermo; mixture pureMixture; transport const; thermo hConst;

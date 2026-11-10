@@ -17,9 +17,10 @@ import unittest
 from unittest.mock import patch
 
 import sc1_two_field as harness
-from sc1_two_field_cases import CASES, DT, OUTERS, SOURCE_KG_S, STEPS, SUBCYCLES, case_files
+from sc1_two_field_cases import CASES, DT, OUTERS, SOURCE_KG_S, STEPS, SUBCYCLES, case_files, foam
 from sc1_two_field_instrument import phase_source, pressure_source, solver_source
 from sc1_two_field_report import TERMS, STAGES, summarize
+from sc1_wall_mesh import Reader
 
 
 def records(case):
@@ -165,6 +166,25 @@ INITIALIZATION
 
 
 class Fixtures(unittest.TestCase):
+    def test_of9_pressure_reference_and_limit_are_in_separate_dictionaries(self):
+        # OF9 pressureReference rejects these legacy keys in PIMPLE. Its
+        # fvConstraints reader instead loads system/fvConstraints/limitp.
+        rejected={'pMin','pMax','pMinFactor','pMaxFactor','rhoMin','rhoMax'}
+        for name in CASES:
+            with self.subTest(case=name):
+                files=case_files(name)
+                body=re.search(r'\bPIMPLE\s*(\{[^{}]*\})',files['system/fvSolution']).group(1)
+                reader=Reader(foam('fvSolution',body).encode())
+                pimple=reader.dictionary(); reader.finish()
+                self.assertFalse(rejected.intersection(pimple))
+                self.assertEqual(pimple['pRefCell'],[b'0'])
+                self.assertEqual(pimple['pRefValue'],[b'100000'])
+                reader=Reader(files['system/fvConstraints'].encode())
+                reader.expect(b'limitp')
+                limit=reader.dictionary(); reader.finish()
+                self.assertEqual(limit,{'type':[b'limitPressure'],'min':[b'1000']})
+                self.assertNotIn('constant/fvConstraints',files)
+
     def test_each_pair_only_changes_reference(self):
         for pair in ('closed','source'):
             a=case_files(pair+'_no_reference'); b=case_files(pair+'_gas_reference')
