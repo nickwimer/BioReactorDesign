@@ -23,6 +23,11 @@ case unrun. **Build follow-up (2026-11-10):** The private alpha library and
 solver compiled successfully, and runtime verification passed. Reuse
 `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` for the next fresh short
 control; see the linked alpha-audit document for verified hashes and commands.
+**Alpha-control result (2026-11-10):** That fresh control has now completed and
+reproduced all legacy budgets. Source splitting and implicit source evolution
+explain the dominant liquid discrepancy. See the
+[new results and matched normal launch](sc1_alpha_control_results_2026-11-10.md);
+do not repeat a completed control.
 
 ## Initial-state and regression checks
 

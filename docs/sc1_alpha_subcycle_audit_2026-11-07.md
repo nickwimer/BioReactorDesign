@@ -1,5 +1,12 @@
 # SC1 stage-control result and private alpha-subcycle audit
 
+**Latest result (2026-11-10):** The private alpha control completed successfully
+and exactly reproduced the earlier diagnostic records. Its new ledger attributes
+the dominant mass discrepancy to source splitting and implicit source evolution.
+Read [the control results and normal-only launch](sc1_alpha_control_results_2026-11-10.md)
+first. The build/control instructions below are historical; reuse the existing
+build and run only the unused normal case in the completed control's pair.
+
 ## Completed control and regression
 
 The user-supplied `Pasted text(20261106-235025).txt` records the successful

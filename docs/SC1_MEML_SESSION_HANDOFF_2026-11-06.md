@@ -7,27 +7,29 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-10):** The revision-2 control in
-`/scratch/nwimer/sc1_stage_pair_20261106T233034Z/control` completed with status 0
-after 2,000 steps (0.1 s). Every v1 phase-budget field and legacy bubble record
-matches the original control at the same timestamp. The new ledger explains
-the oxygen residual to approximately 1.4e-9 mg: gas residuals mainly reflect
-post-species density updates, and liquid clipping cancels 80.574% of requested
-oxygen removal. The remaining liquid mass discrepancy is localized to alpha
-allocation: +123.514 mg observed versus +304.739 mg predicted by sampled
-sources. No physical cause is established yet. **Do not launch this pair's
-normal case.** Read [the result and private alpha-subcycle audit](sc1_alpha_subcycle_audit_2026-11-07.md)
-first. The private alpha library and unique `putidaFoamSC1AlphaAudit` executable
-**built successfully on Kestrel** in
-`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`. Runtime verification passed:
-the executable, film and entrainment libraries resolve the private phase-system
-library; original sources and installed library remain unchanged. Reuse this
-build; do not rebuild. See the [verified hashes and control-only launch](sc1_alpha_subcycle_audit_2026-11-07.md#successful-kestrel-build-reported-2026-11-10).
-No alpha-audit CFD result exists yet. Next recheck the build in the new shell,
-prepare a fresh 0.1 s alpha-audit pair, and run only its control. Preserve
-completed runs and the biological schedule. The transcript shows allocation
-19721806 was released and a new allocation 19805193 was granted; allocation
-availability is transient and must not be assumed from this document.
+**Latest state (2026-11-10):** The private alpha-audit control in
+`/scratch/nwimer/sc1_alpha_pair_20261110T155635Z/control` completed with status 0
+after 2,000 steps (0.1 s), reproducing every earlier initial/phase budget,
+mass-stage, oxygen-stage and legacy bubble record at displayed precision.
+The liquid shortfall is now attributed: final-outer source splitting contributes
+−96.4384 mg, implicit source evolution −82.0951 mg and mixture coupling
+−2.69138 mg. These reduce +304.73869 mg pressure input to +123.51377 mg actual
+source action; alpha clamping contributes only −0.0000312 mg. Alpha equation
+and inventory accounting close at rounding scale relative to the discrepancy.
+The bubble source split contributes +79.7773 mg; complete physical gas-budget
+attribution still includes density/pressure/transport coupling. Read
+[the control results and matched normal launch](sc1_alpha_control_results_2026-11-10.md)
+first. Next run the **existing unused normal case in this same alpha pair**
+using the same build/checkpoint/settings. No rebuild or new pair is needed.
+The prior hold on this normal case is superseded by this successful control;
+older experiments, including the older stage-2 normal case, remain untouched.
+
+Reuse `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and its unique
+`putidaFoamSC1AlphaAudit` executable. Binary hashes, original-source integrity,
+private library resolution and initial-state equality passed before the control.
+Oxygen clipping still cancels 80.574% of requested removal; the biological
+schedule remains unchanged. The transcript shows allocation 19805193, but
+allocation availability is transient and must be checked at launch.
 
 The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
 remains authoritative for the 0.5 s normal/control comparison: own-duration
