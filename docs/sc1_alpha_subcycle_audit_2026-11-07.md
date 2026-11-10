@@ -5,11 +5,10 @@ successfully and reproduced earlier results. Source splitting and implicit
 source evolution explain the dominant liquid discrepancy; entrainment raises
 mean OTR by only 0.147875% in the matched 0.1 s interval. Read
 [the completed pair and numerical convergence checks](sc1_alpha_pair_results_2026-11-10.md)
-first. The build/control instructions below are historical. Reuse the verified
-build for the already-prepared half-timestep diagnostic. The four-outer
-case is now complete; see [its result and next launch](sc1_alpha_four_outer_results_2026-11-10.md).
-Do not rerun completed alpha/numerical cases or launch the older stage-pair
-normal case.
+first. All build/control/normal launch instructions below are historical.
+Both numerical sensitivity cases are now complete; read [the latest
+half-timestep result and new private observer build](sc1_alpha_half_dt_results_2026-11-10.md).
+Preserve completed builds/cases and leave the older stage-pair normal unrun.
 
 ## Completed control and regression
 

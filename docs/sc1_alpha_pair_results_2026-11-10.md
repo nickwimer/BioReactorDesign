@@ -1,11 +1,10 @@
 # SC1 matched alpha audit: completed pair and numerical convergence checks
 
-**Numerical follow-up:** The `four_outer` case has now completed in
-`/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z`. Read
-[its result and the existing half-timestep launch](sc1_alpha_four_outer_results_2026-11-10.md)
-first. The remaining shortfall and outer-index variation prevent accepting
-four iterations as a fix. Run only the existing `half_dt` case next. The
-preparation/four-outer launch block below is historical; do not repeat it.
+**Numerical follow-up:** Both `four_outer` and `half_dt` are complete in
+`/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z`. Neither resolves the mass
+source discrepancy; half dt worsens it. Read [the latest result and new
+source-feasibility build](sc1_alpha_half_dt_results_2026-11-10.md) first.
+All preparation/launch blocks below are historical; do not repeat them.
 The matched entrainment-pair results remain valid.
 
 ## Completed evidence

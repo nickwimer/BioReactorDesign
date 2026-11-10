@@ -7,36 +7,40 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-10):** The four-outer-iteration zero-entrainment case
-`/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z/four_outer` completed
-successfully: 2,000 steps, 8,000 alpha calls, the same 0.1 s interval and
-initial state as the completed two-outer control. Read
-[the four-outer result and half-timestep launch](sc1_alpha_four_outer_results_2026-11-10.md)
-first. The liquid mass-budget shortfall falls 14.8104%, from 181.224915 to
-154.384700 mg, but source splitting and coupling discrepancies remain.
-The liquid response varies substantially between outer indices 3 and 4,
-including in the last timestep; four iterations are not a converged remedy.
-Mean OTR changes only −0.0175353%, and clipping still cancels 80.5772% of
-requested liquid O2 removal. The instrumented alpha/species accounting closes.
+**Latest state (2026-11-10):** Both numerical cases in
+`/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z` are complete. The half-dt
+case completed 4,000 steps/8,000 alpha calls with status 0 over the identical
+0.1 s interval. Halving dt worsened the liquid mass-budget shortfall from
+181.224915 to **319.010443 mg** (+76.03%); actual liquid mass decreases
+14.272415 mg despite positive net source. Final-outer source splitting
+contributes −179.906786 mg and implicit evolution −135.674459 mg. Alpha
+clamping is negligible. The prior four-outer case left a 154.384700 mg
+shortfall and substantial iteration-to-iteration variation. Neither numerical
+setting is an accepted fix. Mean OTR remains about 96.8 mg/s and oxygen
+clipping cancels about 80.57% of requested removal.
 
-**Next action:** Run only the **already-prepared `half_dt` case** in that
-same numerical root, using `sc1_alpha_convergence.py run --case half_dt --run`.
-It retains two outer iterations and halves initial/max timestep to 2.5e-5 s.
-Do not prepare a new numerical root or rerun `four_outer`. The existing
-launcher and verified build
-`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` need no changes or rebuild.
-All 131 local SC1 tests passed at `ae04e89`; this follow-up changes only
-results documentation. The half-timestep case has not yet run. Its result
-will guide source/coupling implementation work; no coefficient tuning or
-biological schedule change is authorized by these diagnostics.
+Read [the half-timestep result and local source-feasibility implementation](sc1_alpha_half_dt_results_2026-11-10.md)
+first. The alpha/species accounting closes; the unresolved issue is the
+source/flux/pressure formulation's physical consistency and coupling, not an
+unattributed ledger error. No experimental closure is approved.
 
-Both cases in `/scratch/nwimer/sc1_alpha_pair_20261110T155635Z` also remain
-complete. Their normal preflight proved all four Courant mismatches were
-outer-location-only changes. The matched alpha pair reproduced earlier v1
-results and found normal entrainment improved mean OTR by only 0.147875%.
-See [the matched pair record](sc1_alpha_pair_results_2026-11-10.md).
-Preserve all completed cases; older launch instructions are historical.
-Allocation availability must be checked rather than inferred from transcripts.
+**Next action: build only.** A new opt-in source-feasibility observer and
+private-build wrapper are implemented. All **147 local SC1 tests pass**.
+Use `build_sc1_alpha_source_probe.sh` with a new scratch root after pulling the
+branch; the linked document has the short command. It preserves all equations,
+biology, original sources and existing builds, creates no cases and launches
+no CFD. OpenFOAM compilation/runtime verification on Kestrel is still pending.
+The new observer will classify the local source deficits and whether restoring
+the raw source at fixed flux would violate phase bounds. Individual feasibility
+is necessary but not proof of a conservative coupled correction.
+
+Do not rerun the completed `four_outer`, `half_dt`, or either case in
+`/scratch/nwimer/sc1_alpha_pair_20261110T155635Z`. Preserve the existing verified
+build `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z`. After the new build
+passes, a fresh probe control will gather measurements absent from all old logs
+and check observational regression. No further blind dt/outer/coefficient sweep
+is requested. Older launch blocks are historical; allocation availability must
+be checked rather than inferred from transcripts.
 
 The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
 remains authoritative for the 0.5 s normal/control comparison: own-duration

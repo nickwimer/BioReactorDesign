@@ -1,5 +1,10 @@
 # SC1 four-outer-iteration result and half-timestep diagnostic
 
+**Follow-up:** The prepared half-timestep case has now completed and worsened
+the liquid shortfall to 319.010443 mg. Read [the result and new build-only
+source-feasibility step](sc1_alpha_half_dt_results_2026-11-10.md). Both numerical
+cases are complete; do not execute the historical launch block below again.
+
 ## Completed run
 
 The user-supplied `Pasted text(20261110-182839).txt` records a successful
