@@ -14,6 +14,15 @@ validated, conservative nonreacting 9.9 s checkpoint, with a common hydrodynamic
 basis for MM/EMM/MEML biology. Do not treat a three-field implementation as the
 deliverable or expand its closures before evaluating a simpler candidate.
 
+**Wall-climbing defect remains an explicit requirement.** The user reiterated
+that the old liquid interface climbed artificially up the tank sides. A near-
+1000 L inventory does not establish that the three-field model resolved it.
+Check actual MRF-zone intersections with stationary walls/baffles and their
+boundary treatment, then local wall films and azimuthal surface variation using
+existing outputs. Annular means can hide the reported artifact. See the
+[wall-climbing assessment](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md#wall-climbing-is-a-separate-acceptance-test).
+Neither a phase-count change nor coefficient tuning is an established remedy.
+
 **Latest result:** The probe in
 `/scratch/nwimer/sc1_source_probe_control_20261110T194214Z` completed successfully:
 status 0, 2,000 steps over 0.1 s, ExecutionTime 749.47 s. All legacy audit records

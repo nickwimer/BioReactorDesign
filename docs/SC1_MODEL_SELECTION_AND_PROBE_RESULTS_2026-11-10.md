@@ -45,6 +45,69 @@ The diagnostic below is a 0.1 s continuation near 31.2 s. Its sub-gram budget
 discrepancy must not be extrapolated to explain the historical 151 L anomaly.
 The old high-DO two-field state is not an acceptable matched starting point.
 
+## Wall climbing is a separate acceptance test
+
+The user reiterated on 2026-11-10 that the earlier liquid interface climbed
+artificially up the tank sides. Correct total liquid inventory alone does not
+resolve that defect: liquid can redistribute into an incorrect wall film or
+vortex while conserving its integral. Conversely, excess inventory can raise
+the entire surface. Diagnose both quantities before attributing the behavior
+to phase count.
+
+At 9.9 s, the historical audit measured the annularly averaged liquid 0.5
+crossing near the wall at 1.292 m for EMM and 1.194 m for MEML, versus nominal
+fill height 1.02 m. MEML's central crossing was 0.693 m, with multiple crossings.
+These values neither validate the newer vortex nor establish disappearance of
+localized wall climbing. Annular averaging can hide films and interface
+penetration. No experimental surface-profile comparison has yet accepted either
+state; do not dismiss the reported artifact as normal centrifugal rise.
+
+Prioritize the following checks before another physical-closure change:
+
+1. **Actual MRF zone and stationary walls.** Inspect generated cell-zone
+   membership at tank walls and baffles, resolved `nonRotatingPatches`, and
+   phase-velocity patch values. In [Foundation OF9's MRF implementation](https://cpp.openfoam.org/v9/MRFZone_8C_source.html),
+   noncoupled, nonempty boundary faces adjacent to zone cells are included
+   unless excluded; `correctBoundaryVelocity` assigns included faces
+   `Omega cross (Cf - origin)`. BiRD's `MovingPhaseModel::correct()` calls
+   this method. An accidentally included stationary wall is therefore a
+   concrete mechanism to check. The repository stirred-tank tutorial has
+   `nonRotatingPatches ()`; this is not itself erroneous when the zone does not
+   touch stationary boundaries, and is not evidence of the Kestrel settings.
+   Inspect the actual generated zone, not just the `rotor` name or dictionary
+   intent. Also inspect baffle geometry and rotating-zone/interface overlap.
+2. **Wall/interface transport and pressure balance.** Read actual alpha,
+   velocity, pressure and outlet/backflow conditions, gravity, surface-tension
+   pairs, interface-compression settings and near-wall mesh quality. Determine
+   whether a contact-angle model is active before invoking wetting as the
+   explanation. The repository tutorial's liquid wall uses `zeroGradient`,
+   but archived SC1 settings remain unverified. Inspect near-wall velocity and
+   pressure alongside interface migration. Do not prescribe a new contact
+   angle, pin wall alpha, or change compression just to suppress the symptom.
+3. **Spatial evidence from existing outputs.** Reuse scratch VTK exports to
+   measure azimuthal sectors in wall-side bands, retaining all liquid-alpha
+   crossings and reporting missing crossings and occupied-cell coverage.
+   Compare 0.1/0.5/0.9 thresholds, high-wall liquid volume, and persistence at
+   available times; a single highest crossing can mistake a droplet for the
+   connected surface. Relate these to the central depression and total
+   inventory. Thresholds diagnose diffuse layers, not a validated foam surface.
+   Compare with experimental wall height, vortex depth and upper-impeller
+   coverage at the same fill and operating conditions.
+
+If these checks leave rotation modeling unresolved, a controlled free-surface
+MRF/sliding-mesh comparison is a later diagnostic, not an immediate repeat of
+the completed oxygen runs. [de Lamotte et al. (2018)](https://discovery.ucl.ac.uk/id/eprint/10061590/)
+compare VOF MRF and sliding-mesh predictions for baffled stirred tanks with
+experiments (abstract inspected). This supports that validation approach; it
+does not prove MRF caused SC1's artifact or that VOF alone resolves dispersed
+bubble area and oxygen transfer.
+
+Any two-field candidate must pass both conservation and local surface-shape
+checks. Retaining three fields requires evidence that their representation
+addresses a physical requirement; the historical wall-climbing symptom alone
+does not supply that evidence. No boundary, mesh, solver or case change is
+made by this assessment.
+
 ## Completed probe: provenance and regression
 
 `Pasted text(20261110-204412).txt` records completion of:
@@ -128,6 +191,7 @@ These establish a candidate route, not SC1 validation.
 1. **Read-only baseline reconstruction first.** Review the archived two-field
    case's t=0 initialization, earliest available liquid inventory, physical
    boundary fluxes, sources, phase/pressure settings and generated MRF geometry.
+   Include the stationary-wall and azimuthally resolved surface checks above.
    Compare with the three-field setup without conflating biological-model and
    hydrodynamic differences. Existing archive paths are recorded below.
 2. **Prepare a fresh, matched nonreacting two-field candidate.** Preserve the
