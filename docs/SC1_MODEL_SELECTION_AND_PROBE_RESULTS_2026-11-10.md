@@ -64,6 +64,13 @@ state; do not dismiss the reported artifact as normal centrifugal rise.
 
 Prioritize the following checks before another physical-closure change:
 
+**Follow-up:** the [completed wall preflight](sc1_wall_preflight_run_2026-11-10.md)
+finds zero `walls`-to-`rotor` adjacency in both actual meshes, ruling out the
+direct MRF wall-assignment mechanism below for those meshes. Sector profiles
+show persistent wall-side elevation and distinct core behavior. Retrieve its
+existing evidence bundle for the remaining boundary/configuration review;
+do not repeat the preflight or treat successful collection as a physical fix.
+
 1. **Actual MRF zone and stationary walls.** Inspect generated cell-zone
    membership at tank walls and baffles, resolved `nonRotatingPatches`, and
    phase-velocity patch values. In [Foundation OF9's MRF implementation](https://cpp.openfoam.org/v9/MRFZone_8C_source.html),
