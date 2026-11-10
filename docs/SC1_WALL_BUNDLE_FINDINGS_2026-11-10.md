@@ -232,7 +232,10 @@ small fixed mesh:
    before attempting a reactor spin-up. A closed source-free pass alone does
    not test the already observed transfer/source-coupling defect.
 
-This is the next implementation target, **not an existing runnable case**.
+This target is now implemented as an isolated small-case harness; see the
+[two-field test and build-only instructions](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md).
+Its 22 new tests pass within the 204-test SC1 suite. **OpenFOAM compilation
+and CFD validation remain pending on Kestrel.** It is not an SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard.
@@ -255,6 +258,7 @@ to biological consumption. The intentional four-hour biological updates and
 current trigger/hold policy remain unchanged; archived EMM/MEML biological
 settings are historical differences, not instructions to change that policy.
 
-No solver or production setting is changed by this review. The only new
-executable is the read-only prescribed-fill estimate. A corrected two-field
-solver/case has not yet been built or validated.
+This review did not change production settings. The subsequent numerical
+harness prepares and builds separate source copies and new small cases;
+it does not alter existing solver sources or completed SC1 simulations.
+A corrected SC1 two-field reactor solver/case has not been validated.

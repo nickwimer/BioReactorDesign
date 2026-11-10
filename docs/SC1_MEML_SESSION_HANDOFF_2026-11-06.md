@@ -48,10 +48,19 @@ at 9.9 s. These are not recovered time-zero values or closed conservation
 budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
-The next implementation is a small, isolated nonreacting two-field conservation
-test comparing no-reference and gas-reference settings with a phase-count-
-independent ledger, followed by known-source tests before reactor spin-up.
-A runnable two-field solver/case has not yet been implemented or validated.
+**The isolated two-field test harness is now implemented; Kestrel build/run
+validation is pending.** It compares no-reference and gas-reference settings
+on a small closed periodic transport case, then on a known liquid-source case
+with pressure-compatible outflow. Each pair differs only in the reference
+setting. A new dynamically sized alpha observer measures rescaling as well as
+the other existing alpha stages; a separate timestep observer captures actual
+phase masses, boundary mass fluxes and assembled pressure sources. All six
+required project libraries are rebuilt privately with the nonreacting solver.
+All 204 local SC1 tests pass, including 22 new harness tests. No OpenFOAM
+compilation or CFD result is claimed. Follow the [build-only command and
+test requirements](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md); the next
+user action is that private build, not another archive diagnostic or reactor
+spin-up. The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
 **Git transport correction:** the earlier hostname-resolution failure was
@@ -73,8 +82,9 @@ feasibility remains unproved. No source addback or physical correction is approv
 
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
-boundaries and MRF setup, then prepare a matched nonreacting two-field candidate
-with a suitable conservation ledger. No such candidate is ready to run yet.
+boundaries and MRF setup. The small numerical harness above is implemented
+but awaits Kestrel compilation. A matched SC1 reactor candidate is not ready
+to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory
 does not establish that phase count caused it; t=0 and boundary/source budgets
 were not established. Retain three fields only for a demonstrated physical
