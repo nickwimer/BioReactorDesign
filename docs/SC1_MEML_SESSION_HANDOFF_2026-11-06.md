@@ -23,6 +23,13 @@ existing outputs. Annular means can hide the reported artifact. See the
 [wall-climbing assessment](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md#wall-climbing-is-a-separate-acceptance-test).
 Neither a phase-count change nor coefficient tuning is an established remedy.
 
+**Next executable step:** run the [read-only wall/MRF preflight](sc1_wall_preflight_run_2026-11-10.md)
+once in the existing allocation. It measures generated-zone adjacency to
+boundary patches, collects actual settings and reuses existing VTKs for
+azimuthal surface profiles. It creates a fresh report directory, runs no CFD
+and does not rebuild the solver. The implementation passes 14 focused local
+tests; Kestrel execution and the resulting physical diagnosis are pending.
+
 **Latest result:** The probe in
 `/scratch/nwimer/sc1_source_probe_control_20261110T194214Z` completed successfully:
 status 0, 2,000 steps over 0.1 s, ExecutionTime 749.47 s. All legacy audit records
