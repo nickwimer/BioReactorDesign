@@ -17,8 +17,10 @@ residual attribution, and both subsequent private alpha-audit cases are now
 complete. Source splitting and implicit source evolution explain the dominant
 liquid discrepancy. Read [the matched alpha results and numerical convergence
 checks](sc1_alpha_pair_results_2026-11-10.md) before running anything. Reuse the
-existing private build for the fresh four-outer-iteration diagnostic. All
-launch blocks later in this document are historical; do not repeat completed
+existing private build for the already-prepared half-timestep diagnostic;
+the [four-outer result](sc1_alpha_four_outer_results_2026-11-10.md) is complete
+and has not resolved the discrepancy. All launch blocks later in this
+document are historical; do not repeat completed
 runs. Leave the older stage-pair normal case unrun.
 
 ## Initial-state and regression checks

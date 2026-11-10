@@ -7,34 +7,36 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-10):** Both cases in
-`/scratch/nwimer/sc1_alpha_pair_20261110T155635Z` are now complete with status 0,
-2,000 steps and identical 0.1 s intervals. The normal-launch preflight proved
-all four completed-control Courant mismatches were outer-location-only changes;
-all other bytes matched. Both runs reproduce the earlier v1 results at the
-same timestamp. **Do not rerun either completed alpha case.** Read
-[the completed pair and numerical convergence checks](sc1_alpha_pair_results_2026-11-10.md)
-first; this supersedes the older normal-launch instructions.
+**Latest state (2026-11-10):** The four-outer-iteration zero-entrainment case
+`/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z/four_outer` completed
+successfully: 2,000 steps, 8,000 alpha calls, the same 0.1 s interval and
+initial state as the completed two-outer control. Read
+[the four-outer result and half-timestep launch](sc1_alpha_four_outer_results_2026-11-10.md)
+first. The liquid mass-budget shortfall falls 14.8104%, from 181.224915 to
+154.384700 mg, but source splitting and coupling discrepancies remain.
+The liquid response varies substantially between outer indices 3 and 4,
+including in the last timestep; four iterations are not a converged remedy.
+Mean OTR changes only −0.0175353%, and clipping still cancels 80.5772% of
+requested liquid O2 removal. The instrumented alpha/species accounting closes.
 
-The final-outer liquid source split contributes −96.4384 mg in control and
-−94.2928 mg in normal; implicit source evolution contributes −82.0951 and
-−66.4337 mg. These dominate the liquid mass discrepancies. Alpha bounds
-clamping is only about −0.0000312 mg. Normal entrainment increases mean OTR
-by only 0.143123 mg/s (0.147875%). Its 17.6552 mg greater liquid mass gain is
-mostly a changed numerical source response. O2 clipping still cancels about
-80.56–80.57% of requested removal. Complete gas-budget attribution still
-requires density/pressure/transport coupling; no closure is approved.
+**Next action:** Run only the **already-prepared `half_dt` case** in that
+same numerical root, using `sc1_alpha_convergence.py run --case half_dt --run`.
+It retains two outer iterations and halves initial/max timestep to 2.5e-5 s.
+Do not prepare a new numerical root or rerun `four_outer`. The existing
+launcher and verified build
+`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` need no changes or rebuild.
+All 131 local SC1 tests passed at `ae04e89`; this follow-up changes only
+results documentation. The half-timestep case has not yet run. Its result
+will guide source/coupling implementation work; no coefficient tuning or
+biological schedule change is authorized by these diagnostics.
 
-**Next action:** Use the new `sc1_alpha_convergence.py` to prepare fresh
-zero-entrainment numerical variants from the original hash-verified checkpoint
-and completed control configuration. Run **four_outer only** (outer count 2→4,
-otherwise identical); leave the prepared half-timestep case unrun until review.
-The completed control is the baseline. All 131 local SC1 tests pass.
-No numerical-variant CFD has yet run. Reuse
-`/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and its verified
-`putidaFoamSC1AlphaAudit`; no rebuild is needed. Preserve the biological
-schedule and all previous cases. Allocation availability must be checked at
-launch rather than inferred from the transcript.
+Both cases in `/scratch/nwimer/sc1_alpha_pair_20261110T155635Z` also remain
+complete. Their normal preflight proved all four Courant mismatches were
+outer-location-only changes. The matched alpha pair reproduced earlier v1
+results and found normal entrainment improved mean OTR by only 0.147875%.
+See [the matched pair record](sc1_alpha_pair_results_2026-11-10.md).
+Preserve all completed cases; older launch instructions are historical.
+Allocation availability must be checked rather than inferred from transcripts.
 
 The earlier [full conservation pair](sc1_conservation_pair_results_2026-11-06.md)
 remains authoritative for the 0.5 s normal/control comparison: own-duration
