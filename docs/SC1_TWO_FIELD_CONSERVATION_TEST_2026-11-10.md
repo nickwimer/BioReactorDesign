@@ -2,17 +2,14 @@
 
 ## Status and purpose
 
-**The corrected private build and runtime verification passed on Kestrel.**
-Use `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`; no rebuild
-is needed. The first attempt stopped on a legacy pressure-limit entry. After
-that correction, the second attempt initialized both phase inventories and
-entered the first timestep, but stopped on missing `alpha.gas` solver controls
-before completing a step. The generator now covers both the system-level and
-phase-specific alpha lookups. The third attempt at `d7b1b2e` returned from the
-first solver successfully, then failed record-coverage validation. **The next
-action is read-only analysis of that saved log, not another CFD run.** Its root
-is `/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`; the gas-reference
-case and source pair remain unlaunched. Conservation is not yet established.
+**The closed no-reference case passes the complete 100-step numerical screen.**
+Saved-log analysis at `e7825bd` confirmed that the earlier report rejection
+was caused by timestamp roundoff. The existing case root is
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z` and the verified
+build is `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`.
+**Next: validate/save the completed result and run only the unattempted
+`closed_gas_reference` partner with `continue-closed`.** No rebuild or repeat
+of `closed_no_reference` is needed. The source pair remains gated and unlaunched.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -285,28 +282,100 @@ The transcript reports `blockMesh`, `checkMesh`, `setFields`, the private
 solver command, then `Incomplete or unexpected initial/step/alpha-call records`.
 In the harness this error occurs only after the solver returned status 0,
 initial input hashes remained unchanged, and the report found the unique
-library marker and solver `End` without a fatal-error marker. The full log
-has not yet been supplied; the final time, record counts and budgets remain
-unverified. No `result.json` was written, and the remaining three cases were
-not launched.
+library marker and solver `End` without a fatal-error marker. At that point
+the final time, record counts and budgets remained unverified. No `result.json`
+was written, and the remaining three cases were not launched. The later
+saved-log result below resolves the reporting failure.
 
 Review found that record keys used exact floating-point time comparisons.
 Changing a complete synthetic stream's `0.072` to `0.0720000000000001`
-reproduces the same rejection. This demonstrates a parser defect, **not yet
-the cause of the Kestrel log's rejection**. Record indexing now accepts only
+reproduces the same rejection. That initially demonstrated a parser defect
+without proving the Kestrel cause. Record indexing now accepts only
 times within 1e-12 s of the prescribed grid (one billionth of a timestep).
 It preserves raw values and rejects duplicate matched keys, genuinely off-grid
 times, and missing or extra records. Coverage errors now name each affected
 record family, expected/observed counts and bounded missing/unexpected examples.
 No solver, case input, mass-budget tolerance or required record count changed.
 
-All 34 harness tests pass, including roundoff-equivalent streams for all four
+All 34 harness tests passed at that correction, including roundoff-equivalent streams for all four
 cases with identical budgets, raw-time preservation, near-duplicate rejection,
-off-grid rejection and actionable coverage diagnostics. The next read-only
-analysis will either produce the existing run's report or expose the remaining
-coverage problem. Preserve all three attempted roots and the verified build.
+off-grid rejection and actionable coverage diagnostics. Preserve all three
+attempted roots and the verified build.
 
-## Next Kestrel step: reanalyze the saved log only
+## Completed saved-log analysis: closed no-reference passes
+
+The user ran `analyze` at `e7825bd` on the existing
+`closed_no_reference/log.solver` and supplied the full JSON report:
+`complete: true`, `screen_pass: true`, `errors: []`, `steps: 100`.
+This is a user-supplied analysis result; the raw log remains on Kestrel.
+
+| Quantity | Gas | Liquid |
+|---|---:|---:|
+| Initial mass (kg) | 0.0005 | 0.5 |
+| Final mass (kg) | 0.000500000000000061 | 0.499999999999939 |
+| Sum of accepted-step mass changes (kg) | 6.110443488027293e-17 | -6.11045889484697e-14 |
+| Cumulative absolute physical residual (kg) | 5.769354784863862e-16 | 5.770176179219254e-13 |
+| Screening limit (kg) | 1.5e-12 | 5.01e-10 |
+| Final-outer rescale sum (m3) | 7.752045533271372e-20 | 1.2858637765678101e-19 |
+
+Reported external boundary flux, option source, transfer source and
+final-outer source-split contribution are all zero for both phases. The complete
+screen also checks nontrivial alpha transport, bounds, phase sum, stage and
+alpha-ledger identities. There were 3,360 timestamp-key adjustments, with a
+maximum of `1.1102230246251565e-16` s against the `1e-12` s matching tolerance.
+The successful analysis of the same saved run confirms the earlier rejection
+was timestamp representation, not missing audit records.
+
+The no-reference formulation conserves mass in this closed, constant-density
+transport fixture, with negligible observed rescaling. This does not establish
+conservation with sources, explain the archived EMM inventory increase, or
+select the SC1 reactor phase formulation. The gas-reference partner and the
+source pair remain necessary. `analyze` printed the result without saving a
+`result.json`; the continuation below revalidates the evidence before saving it.
+
+## Next Kestrel step: continue only the unattempted closed partner
+
+`continue-closed --root CASE_ROOT --run` verifies the private build and case
+manifest, the first case's attempt/build record, initialized input hashes,
+prepared non-alpha inputs, mesh-check evidence, complete solver audit and
+passing numerical screen. It also requires the gas-reference case to be fresh
+and match its prepared input hashes. A missing first `result.json` is then
+created with the saved log's SHA-256; an existing identical result is reused
+without rewriting it. A conflicting result or attempted partner stops the
+command. It runs only the partner's mesh/initialization/solver sequence and
+saves that result normally. The existing pair runner still refuses attempted
+cases. Neither completed CFD nor the source pair is launched by this command.
+
+All 39 harness tests pass. Synthetic recovery tests verify that only the
+partner's four commands run, the completed case changes only by addition of
+its missing report, source cases remain unchanged, and inconsistent/partial
+evidence or an attempted/modified partner blocks before mutation. These tests
+mock CFD; the Kestrel continuation is the next execution check.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+TWOFIELD_CASES=/scratch/nwimer/sc1_two_field_cases_20261110T233431Z
+
+if [[ -n "${SLURM_JOB_ID:-}" && -x "$PY" ]] \
+    && [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
+    && git -C "$REPO" diff --quiet \
+    && git -C "$REPO" diff --cached --quiet \
+    && git -C "$REPO" pull --ff-only git@github.com:nickwimer/BioReactorDesign.git codex/sc1-headspace-bubble-audit-20261029 \
+    && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric; then
+    PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
+        continue-closed --root "$TWOFIELD_CASES" --run
+else
+    echo "Continuation setup stopped. Preserve the existing cases and paste the output."
+fi
+```
+
+Paste the complete output, including `REUSED=`, the saved first report and
+the new gas-reference report or error. Review both closed results before the
+source pair; it is not automatically launched.
+
+## Saved-log analysis reference (completed)
 
 No allocation, OpenFOAM environment setup, rebuild, preparation or solver
 launch is required by `analyze`. Pull the reporting change over SSH and run:
@@ -328,17 +397,13 @@ else
 fi
 ```
 
-Paste the complete report or rejection text. This command prints to the
-terminal and does not change the case or create `result.json`. A passing report
-does not complete the paired comparison. Review it before arranging an
-evidence-preserving continuation of the unattempted gas-reference case; the
-current `run --pair closed` intentionally refuses the already attempted root.
-The source pair remains gated and unlaunched.
+This completed analysis command prints to the terminal without changing the
+case or creating `result.json`. Use `continue-closed` above for the next action.
 
 ## Fresh closed-pair launch reference (not the current next action)
 
 The command below is retained as the original launch recipe. **Do not execute
-it to address the current reporting failure; use the saved-log analysis above.**
+it for the current completed first case; use `continue-closed` above.**
 
 Use the existing allocation and pull the corrected generator over SSH. Reuse
 the already verified build. The command creates four fresh case dictionaries but launches only `closed_no_reference` and
@@ -383,22 +448,22 @@ No source-pair launch is included above.
 
 ## Validation and remaining work
 
-All 34 local harness tests pass after the reporting correction.
-The preceding 208-test SC1 suite passed before these fixture/reporting corrections.
+All 39 local harness tests pass after the guarded continuation addition.
+The preceding 208-test SC1 suite passed before these fixture/reporting/runner changes.
 The harness tests cover paired fixtures,
 source/hook placement, retained phase equations, private preparation, runtime
 linkage rejection, attempted/modified case rejection, source-run gating and
 malformed/nonconservative audit streams, void-assignment compatibility and
 useful compiler-error output, the OF9 pressure-dictionary contract and
 system/phase alpha-control lookup coverage, timestamp matching and strict
-coverage diagnostics.
+coverage diagnostics and evidence-preserving closed-pair continuation.
 The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
 evidence. The first two CFD attempts exposed corrected dictionary errors.
-The third solver process returned successfully, but complete audit coverage
-and numerical conservation remain unverified pending saved-log analysis.
+The third attempt's no-reference case now passes complete audit coverage and
+the numerical screen. The gas-reference and source cases remain unlaunched.
 
 A pass in these small cases would justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,

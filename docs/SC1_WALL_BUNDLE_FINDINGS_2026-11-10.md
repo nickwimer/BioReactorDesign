@@ -244,10 +244,15 @@ no timestep completed. The generator now uses `"alpha.*"` for system and phase
 lookups. The third attempt (`sc1_two_field_cases_20261110T233431Z`) returned
 from its first solver successfully but failed report coverage. The reporter's
 exact-float time keys can reproduce that failure on complete synthetic data;
-bounded timestamp matching and detailed coverage diagnostics now pass 34
-harness tests. The actual log still needs read-only analysis to establish the
-cause and conservation result. Preserve all attempts; do not rerun CFD or
-rebuild to address this reporting failure. It is not an
+bounded timestamp matching resolved the rejection when the user reanalyzed
+the saved log at `e7825bd`. The no-reference case passes all 100 steps, with
+gas/liquid cumulative absolute residuals `5.769354784863862e-16` /
+`5.770176179219254e-13` kg, below limits `1.5e-12` / `5.01e-10` kg. The maximum
+time-key adjustment was `1.1102230246251565e-16` s. This establishes conservation
+only for the small closed constant-density fixture; rescaling was negligible.
+Next use the guarded `continue-closed` command to save the validated result and
+run only the unattempted gas-reference partner. All 39 harness tests pass.
+Preserve all attempts and reuse the verified build. It is not an
 SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

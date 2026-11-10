@@ -350,6 +350,138 @@ class Reporting(unittest.TestCase):
         with self.assertRaises(ValueError): summarize(render(rows),CASES[0])
 
 
+class ClosedContinuation(unittest.TestCase):
+    """Synthetic completed evidence and mocked CFD; no OpenFOAM run is claimed."""
+    def seed(self, root):
+        manifest=dict(version=1,root=str(root),build=str(root/'private_build'),
+                      assets={'private_solver':'verified_hash'},cases={})
+        for name in CASES:
+            for rel,text in case_files(name).items():
+                path=root/name/rel; path.parent.mkdir(parents=True,exist_ok=True)
+                path.write_text(text)
+            manifest['cases'][name]=harness.case_input_hashes(root/name)
+        harness.write_json(root/'cases_manifest.json',manifest)
+        first=root/CASES[0]
+        harness.write_json(first/'attempt.json',dict(case=CASES[0],
+            build=manifest['build'],assets=manifest['assets']))
+        mesh=first/'constant/polyMesh'; mesh.mkdir(); (mesh/'points').write_text('mesh sentinel')
+        harness.write_json(first/'initialized.json',harness.case_input_hashes(first))
+        for name in ('blockMesh','checkMesh','setFields'):
+            (first/('log.'+name)).write_text('Mesh OK.\n' if name=='checkMesh' else 'End\n')
+        (first/'log.solver').write_text(render(records(CASES[0])))
+        return manifest
+
+    @staticmethod
+    def fake_execute(command, case, log, env):
+        name=Path(command[0]).name
+        if name=='blockMesh':
+            mesh=case/'constant/polyMesh'; mesh.mkdir(); (mesh/'points').write_text('mesh sentinel')
+        elif name not in ('checkMesh','setFields',harness.APP):
+            raise AssertionError('Unexpected command: '+str(command))
+        log.write_text(render(records(case.name)) if name==harness.APP else
+                       ('Mesh OK.\n' if name=='checkMesh' else 'End\n'))
+
+    @staticmethod
+    def hashes(root):
+        return {str(p.relative_to(root)):harness.sha(p) for p in root.rglob('*') if p.is_file()}
+
+    def test_recovers_report_and_runs_only_fresh_partner(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); m=self.seed(root)
+            first_before=self.hashes(root/CASES[0])
+            source_before=[self.hashes(root/name) for name in CASES[2:]]
+            with patch.object(harness,'verify_build',return_value={'assets':m['assets']}), \
+                    patch.object(harness,'execute',side_effect=self.fake_execute) as execute, \
+                    redirect_stdout(io.StringIO()):
+                harness.continue_closed(root)
+            self.assertEqual(len(execute.call_args_list),4)
+            self.assertTrue(all(call.args[1]==root/CASES[1] for call in execute.call_args_list))
+            self.assertEqual([Path(call.args[0][0]).name for call in execute.call_args_list],
+                             ['blockMesh','checkMesh','setFields',harness.APP])
+            first_after=self.hashes(root/CASES[0]); first_after.pop('result.json')
+            self.assertEqual(first_before,first_after)
+            self.assertEqual(source_before,[self.hashes(root/name) for name in CASES[2:]])
+            for name in CASES[:2]:
+                result=json.loads((root/name/'result.json').read_text())
+                self.assertTrue(result['screen_pass'])
+                self.assertEqual(result['log_sha256'],harness.sha(root/name/'log.solver'))
+            # A second invocation must refuse the now-attempted partner.
+            before=self.hashes(root)
+            with patch.object(harness,'verify_build',return_value={'assets':m['assets']}), \
+                    patch.object(harness,'execute') as execute:
+                with self.assertRaisesRegex(ValueError,'attempted/modified'):
+                    harness.continue_closed(root)
+                execute.assert_not_called()
+            self.assertEqual(before,self.hashes(root))
+
+    def test_reuses_matching_existing_report_without_overwriting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); m=self.seed(root)
+            report=harness.completed_report(root,CASES[0],m)
+            destination=root/CASES[0]/'result.json'
+            # Different formatting makes an accidental rewrite observable.
+            destination.write_text(json.dumps(report,separators=(',',':')))
+            before=destination.read_bytes()
+            with patch.object(harness,'verify_build',return_value={'assets':m['assets']}), \
+                    patch.object(harness,'execute',side_effect=self.fake_execute), \
+                    redirect_stdout(io.StringIO()):
+                harness.continue_closed(root)
+            self.assertEqual(destination.read_bytes(),before)
+
+    def test_invalid_evidence_or_partner_blocks_before_any_mutation(self):
+        def wrong_attempt(root):
+            p=root/CASES[0]/'attempt.json'; data=json.loads(p.read_text())
+            data['assets']={}; p.write_text(json.dumps(data))
+        def failed_screen(root):
+            rows=records(CASES[0])
+            next(r for k,r in rows if k=='SC1_TWO_STEP')['physicalResidual_kg']=1e-5
+            (root/CASES[0]/'log.solver').write_text(render(rows))
+        def changed_recipe_with_updated_snapshot(root):
+            (root/CASES[0]/'system/fvSolution').write_text('changed solver controls')
+            (root/CASES[0]/'initialized.json').write_text(json.dumps(harness.case_input_hashes(root/CASES[0])))
+        mutations={
+            'incomplete_log':lambda r:(r/CASES[0]/'log.solver').write_text('SC1_TWO_LIBRARY version=1\nEnd\n'),
+            'failed_screen':failed_screen,
+            'wrong_attempt_build':wrong_attempt,
+            'missing_snapshot':lambda r:(r/CASES[0]/'initialized.json').unlink(),
+            'changed_initial_field':lambda r:(r/CASES[0]/'0/alpha.gas').write_text('changed field'),
+            'changed_prepared_recipe':changed_recipe_with_updated_snapshot,
+            'failed_mesh':lambda r:(r/CASES[0]/'log.checkMesh').write_text('failed mesh'),
+            'stale_result':lambda r:(r/CASES[0]/'result.json').write_text('{}'),
+            'attempted_partner':lambda r:(r/CASES[1]/'attempt.json').write_text('{}'),
+            'changed_partner':lambda r:(r/CASES[1]/'system/fvSolution').write_text('changed'),
+        }
+        for label,mutate in mutations.items():
+            with self.subTest(failure=label), tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp); m=self.seed(root); mutate(root); before=self.hashes(root)
+                with patch.object(harness,'verify_build',return_value={'assets':m['assets']}), \
+                        patch.object(harness,'execute') as execute:
+                    with self.assertRaises((ValueError,OSError)):
+                        harness.continue_closed(root)
+                    execute.assert_not_called()
+                self.assertEqual(self.hashes(root),before)
+
+    def test_changed_build_blocks_continuation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); self.seed(root); before=self.hashes(root)
+            with patch.object(harness,'verify_build',return_value={'assets':{'changed':'binary'}}), \
+                    patch.object(harness,'execute') as execute:
+                with self.assertRaisesRegex(ValueError,'different build'):
+                    harness.continue_closed(root)
+                execute.assert_not_called()
+            self.assertEqual(self.hashes(root),before)
+
+    def test_continuation_requires_explicit_run_and_allocation(self):
+        with redirect_stdout(io.StringIO()), patch('sys.stderr',new=io.StringIO()), \
+                patch.object(harness,'continue_closed') as launch:
+            with self.assertRaises(SystemExit):
+                harness.main(['continue-closed','--root','/unused'])
+            with patch.dict(os.environ,{},clear=True):
+                with self.assertRaisesRegex(ValueError,'active Kestrel allocation'):
+                    harness.main(['continue-closed','--root','/unused','--run'])
+            launch.assert_not_called()
+
+
 class Isolation(unittest.TestCase):
     def test_private_preparation_preserves_sources_and_installed_library(self):
         with tempfile.TemporaryDirectory() as tmp:

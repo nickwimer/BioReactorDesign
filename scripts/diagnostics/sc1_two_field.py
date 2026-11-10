@@ -3,6 +3,7 @@
 
 All project libraries are rebuilt privately. The build command launches no CFD.
 Runs require a separate explicit --run and reject any previously attempted case.
+continue-closed can validate/save the first result and launch only its fresh partner.
 """
 import argparse
 import hashlib
@@ -228,22 +229,57 @@ def verify_cases(root):
     return m
 
 
-def run_pair(root, pair):
-    root=root.resolve(strict=True); m=verify_cases(root)
-    names=[pair+'_no_reference',pair+'_gas_reference']
-    if pair=='source':
-        for name in ('closed_no_reference','closed_gas_reference'):
-            result=json.loads((root/name/'result.json').read_text())
-            if result['log_sha256']!=sha(root/name/'log.solver') or not summarize((root/name/'log.solver').read_text(),name)['screen_pass']:
-                raise ValueError('Source pair requires both completed closed screens to pass')
-    # Check BOTH destinations before attempting the first case.
-    for name in names:
-        case=root/name
-        if case.is_symlink() or any(p.name.startswith(('log.','attempt','result','initialized')) or p.name not in ('0','constant','system') for p in case.iterdir()):
-            raise ValueError('Refusing attempted/modified case: '+str(case))
-        if case_input_hashes(case)!=m['cases'][name]: raise ValueError('Case inputs changed: '+str(case))
+def require_fresh_case(root, name, manifest):
+    case=root/name
+    if case.is_symlink() or any(p.name not in ('0','constant','system') for p in case.iterdir()):
+        raise ValueError('Refusing attempted/modified case: '+str(case))
+    if case_input_hashes(case)!=manifest['cases'][name]:
+        raise ValueError('Case inputs changed: '+str(case))
+
+
+def completed_report(root, name, manifest):
+    """Validate a saved run and return its report without writing or running CFD."""
+    case=root/name
+    if case.is_symlink() or not case.is_dir():
+        raise ValueError('Missing/redirected completed case: '+str(case))
+    for rel in ('attempt.json','initialized.json','log.blockMesh','log.checkMesh',
+                'log.setFields','log.solver'):
+        path=case/rel
+        if path.is_symlink() or not path.is_file():
+            raise ValueError('Missing/redirected completed-run evidence: '+str(path))
+    expected_attempt=dict(case=name,build=manifest['build'],assets=manifest['assets'])
+    if json.loads((case/'attempt.json').read_text())!=expected_attempt:
+        raise ValueError('Completed attempt does not match the verified build')
+    inputs=case_input_hashes(case)
+    if inputs!=json.loads((case/'initialized.json').read_text()):
+        raise ValueError('Completed case inputs differ from initialized snapshot')
+    # blockMesh adds mesh files and setFields changes alpha; all other prepared
+    # inputs must still match their original case-manifest hashes.
+    for rel,digest in manifest['cases'][name].items():
+        if rel not in ('0/alpha.gas','0/alpha.liquid') and inputs.get(rel)!=digest:
+            raise ValueError('Completed case differs from prepared inputs: '+rel)
+    if 'Mesh OK.' not in (case/'log.checkMesh').read_text():
+        raise ValueError('Completed case lacks successful mesh check')
+    raw=(case/'log.solver').read_bytes()
+    report=summarize(raw.decode(),name)
+    report['log_sha256']=hashlib.sha256(raw).hexdigest()
+    if not report['screen_pass']:
+        raise ValueError('Completed case failed its numerical screen: '+str(report['errors']))
+    if sha(case/'log.solver')!=report['log_sha256'] or case_input_hashes(case)!=inputs:
+        raise ValueError('Completed evidence changed during validation')
+    destination=case/'result.json'
+    if destination.is_symlink() or (destination.exists() and
+            (not destination.is_file() or json.loads(destination.read_text())!=report)):
+        raise ValueError('Existing completed result differs; preserve it: '+str(destination))
+    return report
+
+
+def run_fresh_cases(root, manifest, names):
+    m=manifest
     env=environment(Path(m['build']))
     for name in names:
+        # Recheck immediately before claiming the case with attempt.json.
+        require_fresh_case(root,name,m)
         case=root/name
         write_json(case/'attempt.json',dict(case=name,build=m['build'],assets=m['assets']))
         execute(['blockMesh'],case,case/'log.blockMesh',env)
@@ -263,7 +299,34 @@ def run_pair(root, pair):
         report['log_sha256']=sha(case/'log.solver')
         write_json(case/'result.json',report)
         print(json.dumps(report,indent=2),flush=True)
+
+
+def run_pair(root, pair):
+    root=root.resolve(strict=True); m=verify_cases(root)
+    names=[pair+'_no_reference',pair+'_gas_reference']
+    if pair=='source':
+        for name in ('closed_no_reference','closed_gas_reference'):
+            result=json.loads((root/name/'result.json').read_text())
+            if result['log_sha256']!=sha(root/name/'log.solver') or not summarize((root/name/'log.solver').read_text(),name)['screen_pass']:
+                raise ValueError('Source pair requires both completed closed screens to pass')
+    # Check BOTH destinations before attempting the first case.
+    for name in names: require_fresh_case(root,name,m)
+    run_fresh_cases(root,m,names)
     print('PAIR='+pair+' complete. Review both budgets before accepting a numerical formulation.')
+
+
+def continue_closed(root):
+    """Recover a passing first report and run only the unattempted closed partner."""
+    root=root.resolve(strict=True); m=verify_cases(root)
+    first, partner='closed_no_reference','closed_gas_reference'
+    require_fresh_case(root,partner,m)
+    report=completed_report(root,first,m)
+    destination=root/first/'result.json'
+    if not destination.exists(): write_json(destination,report)
+    print('REUSED='+str(root/first)+' (validated saved run; no CFD rerun)',flush=True)
+    print(json.dumps(report,indent=2),flush=True)
+    run_fresh_cases(root,m,[partner])
+    print('PAIR=closed complete. Review both budgets before the source pair.')
 
 
 def main(argv=None):
@@ -273,14 +336,16 @@ def main(argv=None):
     v=subs.add_parser('verify'); v.add_argument('--root',type=Path,required=True)
     c=subs.add_parser('prepare-cases'); c.add_argument('--build-root',type=Path,required=True); c.add_argument('--out',type=Path,required=True)
     r=subs.add_parser('run'); r.add_argument('--root',type=Path,required=True); r.add_argument('--pair',choices=('closed','source'),required=True); r.add_argument('--run',action='store_true',required=True)
+    r=subs.add_parser('continue-closed'); r.add_argument('--root',type=Path,required=True); r.add_argument('--run',action='store_true',required=True)
     a=subs.add_parser('analyze'); a.add_argument('--log',type=Path,required=True); a.add_argument('--case',choices=CASES,required=True)
     args=parser.parse_args(argv)
-    if args.action in ('build','run') and not os.environ.get('SLURM_JOB_ID'):
+    if args.action in ('build','run','continue-closed') and not os.environ.get('SLURM_JOB_ID'):
         raise ValueError('Use an active Kestrel allocation for build/run')
     if args.action=='build': build(args.out)
     elif args.action=='verify': print(json.dumps(verify_build(args.root),indent=2))
     elif args.action=='prepare-cases': prepare_cases(args.build_root,args.out)
     elif args.action=='run': run_pair(args.root,args.pair)
+    elif args.action=='continue-closed': continue_closed(args.root)
     else: print(json.dumps(summarize(args.log.read_text(),args.case),indent=2))
 
 

@@ -49,9 +49,9 @@ budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
 **The isolated two-field test harness builds and passes runtime-library
-verification on Kestrel. After two corrected dictionary errors, the third
-attempt's first solver returned successfully, but the report rejected record
-coverage. Reanalyze the saved log before further CFD; conservation is unverified.**
+verification on Kestrel. The closed no-reference case now passes all 100 steps
+of the numerical screen after timestamp-roundoff handling fixed reporting.
+Next validate/save that result and run only its unattempted gas-reference partner.**
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
@@ -97,20 +97,34 @@ lookup coverage and reproduction of the old missing-phase-key failure.
 `closed_no_reference` returned from the solver with status 0, then reporting
 rejected `Incomplete or unexpected initial/step/alpha-call records`.
 The harness reached this check after verifying unchanged initial inputs and
-finding its library marker and solver `End`. The raw log has not been supplied;
-record coverage, final time and conservation remain unverified. No `result.json`
-was written. The other closed case and both source cases were not launched.
+finding its library marker and solver `End`. No `result.json` was written.
+The other closed case and both source cases were not launched.
 
 An exact-float timestamp comparison reproduces this rejection on an otherwise
 complete synthetic stream. The reporter now matches times only within 1e-12 s
 of the prescribed grid, retains raw values, rejects matched-key duplicates,
-and prints coverage counts plus missing/unexpected examples. This is a confirmed
-parser weakness, but its role in the actual Kestrel failure remains a hypothesis.
-All 34 harness tests pass. **Do not rebuild or rerun the first case.** Preserve
-all attempted roots and follow the [read-only saved-log analysis command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-reanalyze-the-saved-log-only).
-The source pair remains gated. The existing pair runner deliberately refuses
-attempted roots, so review the saved result before implementing a verified
-continuation for the unattempted gas-reference case.
+and prints coverage counts plus missing/unexpected examples.
+
+**Saved-log analysis at `e7825bd` passes:** the user supplied `complete: true`,
+`screen_pass: true`, no errors and 100 steps. Gas cumulative absolute mass
+residual is `5.769354784863862e-16` kg (limit `1.5e-12`); liquid is
+`5.770176179219254e-13` kg (limit `5.01e-10`). Initial/final liquid mass is
+0.5 / 0.499999999999939 kg. Both phases have zero reported external flux and
+sources, with negligible final-outer rescaling. Of 3,360 adjusted time keys,
+the maximum correction was `1.1102230246251565e-16` s, confirming timestamp
+roundoff as the reporting failure. This validates only the small closed
+constant-density transport fixture; it does not explain archived EMM excess
+inventory or select the reactor model. The raw log remains on Kestrel.
+
+**Do not rebuild or rerun the first case.** The new `continue-closed` command
+revalidates build, attempt provenance, initialized/prepared inputs, mesh-check
+evidence and the completed passing log, saves the missing `result.json` with
+its log hash, then launches only the fresh gas-reference partner. Existing
+inconsistent results, altered inputs or an attempted partner are refused.
+All 39 local harness tests pass, including mocked execution and preservation
+checks. Follow the [closed-partner continuation command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-continue-only-the-unattempted-closed-partner).
+Preserve all attempted roots. The source pair remains gated and unlaunched;
+review both closed screens before advancing.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
@@ -134,8 +148,8 @@ feasibility remains unproved. No source addback or physical correction is approv
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
-runtime-verified; the first solver now returned successfully, but its saved
-audit stream awaits valid coverage and budget analysis.
+runtime-verified; its closed no-reference screen passes, and the unattempted
+gas-reference partner is next through the guarded continuation.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory
