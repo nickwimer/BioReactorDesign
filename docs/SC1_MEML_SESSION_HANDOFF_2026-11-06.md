@@ -49,8 +49,9 @@ budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
 **The isolated two-field test harness builds and passes runtime-library
-verification on Kestrel. Its first solver startup stopped on a now-corrected
-pressure dictionary error; no timestep has advanced.** It compares no-reference and gas-reference settings
+verification on Kestrel. Two attempts stopped on case-dictionary errors now
+corrected: first the pressure-limit placement, then phase-specific alpha
+controls. No timestep has completed.** It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
 setting. A new dynamically sized alpha observer measures rescaling as well as
@@ -77,9 +78,20 @@ generation, mesh checks and initialization for `closed_no_reference`, then
 stopped at solver startup: OF9 rejects `pMin` in `fvSolution/PIMPLE`. The
 generator now retains the pressure reference in PIMPLE and puts the same
 1000 Pa floor in `system/fvConstraints` using `limitPressure`. No solver source
-or binary changed. All 27 harness tests pass, including the new dictionary
-regression for all four cases. Preserve the failed case root. Pull the
-correction over SSH and follow the [fresh case preparation
+or binary changed. All 27 harness tests passed at that correction.
+
+**The second closed-pair attempt**, at `c78199e`, created
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T232902Z`. The pressure
+constraint loaded successfully, and initial gas/liquid masses were 0.0005/0.5 kg.
+At time label 0.001 s, first PIMPLE iteration, `closed_no_reference` stopped
+because `fvSolution/solvers` had only literal `alpha`, not a match for
+`alpha.gas`. No timestep completed. The momentum-transfer implicit-pressure
+check and MULES both look up phase-specific alpha fields. The generator now
+uses `"alpha.*"`, matching `alpha`, `alpha.gas` and `alpha.liquid` with the same
+controls. Only that dictionary key changes; all 29 harness tests pass, including
+lookup coverage and reproduction of the old missing-phase-key failure.
+Preserve both failed case roots. Reuse the verified build without recompilation.
+Pull the correction over SSH and follow the [fresh case preparation
 and closed-pair launch command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-prepare-fresh-cases-and-run-only-the-closed-pair).
 It creates four case dictionaries but launches only the two closed periodic
 transport cases, serially, 256 cells and 100 steps each. The source pair remains
@@ -107,7 +119,7 @@ feasibility remains unproved. No source addback or physical correction is approv
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
-runtime-verified, but awaits successful timestepping after its startup fix.
+runtime-verified, but awaits successful timestepping after its dictionary fixes.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory

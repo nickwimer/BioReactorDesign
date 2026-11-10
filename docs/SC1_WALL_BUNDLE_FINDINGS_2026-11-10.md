@@ -237,8 +237,12 @@ This target is now implemented as an isolated small-case harness; see the
 After the field-assignment correction, 26 harness tests pass within the
 208-test SC1 suite. **The corrected private build and runtime verification
 passed on Kestrel** in `sc1_two_field_build_20261110T224950Z`. The first closed
-case stopped before timestepping on legacy pressure-limit syntax; its case
-generator is corrected, and fresh cases will reuse that build. It is not an
+case stopped before timestepping on legacy pressure-limit syntax. The second
+attempt loaded the corrected pressure constraint and initialized inventories,
+then stopped in the first alpha solve on a missing `alpha.gas` controls entry;
+no timestep completed. The generator now uses `"alpha.*"` for system and phase
+lookups, with 29 harness tests passing. Preserve both failed case roots and
+reuse the verified build for fresh closed-pair cases. It is not an
 SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

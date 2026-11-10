@@ -4,9 +4,12 @@
 
 **The corrected private build and runtime verification passed on Kestrel.**
 Use `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`; no rebuild
-is needed. The first closed-case solver process stopped during startup on a
-legacy pressure-limit dictionary entry, before any timestep. The generator is
-now corrected; the next action is the closed pair in fresh cases. This is a numerical test harness, not a corrected SC1 reactor
+is needed. The first attempt stopped on a legacy pressure-limit entry. After
+that correction, the second attempt initialized both phase inventories and
+entered the first timestep, but stopped on missing `alpha.gas` solver controls
+before completing a step. The generator now covers both the system-level and
+phase-specific alpha lookups. The next action is the closed pair in fresh cases.
+This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
 
@@ -219,8 +222,51 @@ The generator change affects only `system/fvSolution` and
 only in `referencePhase gas;`. A new regression parses the PIMPLE and constraint
 entries for every case, rejects all six obsolete pressure/density-limit keys,
 and verifies the preserved reference and the intended minimum pressure.
-All 27 two-field harness tests pass. This fixes the observed startup error;
+All 27 two-field harness tests passed at that correction. It fixed the observed startup error;
 it does not establish successful timestepping or conservation.
+
+## Second closed-pair attempt: phase-specific alpha controls
+
+The retry at `c78199e` created
+`/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T232902Z`.
+`closed_no_reference` passed mesh generation, checking and initialization.
+The solver successfully read `system/fvConstraints/limitp` with `min 1000`,
+confirmed `SC1_TWO_LIBRARY version=1`, and printed initial inventories:
+
+| Phase | Initial volume (m3) | Initial mass (kg) |
+|---|---:|---:|
+| gas | 0.0005 | 0.0005 |
+| liquid | 0.000500000000000001 | 0.5 |
+
+At `Time = 0.001`, PIMPLE iteration 1, it exited with status 1 because
+`alpha.gas` was undefined under `system/fvSolution/solvers`. The time label
+advanced, but **no timestep completed and no conservation screen passed**.
+The other closed case and both source cases were not launched. Preserve this
+complete root and the preceding failed root; do not edit or restart either.
+
+The generated entry was the literal `alpha`. This satisfied
+`phaseSystemSolve.C`'s `mesh_.solverDict("alpha")`, but not
+`MomentumTransferPhaseSystem::implicitPhasePressure`, which requests the phase
+field name before the first limiter call. The
+[OF9 MULES limiter](https://cpp.openfoam.org/v9/MULESTemplates_8C_source.html)
+also requests `mesh.solverDict(psi.name())`. Both consumers require entries
+matching `alpha.gas` and `alpha.liquid`, even with implicit phase pressure off.
+
+The correction uses the repository's existing quoted `"alpha.*"` pattern.
+It matches `alpha`, `alpha.gas` and `alpha.liquid` with the same controls.
+Only this key in `system/fvSolution` changes in each generated case; the
+subcycles, corrections, audit switch, flux settings, limiter defaults and
+screening tolerances are unchanged. Each pair still differs only by
+`referencePhase gas;`. **Reuse the verified build; no compiled source changed.**
+
+All 29 harness tests pass. New fixture-contract tests resolve the system and
+phase field names for all four cases and reproduce the failed phase lookups
+with a literal `alpha` key. These restricted Python checks are not native
+OpenFOAM dictionary or CFD tests. Source review also checked the selected
+pressure/momentum controls and schemes: the pure isothermal laminar fixtures
+do not solve energy, species or turbulence transport equations; implicit
+phase pressure defaults to false. Successful timestepping still requires the
+fresh Kestrel run below.
 
 ## Next Kestrel step: prepare fresh cases and run only the closed pair
 
@@ -267,18 +313,19 @@ No source-pair launch is included above.
 
 ## Validation and remaining work
 
-All 27 local harness tests pass after the pressure-dictionary correction.
-The preceding 208-test SC1 suite passed before this fixture-only change.
+All 29 local harness tests pass after the phase-specific alpha correction.
+The preceding 208-test SC1 suite passed before these fixture-only corrections.
 The harness tests cover paired fixtures,
 source/hook placement, retained phase equations, private preparation, runtime
 linkage rejection, attempted/modified case rejection, source-run gating and
 malformed/nonconservative audit streams, void-assignment compatibility and
-useful compiler-error output, and the OF9 pressure-dictionary contract.
+useful compiler-error output, the OF9 pressure-dictionary contract and
+system/phase alpha-control lookup coverage.
 The shared standalone C++ MULES
 arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
-evidence. The first CFD startup exposed the corrected dictionary error;
+evidence. The two CFD attempts exposed the corrected dictionary errors;
 successful timestepping and numerical conservation remain unproved.
 
 A pass in these small cases would justify further controlled tests, not a

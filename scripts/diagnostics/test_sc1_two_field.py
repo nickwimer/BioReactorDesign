@@ -166,6 +166,42 @@ INITIALIZATION
 
 
 class Fixtures(unittest.TestCase):
+    @staticmethod
+    def alpha_controls(solution, field):
+        # Restricted lookup for these flat generated solver entries: literal
+        # keys match exactly; only quoted keys are regular expressions.
+        # This is a fixture-contract check, not an OpenFOAM parser/runtime test.
+        solvers=solution.split('solvers\n{',1)[1].split('\nPIMPLE',1)[0]
+        entries=re.findall(r'("[^"\n]+"|\w+)\s*(\{[^{}]*\})',solvers)
+        for key,body in entries:
+            if key==field or (key.startswith('"') and re.fullmatch(key[1:-1],field)):
+                reader=Reader(foam('controls',body).encode())
+                controls=reader.dictionary(); reader.finish()
+                return controls
+        raise KeyError(field)
+
+    def test_alpha_controls_cover_system_and_mules_phase_lookups(self):
+        # phaseSystemSolve.C requests "alpha"; the momentum-transfer implicit
+        # pressure check and OF9 MULES::limiter request alpha.gas/alpha.liquid,
+        # even without an implicit alpha equation.
+        for name in CASES:
+            with self.subTest(case=name):
+                solution=case_files(name)['system/fvSolution']
+                controls=[self.alpha_controls(solution,field)
+                          for field in ('alpha','alpha.gas','alpha.liquid')]
+                self.assertTrue(all(c==controls[0] for c in controls))
+                self.assertEqual(controls[0]['nAlphaCorr'],[b'1'])
+                self.assertEqual(controls[0]['nAlphaSubCycles'],[str(SUBCYCLES).encode()])
+                self.assertEqual(controls[0]['sc1PhaseAudit'],[b'true'])
+                for option in ('meanFluxReference','splitPhaseFlux'):
+                    self.assertEqual(controls[0][option],[b'false'])
+
+    def test_literal_alpha_key_reproduces_missing_phase_controls(self):
+        legacy=case_files(CASES[0])['system/fvSolution'].replace('"alpha.*"','alpha')
+        self.assertIn('nAlphaSubCycles',self.alpha_controls(legacy,'alpha'))
+        for field in ('alpha.gas','alpha.liquid'):
+            with self.assertRaises(KeyError): self.alpha_controls(legacy,field)
+
     def test_of9_pressure_reference_and_limit_are_in_separate_dictionaries(self):
         # OF9 pressureReference rejects these legacy keys in PIMPLE. Its
         # fvConstraints reader instead loads system/fvConstraints/limitp.

@@ -59,7 +59,7 @@ wallDist { method meshWave; }
 ''')
     put('system/fvSolution', f'''solvers
 {{
-    alpha {{ nAlphaCorr 1; nAlphaSubCycles {SUBCYCLES}; sc1PhaseAudit true;
+    "alpha.*" {{ nAlphaCorr 1; nAlphaSubCycles {SUBCYCLES}; sc1PhaseAudit true;
              meanFluxReference false; splitPhaseFlux false; }}
     p_rgh {{ solver PCG; preconditioner DIC; tolerance 1e-12; relTol 0; }}
     p_rghFinal {{ $p_rgh; }}
