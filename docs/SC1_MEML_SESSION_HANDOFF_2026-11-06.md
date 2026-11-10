@@ -7,7 +7,33 @@
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
 **Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
 
-**Latest state (2026-11-10):** Both numerical cases in
+**User direction (2026-11-10): three fields are optional.** The assistant had
+introduced the gas split as a proposed conservation remedy. The user explicitly
+requires retaining it only if needed. The objective is the simplest physically
+validated, conservative nonreacting 9.9 s checkpoint, with a common hydrodynamic
+basis for MM/EMM/MEML biology. Do not treat a three-field implementation as the
+deliverable or expand its closures before evaluating a simpler candidate.
+
+**Latest result:** The probe in
+`/scratch/nwimer/sc1_source_probe_control_20261110T194214Z` completed successfully:
+status 0, 2,000 steps over 0.1 s, ExecutionTime 749.47 s. All legacy audit records
+match baseline exactly at printed precision. The 16 new rows pass completeness
+checks and their bin sums independently match the same-outer alpha ledger.
+Final-outer liquid splitting is −96.438397 mg (chiefly near alpha=1), and
+implicit evolution is −82.095139 mg (chiefly interior alpha). The corresponding
+raw-target bound excess is only 0.000110285 mg, but coupled phase-sum/pressure
+feasibility remains unproved. No source addback or physical correction is approved.
+
+Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
+first. Next review the archived two-field initialization, liquid budgets,
+boundaries and MRF setup, then prepare a matched nonreacting two-field candidate
+with a suitable conservation ledger. No such candidate is ready to run yet.
+Do not repeat the completed probe. The historical two-field excess inventory
+does not establish that phase count caused it; t=0 and boundary/source budgets
+were not established. Retain three fields only for a demonstrated physical
+need that the simpler formulation cannot satisfy.
+
+**Preceding numerical checks:** Both cases in
 `/scratch/nwimer/sc1_alpha_numerics_20261110T180204Z` are complete. The half-dt
 case completed 4,000 steps/8,000 alpha calls with status 0 over the identical
 0.1 s interval. Halving dt worsened the liquid mass-budget shortfall from
@@ -19,20 +45,17 @@ shortfall and substantial iteration-to-iteration variation. Neither numerical
 setting is an accepted fix. Mean OTR remains about 96.8 mg/s and oxygen
 clipping cancels about 80.57% of requested removal.
 
-Read [the half-timestep result and local source-feasibility implementation](sc1_alpha_half_dt_results_2026-11-10.md)
-first. The alpha/species accounting closes; the unresolved issue is the
+The [half-timestep result and source-feasibility implementation](sc1_alpha_half_dt_results_2026-11-10.md)
+documents that stage. The alpha/species accounting closes; the unresolved issue is the
 source/flux/pressure formulation's physical consistency and coupling, not an
 unattributed ledger error. No experimental closure is approved.
 
-**Current action: observer control reported running; await output.** The user
-reports launching the fresh probe control using the guarded command. Its
-timestamped case path and completion output have not yet been supplied; do not
-launch a second probe or repeat that command. The source-probe
+**Preserve the completed observer build.** The source-probe
 build `/scratch/nwimer/sc1_alpha_source_probe_20261110T191459Z` compiled and
 passed runtime verification, including unchanged installed library/original
-sources and private linkage of the solver and trial extensions. No completed
-CFD result with this build has been supplied. Read [the verified build and one-shot run
-instructions](sc1_alpha_source_probe_run_2026-11-10.md). The new launcher pins
+sources and private linkage of the solver and trial extensions. The
+[build/run record](sc1_alpha_source_probe_run_2026-11-10.md) is now historical;
+do not repeat its command. The launcher pins
 the successful binaries, copies the original manifest checkpoint into one
 fresh case, retains all baseline physics/numerics/biology, enables only the
 observer and checks legacy-record regression. All **162 local SC1 tests pass**.
@@ -47,14 +70,14 @@ experiments. Newer alpha source code retains the capped Su/Sp structure, so a
 version upgrade is not an established fix. The closest hybrid paper explicitly
 left gas morphology transfer and froth to future work. Use the references to
 guide isolated numerical and hydrodynamic benchmarks; none validates SC1 or
-changes the ongoing diagnostic run. No code or simulation change accompanies
+requires three fields. No code or simulation change accompanies
 this research follow-up.
 
 Do not rerun the completed `four_outer`, `half_dt`, or either case in
 `/scratch/nwimer/sc1_alpha_pair_20261110T155635Z`. Preserve the existing verified
 build `/scratch/nwimer/sc1_alpha_audit_20261107T001119Z` and the new verified
-source-probe build. The fresh probe control will gather measurements absent
-from all old logs and check observational regression. No further blind dt/outer/coefficient sweep
+source-probe build and completed probe control. Its new measurements and
+observational regression are recorded above. No further blind dt/outer/coefficient sweep
 is requested. Older launch blocks are historical; allocation availability must
 be checked rather than inferred from transcripts.
 
@@ -187,7 +210,7 @@ interpreting entrainment benefits. Read the
 
 ## 1. What we are trying to accomplish
 
-Establish a **physically credible, mass/species-conserving, nonreacting three-phase MEML hydrodynamic and oxygen-transfer state at 9.9 seconds**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Preserve the physical liquid inventory, resolve the upper-impeller free surface and froth/entrainment mechanisms, and predict credible bubble residence, gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.
+Establish a **physically credible, mass/species-conserving, nonreacting hydrodynamic and oxygen-transfer state at 9.9 seconds using the simplest adequate phase representation**, suitable as a common baseline for subsequent **MM, EMM, and MEML** biological-model comparisons. Three fields are optional and require evidence of need. Preserve the physical liquid inventory, represent the upper-impeller/free-surface interaction and any experimentally consequential froth/entrainment, and predict credible gas holdup and O₂ transfer **without forcing a target DO by tuning arbitrary coefficients**.
 
 The user's biological solver intentionally advances biology at an equivalent **four-hour interval per biology update** and holds OUR fixed over many CFD seconds. **Do not treat that scheduling as a bug or silently change the biological update scheme.** The immediate task is to repair/validate hydrodynamics and transfer before using any new state as a biological checkpoint.
 

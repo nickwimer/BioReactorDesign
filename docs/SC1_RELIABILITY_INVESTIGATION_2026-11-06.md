@@ -5,12 +5,21 @@ no new Kestrel runs or experimental measurements. Source reviewed at
 `d7fc94d8f2ba763ade4257093ec2b817c56ecc70`, with diagnostic fixes accompanying
 this report. All experimental closures remain unapproved for production.
 
+**Architecture decision superseded, 2026-11-10:** The user clarified that three
+fields should be retained only if necessary. The earlier provisional retention
+recommendation below is historical. Review the
+[completed probe and model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md):
+evaluate the simpler two-field candidate under matched conditions before
+expanding the three-field closures. The old EMM inventory anomaly has not been
+isolated to phase count. Conservation and physical validation, not retention
+of the gas split, are the objective.
+
 **Subsequent build update:** The isolated audit at `6ac7e36` successfully
 compiled on Kestrel; all 19 local checks also passed there. No new CFD audit
 run has occurred. See the [build record](sc1_timestep_conservation_audit.md#successful-kestrel-build-2026-11-06)
 for the executable path, dependency evidence and remaining runtime checks.
 
-## Recommendation
+## Original recommendation (architecture preference superseded)
 
 Retain the three-field MEML architecture provisionally: resolved coherent
 headspace/liquid interface, dispersed bubbles with a PB, and conservative

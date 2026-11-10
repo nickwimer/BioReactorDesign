@@ -3,8 +3,11 @@
 Reviewed 2026-11-10. This research supplements the
 [reliability investigation](SC1_RELIABILITY_INVESTIGATION_2026-11-06.md)
 and [current source probe](sc1_alpha_source_probe_run_2026-11-10.md).
-The user reports that the probe is running; no completion output has been
-received. No solver, case, library or biological schedule is changed here.
+The probe is now complete; see its [results and the reopened model-selection
+decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md). The user clarified
+that three fields should be retained only if needed. This review supplies
+candidates for the simplest adequate representation, not a requirement to
+retain the gas split. No solver, case, library or biological schedule is changed.
 
 ## Assessment
 
@@ -124,8 +127,9 @@ multiplier; broth-specific foam evidence is still needed.
 
 ## How this changes the next implementation decision
 
-1. Finish and interpret the current observer run, including legacy regression.
-   Preserve it and all completed runs; do not launch a second probe.
+1. The observer and legacy regression are complete. Preserve all runs. Follow
+   the model-selection decision above: establish the old two-field inventory
+   history and matched configuration before selecting the simpler benchmark.
 2. Compare the exact source/flux/pressure sequence against the pinned upstream
    BiRD and Foundation implementations. Build an isolated minimal reproduction
    of the observed source/bounds problem before selecting a correction.

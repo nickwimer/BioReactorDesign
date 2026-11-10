@@ -1,11 +1,13 @@
 # SC1 source-probe build verified; fresh control run ready
 
-**Status update:** The user reports that the probe control is running. Its
-case path and completion log have not yet been supplied. Do not repeat the
-launch block below. Await that result; the [external benchmark review](SC1_EXTERNAL_BENCHMARKS_2026-11-10.md)
-provides references for interpreting it and selecting subsequent tests.
+**Completed:** `/scratch/nwimer/sc1_source_probe_control_20261110T194214Z`
+finished with status 0 and exact printed legacy regression. Do not repeat the
+launch block below. Read the [probe results and model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md).
+Three fields are now explicitly optional; no new three-field closure run or
+build is requested. The [external benchmark review](SC1_EXTERNAL_BENCHMARKS_2026-11-10.md)
+provides references for a simpler matched candidate.
 
-## Verified build, no new CFD result
+## Historical build verification
 
 `Pasted text(20261110-192420).txt` confirms successful private phase-library
 and solver compilation and source-probe runtime verification at:
@@ -28,8 +30,8 @@ The original 182 phase-source files, 185 prepared private phase-source files
 and 34 prepared solver-source files all passed their provenance checks. The
 solver, film and entrainment extensions resolve the new private phase library.
 Both mandatory audit/probe symbols passed verification. The existing unused
-variable warnings did not prevent linking. **No CFD has run with this build
-in the supplied evidence.**
+variable warnings did not prevent linking. At this build-only stage no CFD
+had run; the subsequent completed probe is linked above.
 
 ## One fresh control, unchanged equations and settings
 
