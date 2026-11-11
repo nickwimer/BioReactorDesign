@@ -2,9 +2,9 @@
 
 ## Where we are
 
-**The latest Kestrel console reports a passing 10-ms resting startup on the actual MEML vessel mesh, with 1000 L of liquid and all 800 pressure-correction groups converged.** This is the first reported complete pass of this short startup screen. It is a useful numerical milestone, but the stirred, aerated reactor and the common 9.9-s operating checkpoint are still unfinished.
+**The 24-pass hydrostatic candidate has passed the 10-ms resting startup on the actual MEML vessel mesh, with 1000 L of liquid and all 800 pressure-correction groups converged.** The correct archive and complete log are now received and independently verified. This is the first verified complete pass of this short startup screen. It is a useful numerical milestone, but the stirred, aerated reactor and the common 9.9-s operating checkpoint are still unfinished.
 
-**Evidence qualification:** the latest console is saved in [the console result](sc1_reactor_vof_hydro_convergence_console_2026-11-11.json). The archive attached with it is a byte-for-byte duplicate of the previous ten-pass run. Therefore the new 24-pass run is console-reported, with independent full-log/archive verification pending. Do not rerun CFD to obtain the existing evidence bundle.
+**Evidence scope:** [the verified result](sc1_reactor_vof_hydro_convergence_result_2026-11-11.json) records all 17 bundled file digests, 11 included initial-input digests, the independently reproduced phase budgets and all 19,200 pressure records. The first attachment duplicated the previous ten-pass run; the replacement is correct and closes that evidence gap. Native field arrays and external binaries are absent from this small archive, so their validation remains evidence from the pinned Kestrel workflow. No CFD rerun is needed.
 
 This document is the current entry point. The [older session handoff](SC1_MEML_SESSION_HANDOFF_2026-11-06.md) retains the investigation history; its older “next action” paragraphs are not current launch instructions.
 
@@ -19,7 +19,7 @@ Produce the simplest physically credible, mass/species-conserving, nonreacting *
 - Commit and push every code or documentation change to `codex/sc1-headspace-bubble-audit-20261029`.
 - There is no direct HPC access from this workspace. The user runs reviewed commands on Kestrel; an earlier allocation must not be assumed still active.
 
-## Latest reported result
+## Latest verified startup result
 
 Run source commit: `652de393d9d12b53e115c827c7cb8a0c598ae441`. Case variant: `sc1_meml_vof_hydrostatic_convergence_v2`. Case root:
 
@@ -27,9 +27,9 @@ Run source commit: `652de393d9d12b53e115c827c7cb8a0c598ae441`. Case variant: `sc
 /kfs3/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z
 ```
 
-The console reports `VOF_HYDRO_CONVERGENCE=PASS`, exit status 0, normal `End`, no recorded failure events, and 51 initial inputs unchanged. The run uses eight ranks, dt = 5e-5 s, 200 steps and 24 pressure passes per correction (`nNonOrthogonalCorrectors 23`). There are two outer iterations and two pressure corrections per outer iteration. The workflow reconstructed and checked all 40 requested native snapshots, according to its reported success; those native arrays have not been independently read here.
+The console reports `VOF_HYDRO_CONVERGENCE=PASS` and exit status 0. The received log independently confirms normal `End`, all required records and passing physical/convergence screens. The collector reports 51 initial inputs unchanged; the 11 included initial files also verify locally. The run uses eight ranks, dt = 5e-5 s, 200 steps and 24 pressure passes per correction (`nNonOrthogonalCorrectors 23`). There are two outer iterations and two pressure corrections per outer iteration. The workflow reconstructed and checked all 40 requested native snapshots, according to its reported success; those native arrays have not been independently read here.
 
-| Quantity | Latest reported value | Acceptance / interpretation |
+| Quantity | Verified log / saved-result value | Acceptance / interpretation |
 | --- | ---: | --- |
 | Simulated duration | 0.01 s | Short resting startup only |
 | Pressure groups converged | 800 / 800 | All groups required |
@@ -44,11 +44,11 @@ The console reports `VOF_HYDRO_CONVERGENCE=PASS`, exit status 0, normal `End`, n
 | Liquid mass residual L1 | 9.76996262e-12 kg | <=1.00001e-5 kg |
 | Gas mass residual L1 | 1.06581410e-14 kg | <=6.52002269e-9 kg |
 
-Final signed liquid/gas physical residuals are 2.22044605e-13 / -9.61231480e-24 kg. Reported final alpha lies in [0,1]. At 10 ms the liquid-volume difference from the ten-pass control is zero, and peak-speed differences are approximately 6.6e-23 m/s for liquid and -2.0e-20 m/s for gas. Increasing pressure passes closed the convergence requirement without materially changing the reported flow trajectory.
+Final signed liquid/gas physical residuals are 2.22044605e-13 / -9.61231480e-24 kg. Logged final alpha lies in [0,1]. At 10 ms the liquid-volume difference from the ten-pass control is zero, and peak-speed differences are approximately 6.6e-23 m/s for liquid and -2.0e-20 m/s for gas. Increasing pressure passes closed the convergence requirement without materially changing the reported flow trajectory.
 
-### Evidence to obtain next
+### Evidence received and verified
 
-Correct existing bundle:
+Verified bundle, now received:
 
 ```text
 /kfs3/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z_evidence/reactor_failure_evidence.tar.gz
@@ -58,18 +58,14 @@ The collector uses the filename `reactor_failure_evidence.tar.gz` for this succe
 
 | Identity | SHA-256 |
 | --- | --- |
-| Correct new bundle, expected from console | `cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3` |
-| New solver log, reported | `704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3` |
+| Correct new bundle, verified | `cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3` |
+| New solver log, verified | `704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3` |
 | Received console transcript | `632e67b19f6adc51559fc15e3fd448705e9e9a1801c47987f490e70429c563da` |
-| Received archive, actually the old ten-pass run | `33f5a524c9440516b0e2477c830ef7378ea64ef3e9d4b41f2c0de6f135296fad` |
+| Earlier duplicate attachment, old ten-pass run | `33f5a524c9440516b0e2477c830ef7378ea64ef3e9d4b41f2c0de6f135296fad` |
 
-The received archive's manifest identifies `/kfs3/scratch/nwimer/sc1_vof_hydro_20261111T220400Z`. Its previously verified contents cannot independently establish the new result. Obtain the correct archive, check its digest and safe member paths, verify member/input digests, then independently re-parse the new log and reconcile its budgets, 200 steps and 19,200 pressure records. Compare against the saved result and preserve exact provenance. Native snapshot validation and the external build chain remain Kestrel-workflow evidence unless those files are separately supplied.
+The replacement archive identifies the correct `20261111T223454Z` root and source commit. Its paths contain only safe regular files. All 17 listed member digests, 11 included input digests and ten current recipe-file hashes match. Attempt/build identities agree with the manifest. The saved result exactly matches the earlier console; log budgets and pressure coverage reproduce independently. The log records **282 seconds of solver wall time**.
 
-A read-only check on Kestrel, requiring no CFD or allocation, is:
-
-```bash
-sha256sum /scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z_evidence/reactor_failure_evidence.tar.gz
-```
+The supplied old and new manifests differ only in the `system/fvSolution` input hash. The included dictionaries confirm the sole edit is `nNonOrthogonalCorrectors 9` to `23`. All 40 saved matched-time comparisons against the old result reproduce. Their native mesh/field arrays and external runtime assets are absent, so this verifies saved summaries and log evidence, not a local recomputation from native snapshots. The original ten-pass result remains a failed convergence control.
 
 ## What changed, and what the current model represents
 
@@ -102,21 +98,21 @@ This has suppressed the observed short-time spurious motion. A continuum identit
 | Original VOF nonorthogonal test | All 672 observed pressure-correction groups converge, yet the same speed failure remains. More pressure passes alone did not fix that original force imbalance. |
 | Two-step force probe | Verified face terms reconstruct eight samples / sixteen peak cells. Gravity/pressure imbalance dominates sampled motion; capillarity is much smaller there. Fresh versus matrix pressure reconstruction agrees closely. |
 | Hydrostatic ten-pass control | Completes 10 ms and passes physical screens. Full acceptance fails because 203/800 pressure groups miss the final-pass criterion. Full received log/archive independently verified. |
-| Hydrostatic 24-pass comparison | Console reports all physical screens and all 800 pressure groups pass. Correct latest archive still needed. |
+| Hydrostatic 24-pass comparison | Correct archive/log verified; all physical screens and all 800 pressure groups pass. Short resting startup accepted within the stated evidence scope. |
 
 The old 151-L anomaly is not quantitatively attributed by these small diagnostics. Likewise, correct inventory does not prove that wall climbing, the central depression, upper-impeller wetting or oxygen transfer is physically correct.
 
 ## Ordered work toward a working simulation
 
-### 1. Close the evidence gap for the completed short run
+### 1. Completed: verify the short-run evidence
 
-Obtain and verify the correct existing bundle described above. Record the result without overwriting the ten-pass control or recasting its failed convergence flag as a pass. No CFD rerun or rebuild is needed for this step.
+The correct bundle is received and verified as described above. Preserve both controls and the passing candidate. Do not repeat this run. The next implementation task is the longer-rest and perturbation validation below.
 
 ### 2. Implement and run a longer resting validation
 
 The present executable **hard-aborts beyond 0.010000000001 s**. Its reporters also prescribe 200 steps and 40 snapshots. Editing `endTime` alone is insufficient. Prepare a separate duration-aware candidate and reporting contract, retaining the fixed reference and original physical screens, with complete log coverage, output checks and monitored stopping.
 
-Use staged durations chosen against measured wall time and allocation; 0.02 s followed by 0.1 s are possible planning targets, not implemented commands. The ten-pass control took 238 solver wall seconds; the latest 24-pass wall time is not available in the received console. Assess speed and kinetic-energy trends, inventory, pressure, interface drift and mesh/timestep sensitivity. Ten quiet milliseconds does not establish long-time equilibrium or stability.
+Use staged durations chosen against measured wall time and allocation; 0.02 s followed by 0.1 s are possible planning targets, not implemented commands. The ten-pass control took 238 solver wall seconds and the verified 24-pass run took 282 seconds; these are observed solver times, not guarantees for longer runs. Assess speed and kinetic-energy trends, inventory, pressure, interface drift and mesh/timestep sensitivity. Ten quiet milliseconds does not establish long-time equilibrium or stability.
 
 ### 3. Test a physical perturbation, with the reference held fixed
 
@@ -149,14 +145,14 @@ All timestamps below are literal UTC directory names. `/scratch` resolves to `/k
 | OpenFOAM environment | `$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc`, then `module load libfabric` |
 | Hydrostatic build, reused by both runs | `/scratch/nwimer/sc1_vof_hydro_build_20261111T220400Z` |
 | Verified ten-pass control | `/scratch/nwimer/sc1_vof_hydro_20261111T220400Z` |
-| Latest console-reported 24-pass case | `/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z` |
+| Verified passing 24-pass case | `/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z` |
 | Verified force-probe case | `/scratch/nwimer/sc1_vof_force_20261111T205814Z` |
 | Original VOF build | `/scratch/nwimer/sc1_vof_build_20261111T191346Z` |
 | Original VOF nonorthogonal control | `/scratch/nwimer/sc1_vof_nonorth_20261111T203602Z` |
 | Private rate-split build | `/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z` |
 | Eight completed rate-split regressions | `/scratch/nwimer/sc1_two_field_rates_cases_20261111T021516Z` |
 
-Current hydrostatic executable is `bin/sc1InterFoamHydrostatic`, SHA-256 `7da783091d8eb2d2df22ee6d657543850ce8b4c226f59fc39af8a35a61387c5f`. Both hydrostatic runs use this same binary. Preserve it and its source/build manifest. The new run's manifest hash has not been supplied; do not infer it from the control's manifest hash.
+Current hydrostatic executable is `bin/sc1InterFoamHydrostatic`, SHA-256 `7da783091d8eb2d2df22ee6d657543850ce8b4c226f59fc39af8a35a61387c5f`. Both hydrostatic runs use this same binary. Preserve it and its source/build manifest. The new run's verified manifest SHA-256 is `74f7662afbe39e1505b91b5d990ac37a8eb26e400bf633600ad55500638a7340`; saved result SHA-256 is `fb397516c18791f0de82b625969139d8cd7c9c9a78b7f17e8f0c8befcf71660d`.
 
 ## Code, tests and next-session entry points
 
@@ -171,4 +167,4 @@ Relevant implementation under `scripts/diagnostics/`:
 
 The latest implementation validation recorded 66 focused tests passing across hydrostatic, convergence, force, nonorthogonal, gradient, saved-field, VOF and failure-reporting modules. These include Python contracts, a standalone compiled C++ profile test and mocked workflows. The user confirmed the actual OpenFOAM 9 build on Kestrel. Local unit tests are not a CFD validation claim. This handoff update changes documentation only.
 
-Build recipes, binaries, dependencies, inputs and parent results are pinned. Changing an old recipe helper can invalidate reuse of a preserved build; introduce a versioned candidate deliberately. Do not loosen screens merely to obtain a pass. Do not repeat completed experiments just because a historical document contains their launch command. The immediate next action is to verify the correct existing 24-pass evidence, then implement the longer-rest and perturbation work above.
+Build recipes, binaries, dependencies, inputs and parent results are pinned. Changing an old recipe helper can invalidate reuse of a preserved build; introduce a versioned candidate deliberately. Do not loosen screens merely to obtain a pass. Do not repeat completed experiments just because a historical document contains their launch command. The short-run evidence gap is closed. The immediate next action is to implement the longer-rest and fixed-reference perturbation work above.

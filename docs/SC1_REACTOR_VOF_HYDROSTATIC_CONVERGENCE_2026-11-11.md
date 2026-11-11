@@ -1,6 +1,6 @@
 # SC1 hydrostatic startup: pressure convergence comparison
 
-## Latest result: 24-pass startup reports PASS
+## Latest result: 24-pass startup PASS, archive and log verified
 
 The run at `652de39` in
 `/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z` reports
@@ -16,18 +16,32 @@ Peak liquid/gas speeds remain 8.85673136e-8 / 1.95089614e-5 m/s, maximum Co
 matched-time peak-speed differences from the control are approximately
 6.6e-23 / -2.0e-20 m/s; liquid-volume difference is zero.
 
-**Provenance:** this new result is reported by the supplied console, saved in
-[the console record](sc1_reactor_vof_hydro_convergence_console_2026-11-11.json).
-The attached archive is a byte-for-byte duplicate of the old ten-pass control
-(hash below), not the new run. Correct archive verification remains pending.
-Expected new archive:
+**The correct archive is now received and independently verified.** The first
+attachment duplicated the old ten-pass control; the replacement closes that gap.
+See [the full verified result](sc1_reactor_vof_hydro_convergence_result_2026-11-11.json).
+All 17 listed file digests, 11 included initial-input hashes and ten current
+recipe-file hashes match. Attempt identities agree. Re-parsing the complete log
+reproduces the phase budgets, all 19200 pressure records and 800 converged groups.
+The saved result exactly matches the console. The log records 282 solver wall
+seconds. The old/new included fvSolution files differ only in pressure-pass count;
+all 40 saved matched-time comparisons reproduce against the preserved control.
+
+Verified archive:
 `/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z_evidence/reactor_failure_evidence.tar.gz`,
 SHA-256 `cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3`.
-The reported new solver-log SHA-256 is
+Solver-log SHA-256:
 `704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3`.
-Obtain that existing bundle; do not rerun this comparison. See the
-[current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for the full evidence scope,
-longer-rest/perturbation work and remaining route to an operating simulation.
+Manifest SHA-256:
+`74f7662afbe39e1505b91b5d990ac37a8eb26e400bf633600ad55500638a7340`.
+Saved-result SHA-256:
+`fb397516c18791f0de82b625969139d8cd7c9c9a78b7f17e8f0c8befcf71660d`.
+
+Native field arrays and runtime binaries are not bundled. Their checks remain
+Kestrel-workflow evidence; local verification checks saved summaries and the log,
+not a reconstruction from native arrays. This accepts the short resting startup
+within that scope. Do not rerun it. See the
+[current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for longer-rest/perturbation
+work and the remaining route to an operating simulation.
 
 ## Previous ten-pass control: verified result
 
@@ -134,8 +148,8 @@ else
 fi
 ```
 
-The user has run this command and supplied the passing console. Obtain the correct
-existing bundle as described above. Longer rest and physical perturbation testing
+The user has run this command and supplied the passing console and correct
+archive. Independent log/archive verification is complete as described above. Longer rest and physical perturbation testing
 require new duration/restart-aware work; the current binary stops at 10 ms.
 No operating checkpoint or biology result is accepted; the four-hour biological
 update schedule remains unchanged.
@@ -147,5 +161,6 @@ initial/final convergence criteria, phase budgets and physical pressure/velocity
 checks. They also exercise immutable control identities, the single dictionary
 change, no-build reuse, overlap/attempt rejection, missing native fields,
 matched-time comparisons and evidence collection on normal and failed runs.
-The 24-pass CFD comparison has now run on Kestrel and reports PASS. This
+The 24-pass CFD comparison has run on Kestrel and passed; its archive and log
+are now independently verified. This
 documentation update does not change solver code or acceptance thresholds.

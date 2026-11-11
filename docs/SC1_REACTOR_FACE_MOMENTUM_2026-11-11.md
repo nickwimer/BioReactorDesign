@@ -36,7 +36,7 @@ Its v4 bundle is now verified. The
 reproduced the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The latest 24-pass hydrostatic startup reports PASS over 10 ms; verification of the correct archive is pending. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for evidence status and next work; do not repeat the completed comparison.**
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The 24-pass hydrostatic startup has a verified 10-ms pass: its correct archive and complete log have been checked. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for evidence scope and longer-rest/perturbation work; do not repeat the completed comparison.**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 

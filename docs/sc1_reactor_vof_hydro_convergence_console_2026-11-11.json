@@ -1,5 +1,5 @@
 {
-  "provenance": "User-supplied console transcript only for the new 24-pass run. Its full evidence archive has not been received.",
+  "provenance": "Original user-supplied console transcription. Correct replacement archive subsequently received and independently verified; see sc1_reactor_vof_hydro_convergence_result_2026-11-11.json.",
   "console_sha256": "632e67b19f6adc51559fc15e3fd448705e9e9a1801c47987f490e70429c563da",
   "reportedRun": {
     "complete": true,
@@ -371,10 +371,16 @@
     "matchesNewRun": false,
     "meaning": "Byte-for-byte duplicate of the previously verified ten-pass archive; cannot verify the new 24-pass run."
   },
-  "verificationPending": [
+  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md. Archive gap closed; implement longer-rest and fixed-reference perturbation validation without rerunning completed CFD.",
+  "verificationPendingAtInitialReceipt": [
     "Correct 24-pass archive digest and member checks",
     "Independent parsing of its complete log and comparison result",
     "Native arrays remain on Kestrel; a standard small evidence bundle does not include them"
   ],
-  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md. Obtain the correct archive without rerunning completed CFD; then implement longer-rest and perturbation validation."
+  "followupVerification": {
+    "archiveVerified": true,
+    "sha256": "cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3",
+    "result": "sc1_reactor_vof_hydro_convergence_result_2026-11-11.json",
+    "scope": "All 17 listed digests, 11 included input hashes, complete log budgets and 800 pressure groups checked; native arrays and external binaries are not included."
+  }
 }

@@ -1,8 +1,8 @@
 # SC1 MEML oxygen-transfer investigation — new-session handoff
 
 **Current entry point:** [SC1 current handoff — 11 November 2026](SC1_CURRENT_HANDOFF_2026-11-11.md).
-The latest 24-pass hydrostatic startup reports PASS over 10 ms; independent
-verification of its correct archive is pending. Start with that handoff for
+The latest 24-pass hydrostatic startup passes over 10 ms; its correct archive
+and complete log are now independently verified. Start with that handoff for
 current status and next work. Older “next action” paragraphs below are retained
 as investigation history, not current launch instructions.
 
@@ -11,7 +11,7 @@ as investigation history, not current launch instructions.
 **Research system:** *Pseudomonas putida* SC1 stirred-tank simulation, OpenFOAM 9 / BiRD, NLR Kestrel  
 **GitHub branch:** `codex/sc1-headspace-bubble-audit-20261029`  
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
-**Status:** The latest private VOF hydrostatic startup reports a complete short resting-screen pass. Longer rest, physical perturbations, stirring, aeration and oxygen-transfer validation remain. The oxygen deficit is unresolved; no experimental closure has been approved for production.
+**Status:** The latest private VOF hydrostatic startup has a verified complete short resting-screen pass. Longer rest, physical perturbations, stirring, aeration and oxygen-transfer validation remain. The oxygen deficit is unresolved; no experimental closure has been approved for production.
 
 **User direction (2026-11-10): three fields are optional.** The assistant had
 introduced the gas split as a proposed conservation remedy. The user explicitly
@@ -253,11 +253,13 @@ outer iteration pass. The first-correction residual is still contracting at
 pass ten (pass-10/pass-9 ratio 0.419 to 0.549). All linear final residuals pass.
 
 **Latest result: the [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
-reports PASS at `652de39`**, root
+passes at `652de39`**, root
 `/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z`. All 200 steps and
 800/800 pressure groups pass, with unchanged physical limits and essentially
-identical quiet flow. The supplied archive duplicates the old ten-pass archive;
-the correct new bundle still needs independent verification. See the
+identical quiet flow. The correct replacement archive is now verified: all 17
+file digests, 11 included input hashes, phase budgets and 19200 pressure records
+match; all 800 groups converge. Solver wall time is 282 seconds. Native arrays
+and external binaries remain Kestrel-workflow evidence. See the
 [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for exact identities and
 ordered work. Do not repeat the completed comparison. The current solver is
 limited to 10 ms and fresh starts; longer rest and physical perturbation tests

@@ -10,8 +10,8 @@ groups need further convergence. The attached archive and log budgets verify.
 See the [full result](sc1_reactor_vof_hydrostatic_result_2026-11-11.json).
 
 The subsequent [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
-now reports PASS using the same binary and limits. The attached archive duplicates
-this ten-pass control; correct new archive verification is pending. See the
+now has a verified archive/log PASS using the same binary and limits. The correct
+replacement archive is received; the earlier duplicate is historical. See the
 [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for the remaining work.
 The build/run command below is historical; do not repeat either completed case.
 
