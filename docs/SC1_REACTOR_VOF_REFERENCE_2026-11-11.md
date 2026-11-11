@@ -1,49 +1,66 @@
 # SC1 single-velocity free-surface reference
 
-## Reported Kestrel result: build passed, reference stopped
+## Verified Kestrel result: liquid-speed guard stop at 8.4 ms
 
-At `a8349f1`, the corrected application compiled and passed dependency checks
-in `/scratch/nwimer/sc1_vof_build_20261111T191346Z`. Its reported SHA256 is
+The corrected application compiled and passed dependency checks at `a8349f1`
+in `/scratch/nwimer/sc1_vof_build_20261111T191346Z`; reported binary SHA256
 `4614cd390d5586be793e260516e4dd1a0ae2facaeb59bae62a48a13a97ce3091`.
-The fresh case `/scratch/nwimer/sc1_vof_reference_20261111T191346Z` stopped
-at printed time 0.0084 s, outer 2, with a generic `FOAM FATAL ERROR` banner.
-There are 168 printed time labels, no `End`, solver return 139 and wrapper
-status 1. These are not 168 accepted steps. The reported maximum printed
-mixture Co is 0.001778043328599279; this does not establish pressure or
-quiescent-speed acceptance. All 49 initial inputs are reported unchanged.
+The case is `/scratch/nwimer/sc1_vof_reference_20261111T191346Z`.
 
-The [saved console result](sc1_reactor_vof_result_2026-11-11.json) records the
-reported identities separately from independent verification. The full bundle
-has not yet been received. The console omits the fatal explanation and VOF
-step records, so the initiating failure is still unknown. Do not label this
-as a liquid-speed failure, pressure failure or independent segmentation fault
-from the generic banner/exit code alone. The 10-ms reference did not complete.
+**The evidence bundle is received and verified:** archive SHA256, all 16 bundled
+file hashes and all 10 included initial dictionaries match. The HPC collector
+reports all 49 initial inputs unchanged; the mesh/native fields and external
+binaries are not included and have not been independently revalidated locally.
+See the [verified result](sc1_reactor_vof_result_2026-11-11.json).
 
-The older failure collector recognizes `SC1_TWO_STEP` and BiRD fraction lines,
-not the VOF audit or stock `Phase-1 volume fraction` output. Its zero pair count
-and zero largest-alpha value are parser limitations, not physical findings.
-The read-only collector now adds VOF record coverage, last logged phase budgets,
-pressure extrema and logged guard violations. Malformed/nonfinite records and
-duplicates remain explicit; no incomplete log can gain startup acceptance.
-A VOF step is printed before its guard. Its presence alone is not acceptance.
-The new summary reports logged budgets; independent reconciliation remains
-required when inspecting the full log. No solver, guard, build recipe or case
-input changes in this reporting update.
+The fatal explanation is `VOF reference failed unchanged startup screens`,
+from `sc1VofAudit.H:128`. Its only logged guard violation is liquid speed:
+**1.003187 mm/s at 8.4 ms**, just above the unchanged 1 mm/s limit. Record 167
+at 8.35 ms is 0.997218 mm/s. The guard precedes FOAM fatal/MPI_Abort and
+segmentation-fault shutdown records. Return 139 does not establish an earlier
+independent numerical crash. There is no End or completed 10-ms reference.
 
-**Next action: attach the existing archive; no new Kestrel run is needed.**
+| Measured quantity | Observed prefix through 8.4 ms |
+|---|---:|
+| VOF step / pressure records | 168 / 672 |
+| Liquid peak speed | 0.0010031870046817379 m/s |
+| Gas peak speed | 0.9727328353859714 m/s |
+| Pressure minimum / maximum | 99982.986897 / 111878.150896 Pa |
+| Maximum logged step Co | 0.001788180146 |
+| Liquid inventory | 999.999999999982 L |
+| Liquid mass-residual L1 / limit | 9.29257e-11 / 1.00001e-5 kg |
+| Gas mass-residual L1 / limit | 1.29325e-13 / 6.52002e-9 kg |
+| Alpha redistribution L1 | 3.87786e-8 m3 (3.87786e-5 L) |
 
-`/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/reactor_failure_evidence.tar.gz`
+Both phase budgets independently reconcile from volume changes and the actual
+transport flux; printed per-step and cumulative residuals agree. Fractions,
+complement, pressure, redistribution and Co remain within their stated limits.
+The final step is printed before its rejecting guard: 168 records are not
+168 accepted steps and conservation does not establish quiescence.
+The old collector's zero pair/alpha values were BiRD-only parser limitations;
+the new VOF-aware report reads the actual audit and stock fraction lines.
 
-Reported archive SHA256:
+Gas speed grows from 0.005837 m/s at 0.05 ms to 0.116583 at 1 ms, 0.465039 at
+4 ms and 0.972733 at 8.4 ms. It is not approaching rest. Global liquid and gas
+peaks need not be colocated, and their ratio is not a local force budget.
+The [stock OF9 pressure correction](https://cpp.openfoam.org/v9/multiphase_2interFoam_2pEqn_8H_source.html)
+combines surface tension and gravity with the pressure-equation flux in the
+velocity update. The present log does not identify which spatial term creates
+the observed motion; phase slip has been removed but the reference is not
+quiescent. Do not relax the speed guard or extend the failed trajectory.
+
+**Next action: [inspect the already-written native processor fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).**
+Directory listings exist through 8.25 ms. The new read-only Python command checks
+the full global-cell mapping, initial mapped fields, and selected snapshots
+against their logged inventories and velocities before reporting peak locations,
+directions, patch adjacency and immediate-neighbour data. No OpenFOAM executable,
+reconstruction, compilation or CFD is required. The source remains untouched.
+
+Verified archive SHA256:
 `ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.
-Reported solver-log SHA256:
+Verified solver-log SHA256:
 `2811c733dc1fe00499022c7d1b447d26ff6ec45facf145261f5f5dfae9190a9b`.
-
-Verify that archive and its included hashes, inspect the fatal context, and
-reconcile the observed VOF budgets before changing a numerical or physical
-choice. Preserve both VOF builds and every case/control. No reconstruction ran;
-time-directory names alone do not establish usable native snapshots. Do not
-rebuild, rerun, restart or recollect this attempt merely to use the updated parser.
+Preserve every build, case and control. The operating simulation is not yet accepted.
 
 ## First build result and correction
 
@@ -200,13 +217,14 @@ else
 fi
 ```
 
-The command above produced the stopped attempt recorded at the top. Attach its
-existing bundle and preserve every root; no new allocation or calculation is needed.
+The command above produced the stopped attempt recorded at the top. Its bundle
+has been verified. Use the separate saved-field inspection command; preserve
+every root and do not repeat the calculation.
 
 ## Local verification and remaining runtime work
 
-Thirty-nine focused tests pass, including ten reference tests and six additional
-incomplete-VOF evidence tests. They check
+The earlier 39-test suite passed for VOF-aware failure collection. The current
+29 focused tests cover the reference, failure collector and saved-field reader. They check
 unchanged upstream equation lines, exact source compatibility, private build
 destinations, preserved controls, runtime/source tampering, boundary recipes,
 known phase export/replacement budgets, rejected incomplete/nonfinite records,

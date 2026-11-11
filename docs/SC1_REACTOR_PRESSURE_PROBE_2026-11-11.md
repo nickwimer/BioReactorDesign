@@ -64,7 +64,7 @@ The outer-2 liquid explicit drag-flux range dominates its predictor range.
 compiled and stopped at 0.2 ms on the liquid-speed guard; its bundle is now
 verified. The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
 completed; its verified bundle also reveals horizontal gas motion near the
-interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) built, then stopped at 8.4 ms; inspect its existing evidence bundle next.
+interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. Next inspect [existing native fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).
 It eliminates the symmetric two-phase face drag before assembling both the
 pressure predictor and pressure coefficient. All v4 initial inputs and original
 acceptance limits remain fixed; its monitored run was capped at 10 ms.

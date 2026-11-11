@@ -160,29 +160,31 @@ interface and 34.8828 mm/s in the bulk-gas layer above it at 0.15 ms. Neither
 peak owns a boundary face. Normal counterflow at the liquid maximum is only
 part of the disturbance. Whole-domain volume-mixture RMS is 1.482643 mm/s.
 
-**Latest result: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
-build passed; CFD stopped at printed time 0.0084 s.** The logging API error
-in the first build (`Info.precision(17)`) was corrected to `Info().precision(17)`.
-The fresh build at `a8349f1`, `/scratch/nwimer/sc1_vof_build_20261111T191346Z`,
-passed compilation/dependency verification. Preserve it and the earlier failed
-build `/scratch/nwimer/sc1_vof_build_20261111T190909Z`; do not rebuild.
-The reference case is `/scratch/nwimer/sc1_vof_reference_20261111T191346Z`.
-There are 168 printed time labels, no End, solver return 139 and wrapper status 1.
-The fatal banner appears at line 4962, outer 2; its explanation is absent from
-the console. All 49 initial inputs are reported unchanged. The maximum printed
-Co is 0.001778043328599279, which does not establish pressure or speed acceptance.
-The old collector's zero pair count/alpha magnitude cannot be interpreted for
-VOF. It did not parse VOF audit/fraction lines; the read-only parser now does.
+**Verified result: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
+build passed; its liquid-speed guard stopped CFD at 8.4 ms.** Preserve the compiled
+build `/scratch/nwimer/sc1_vof_build_20261111T191346Z` and failed case
+`/scratch/nwimer/sc1_vof_reference_20261111T191346Z`. The first failed build at
+`20261111T190909Z` is also preserved; its `Info.precision(17)` logging call was
+corrected to `Info().precision(17)` before the successful `a8349f1` build.
 
-**Next action: receive and inspect the already-created evidence archive.**
-`/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/reactor_failure_evidence.tar.gz`
-has reported SHA256 `ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.
-The [console result](sc1_reactor_vof_result_2026-11-11.json) is saved; the archive
-has not yet been received or independently verified. Do not infer the cause,
-rerun, rebuild, restart or recollect. Inspect the fatal context and reconcile the
-VOF budgets from the existing full log first. Thirty-nine focused tests pass
-for the reporting update. No CFD equations, guards or build recipes changed.
-No rotation, aeration, PBM, oxygen-transfer or biology validation is implied.
+The bundle is now received: archive, all 16 included file hashes and all 10
+included initial dictionaries verify. The [full result](sc1_reactor_vof_result_2026-11-11.json)
+contains 168 VOF step records and 672 finite pressure records. The only logged
+guard violation is liquid speed 1.003187 mm/s at 8.4 ms (limit 1 mm/s).
+Both independently reconciled phase budgets pass their unchanged numerical
+limits: liquid L1 9.29257e-11 kg, gas 1.29325e-13 kg. Pressure stays between
+99982.986897 and 111878.150896 Pa, and final step Co is 0.00178818.
+However gas speed rises to 0.972733 m/s. Its peak location/direction is unknown.
+This is not a quiescent baseline or passed 10-ms startup. Return 139 follows
+the guard/fatal/MPI shutdown; it is not evidence of an earlier independent crash.
+
+**Next action: [read existing VOF processor fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md)**
+at 0.25, 1, 4 and 8.25 ms. `sc1_reactor_vof_saved.py` checks source hashes,
+processor addressing, mapped initial fields and native/audit agreement, then
+reports phase peak locations, directions and neighbour stencils. Python only:
+no OpenFOAM commands, reconstruction, compilation, source edits or CFD.
+Do not rebuild, rerun, relax limits or extend the failed trajectory. The 29
+focused tests pass. No aeration, PBM, oxygen-transfer or biology is validated.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

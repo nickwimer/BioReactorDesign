@@ -52,7 +52,8 @@ the normal counterflow at the liquid maximum does not explain the full gas
 disturbance. The near-vent gas peak remains only 9.26e-7 m/s.
 
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
-built, then stopped at 8.4 ms; inspect its existing evidence bundle next.**
+stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
+Next inspect [existing native fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).
 It uses the same mesh, fill, initial p_rgh, gravity and physical properties, but
 a shared velocity with the Foundation OF9 interFoam equations, read-only phase
 budgets and the existing startup guards in a separate private application. This establishes a simpler resolved-interface comparison before
@@ -174,7 +175,7 @@ is not selected in advance.
 ## Historical Kestrel command — completed, do not repeat
 
 This command produced the diagnostic above. Its bundle is verified; use the
-VOF-reference result and attach its existing evidence bundle; do not repeat its launch.
+VOF-reference result and the saved-field inspection command; do not repeat its launch.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit

@@ -49,7 +49,8 @@ direct wall-face owners, while wall-adjacent peaks have almost equal speeds.
 Its full bundle is now verified and also shows predominantly horizontal gas
 peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
-built, then stopped at 8.4 ms; inspect its existing evidence bundle next.**
+stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
+Next inspect [existing native fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).
 It uses the same mesh and initial fill. The spatial diagnostic does not accept
 this failed parent startup or establish a two-fluid force correction.
 
