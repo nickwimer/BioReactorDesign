@@ -1,0 +1,88 @@
+{
+  "provenance": "User-pasted Kestrel console output. New pressure-coupled raw-log bundle not yet received or independently verified.",
+  "root": "/kfs3/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z",
+  "build": "/kfs3/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z",
+  "variant": "sc1_meml_pressure_coupling_v5",
+  "sourceCommit": "408028e652f4fa4e5c3e2b6f39e6ab423b226e1d",
+  "wrapperStatus": 1,
+  "buildVerification": {
+    "reportedPass": true,
+    "binary": "/kfs3/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z/bin/birdPressureCoupled",
+    "sha256": "e5414f2afb8192d2fe88cd4f881ac554a7605326b1938ccbfe5fc62291937dd4",
+    "dependencies": {
+      "libbirdeulerianInterfacialCompositionModels.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdeulerianInterfacialCompositionModels.so",
+      "libbirdeulerianInterfacialModels.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdeulerianInterfacialModels.so",
+      "libbirdphaseSystem.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdphaseSystem.so",
+      "libbirdmultiphaseMomentumTransportModels.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdmultiphaseMomentumTransportModels.so",
+      "libbirdmultiphaseReactions.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdmultiphaseReactions.so",
+      "libbirdmultiphaseSystems.so": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z/lib/libbirdmultiphaseSystems.so"
+    }
+  },
+  "guard": {
+    "reason": "solver failure",
+    "line": 1392,
+    "lastPrintedTime": "0.0002",
+    "text": "[1] --> FOAM FATAL ERROR:",
+    "returncode": 139,
+    "meaning": "Stopped failed/incomplete diagnostic; no valid restart implied."
+  },
+  "collection": {
+    "lines": 1593,
+    "endMarkerSeen": false,
+    "printedTimes": 4,
+    "lastPrintedTime_s": 0.0002,
+    "pairedStepRecordCount": 4,
+    "lastPairedStepRecordTime_s": 0.0002,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 8.394607297373625e-05,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {
+      "foam_fatal": {
+        "line": 1392,
+        "lastPrintedTime_s": 0.0002,
+        "outer": 2,
+        "text": "[1] --> FOAM FATAL ERROR:"
+      }
+    },
+    "eventCounts": {
+      "foam_fatal": 8
+    },
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "solverLogSha256": "4c469e3438576ad12139cad251de18b159dd35161cdcb7aede16124b193ecaac",
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated."
+  },
+  "report": "/kfs3/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/report.json",
+  "bundle": "/kfs3/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/reactor_failure_evidence.tar.gz",
+  "bundleSha256": "69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0",
+  "interpretation": {
+    "confirmed": [
+      "Application compilation/dependency verification passed in the pasted output.",
+      "Run stopped at printed time 0.0002 s, with four end-step audit pairs, no End, and wrapper status 1.",
+      "All 59 initial inputs are reported unchanged.",
+      "The compact collector reports fatal errors but does not include their explanatory text."
+    ],
+    "inference": "Four paired step records are consistent with a stop in sc1QuiescentStep, which follows endStep audit emission. A liquid-speed guard is a leading hypothesis, not a confirmed cause.",
+    "unknown": [
+      "Actual fatal-error message and source location.",
+      "Accepted-step liquid speeds and pressure/flux-check histories.",
+      "Whether returncode 139 reflects MPI shutdown as in the previous probe or a distinct failure."
+    ],
+    "caveats": [
+      "Small logged Courant and bounded alpha do not establish quiescence or conservation.",
+      "This is 0.2 ms of a planned 10 ms screen, before the first scheduled 0.25-ms snapshot.",
+      "The original pressure collapse is not declared fixed from this console alone."
+    ]
+  },
+  "decision": "Receive and verify the already-created bundle, inspect the fatal message and immediately preceding SC1_QUIESCENT_STEP, SC1_COUPLED_FLUX and SC1_PRESSURE records. Preserve this build and run. No rerun, rebuild, recollection, restart, parameter change or threshold relaxation is selected."
+}

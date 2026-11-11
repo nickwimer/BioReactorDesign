@@ -60,10 +60,11 @@ The first bad pressure is at rank 2, local cell 24771, centre
 pre-correction gas speed 0.387578851 m/s and liquid speed 1.30908e-7 m/s.
 The outer-2 liquid explicit drag-flux range dominates its predictor range.
 
-**Next action: build and test the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).**
+**Subsequent result:** the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
+compiled and stopped at 0.2 ms. Receive its existing bundle next.
 It eliminates the symmetric two-phase face drag before assembling both the
 pressure predictor and pressure coefficient. All v4 initial inputs and original
-acceptance limits remain fixed; a fresh monitored run is capped at 10 ms.
+acceptance limits remain fixed; its monitored run was capped at 10 ms.
 This is a source/field-supported candidate, not an established cure. Do not
 rerun the completed observer or extend any failed case.
 

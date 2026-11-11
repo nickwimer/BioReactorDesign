@@ -2,11 +2,41 @@
 
 ## Status
 
-Implemented and locally tested; **Kestrel compilation and CFD result pending**.
-The next action is the command below. It builds only a new private application,
-then runs a fresh quiescent case for at most 10 ms. Preserve all previous builds,
-cases, the archived reactor and the original solver sources. No operating,
-free-surface, oxygen or biology acceptance is claimed.
+**Kestrel application build passed; the startup stopped at 0.2 ms, status 1.**
+The run at `408028e` is `/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z`;
+its build is `/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z`.
+The [console result](sc1_reactor_pressure_coupling_result_2026-11-11.json)
+records executable SHA256
+`e5414f2afb8192d2fe88cd4f881ac554a7605326b1938ccbfe5fc62291937dd4`
+and verified linkage to the same six rate-build libraries.
+
+The collector reports 1,593 log lines, four printed times and four paired
+end-step audit records through 0.0002 s, no `End`, unchanged hashes for all
+59 initial inputs, maximum logged mixture Co 8.394607297373625e-5, and largest
+finite alpha magnitude 1. The first recorded fatal error is line 1392, outer 2.
+The external monitor reports return code 139. **The fatal explanatory text is
+not present in the compact console summary**, so its exact cause and shutdown
+sequence are not yet confirmed.
+
+Source ordering puts `sc1QuiescentStep` after the end-step audit pair. Thus
+four pairs followed by a same-time fatal error are consistent with the 1-mm/s
+liquid-speed guard; this is an inference requiring the actual log. Do not
+label this a confirmed speed failure, declare the pressure defect fixed, or
+interpret the small logged Co as quiescence acceptance. The run is incomplete
+and has not reached its first 0.25-ms scheduled snapshot.
+
+**Next action: attach the already-created evidence bundle:**
+
+`/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/reactor_failure_evidence.tar.gz`
+
+- Reported bundle SHA256: `69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0`.
+- Reported solver-log SHA256: `4c469e3438576ad12139cad251de18b159dd35161cdcb7aede16124b193ecaac`.
+
+The new bundle has not yet been received or independently verified. Inspect
+the fatal message and preceding `SC1_QUIESCENT_STEP`, `SC1_COUPLED_FLUX` and
+`SC1_PRESSURE` records. No new collection or HPC run is needed. Preserve the
+compiled candidate, its case and every earlier control. No restart, parameter
+change or threshold relaxation is selected from this console alone.
 
 ## Evidence and decision
 
@@ -110,7 +140,10 @@ normal completion. A passing 10-ms startup remains a short quiescent screen.
 Longer rest, controlled stirring, aeration and interface/wall checks must follow
 before an operating checkpoint can be accepted.
 
-## Next Kestrel command
+## Historical Kestrel command — completed, do not repeat
+
+This command produced the build and stopped run above. Receive its existing
+bundle next; do not launch another copy.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -145,7 +178,7 @@ else
 fi
 ```
 
-Paste the output and attach the printed `BUNDLE`. No old case is restarted.
+The output is now recorded above. Attach the existing `BUNDLE`; preserve all roots.
 
 ## Local validation
 
@@ -160,6 +193,7 @@ reconstruction, and complete acceptance records without overriding an existing
 failed startup screen.
 
 The local environment has no OpenFOAM installation. These tests do not compile
-the OpenFOAM field adapter or execute MPI/CFD. The command above is the pending
-compilation and actual-mesh test; no claim of a working simulation follows
-from the scalar or orchestration tests alone.
+the OpenFOAM field adapter or execute MPI/CFD. The subsequent Kestrel compilation passed and the actual-mesh run stopped,
+as recorded above. This documentation-only update does not rerun the 122
+prelaunch tests or change the candidate. No working-simulation acceptance
+follows from either local tests or this incomplete run.

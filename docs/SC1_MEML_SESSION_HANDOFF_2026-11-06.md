@@ -123,16 +123,26 @@ cell alphaGas=0 and alphaLiquid=1, with pre-correction gas speed 0.387579 m/s
 and liquid speed 1.30908e-7 m/s. Outer 1 produces absent-gas speeds up to
 0.545059 m/s; outer-2 explicit liquid drag flux dominates its predictor range.
 
-**Next step: build and run the [pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).**
-The private application eliminates symmetric two-phase face drag in both the
-pressure predictor and pressure coefficient, replacing lagged drag and the
-post-pressure inversion. All v4 initial inputs remain identical. The existing
-rate libraries and pressure-probe recipe are preserved. A fresh monitored
-10-ms startup retains the original conservation/quiescence thresholds and
-stops synchronously on invalid pressure, mixture-flux identity or accepted-step
-liquid speed. All 122 focused local tests pass; OpenFOAM compilation and CFD
-are pending. No operating simulation or physical validation is established.
-Do not repeat the observer, restart failed fields, or rerun completed regressions.
+**Latest vessel attempt:** the [pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
+built successfully at `408028e`, with binary SHA256
+`e5414f2afb8192d2fe88cd4f881ac554a7605326b1938ccbfe5fc62291937dd4`
+and the same six verified rate libraries. Build
+`/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z`; case
+`/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z`.
+The run stopped at 0.0002 s, outer 2 (fatal/139, wrapper status 1): four
+paired end-step records, no End, max logged Co 8.394607297373625e-5, all 59
+inputs reported unchanged. The exact fatal text is omitted from the console.
+A post-step liquid-speed guard is plausible from source ordering, but requires
+the log; neither pressure repair nor quiescence acceptance is established.
+
+**Next step: receive the already-created candidate bundle** at
+`/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/reactor_failure_evidence.tar.gz`.
+The [console result and hashes](sc1_reactor_pressure_coupling_result_2026-11-11.json)
+are saved; the new raw bundle has not yet been received or independently verified.
+Inspect the fatal message, accepted-step liquid speeds, coupled flux identity
+and pressure history. Preserve the compiled build and all cases. No rebuild,
+rerun, recollection, restart or tolerance change is needed for this handoff.
+All 122 focused tests passed before launch; this update is documentation only.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

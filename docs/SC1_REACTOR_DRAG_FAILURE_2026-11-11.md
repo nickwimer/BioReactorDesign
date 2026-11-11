@@ -13,7 +13,8 @@ the subsequent [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
 also failed at the same first-step outer iteration. Its bundle is now verified. The
 [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
 the pressure collapse and stopped before limiting; its bundle is now verified.
-Next test the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).
+The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
+compiled but stopped at 0.2 ms; inspect its existing bundle next.
 No recollection or repetition of the failed run is needed.
 
 The collector at `264d209` completed with status 0 in

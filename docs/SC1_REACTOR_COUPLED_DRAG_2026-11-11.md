@@ -44,9 +44,10 @@ The [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now
 reproduced this pressure minimum and stopped before limiting. Its face drag
 diagonal maximum rises from 0.112828 to 1.45118e9 between outer iterations.
 The probe bundle is now verified, including the pure-liquid pressure-minimum
-cell with a moving absent gas phase. **Next action:** build and test the
-[private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md),
-retaining all v4 initial inputs and original acceptance limits.
+cell with a moving absent gas phase. The
+[private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
+subsequently compiled but stopped at 0.2 ms with all v4 initial inputs retained.
+Receive its existing bundle next; the exact fatal message is still needed.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

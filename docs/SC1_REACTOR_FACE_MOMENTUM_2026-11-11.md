@@ -34,7 +34,8 @@ at the same first-step outer iteration, with nearly identical minimum pressure.
 Its v4 bundle is now verified. The
 [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) subsequently
 reproduced the pressure collapse and stopped before limiting; its bundle is now verified.
-Next test the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).**
+The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
+compiled but stopped at 0.2 ms; inspect its existing bundle next.**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 
