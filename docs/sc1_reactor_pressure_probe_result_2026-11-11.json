@@ -1,0 +1,1782 @@
+{
+  "provenance": "Received archive reactor_failure_evidence.tar(3).gz; archive, all 20 bundled file hashes and all 13 included initial dictionary hashes independently verified. Full 581-line solver log inspected. Large fields, native mesh, binaries and external control/regression roots remain on Kestrel.",
+  "root": "/kfs3/scratch/nwimer/sc1_pressure_probe_20261111T172942Z",
+  "build": "/kfs3/scratch/nwimer/sc1_pressure_probe_build_20261111T172942Z",
+  "variant": "sc1_meml_pressure_probe_v1",
+  "sourceCommit": "1dbe432f3fe07f6cc82b75ac9233261799b99baf",
+  "wrapperStatus": 1,
+  "guard": {
+    "reason": "solver failure",
+    "line": 380,
+    "lastPrintedTime": "5e-05",
+    "text": "[1] --> FOAM FATAL ERROR:",
+    "returncode": 139,
+    "meaning": "Stopped failed/incomplete diagnostic; no valid restart implied."
+  },
+  "probe": {
+    "suite": "sc1_meml_pressure_probe_v1",
+    "probeMarkerCount": 1,
+    "stages": [
+      {
+        "sequence": "1",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "momentum"
+      },
+      {
+        "sequence": "2",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "3",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "4",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      },
+      {
+        "sequence": "5",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "fluxCorrected"
+      },
+      {
+        "sequence": "6",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "7",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "8",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      },
+      {
+        "sequence": "9",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "fluxCorrected"
+      },
+      {
+        "sequence": "10",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "momentum"
+      },
+      {
+        "sequence": "11",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "12",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "13",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      }
+    ],
+    "selectedFields": [
+      {
+        "sequence": "1",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "1",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "3",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "4.9995536786813554e-08",
+        "max": "4.999927408588476e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "4",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887332227",
+        "max": "111756.155995504",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "7",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "4.9995536786813554e-08",
+        "max": "4.999927408588476e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "8",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887706182",
+        "max": "111756.15103699391",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "10",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184694.6572018",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "10",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184694.6572018",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "12",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "6.797243007986973e-10",
+        "max": "4.9999257727878712e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "13",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "-2499398.1871999367",
+        "max": "99991.933586284227",
+        "nonfinite": "0"
+      }
+    ],
+    "stops": [
+      {
+        "reason": "unclippedPressureBelow1000Pa",
+        "min_Pa": "-2499398.1871999367"
+      }
+    ],
+    "done": [],
+    "meaning": "Diagnostic evidence only; no startup or conservation acceptance. Full field/location records are in the log.",
+    "log_sha256": "d2c5d3b55ad096ee1fc8151a68353828fbfb05db9bc1e5c65af72fa0cc5ef656"
+  },
+  "collection": {
+    "lines": 581,
+    "endMarkerSeen": false,
+    "printedTimes": 1,
+    "lastPrintedTime_s": 5e-05,
+    "pairedStepRecordCount": 0,
+    "lastPairedStepRecordTime_s": null,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 0.0,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {
+      "foam_fatal": {
+        "line": 380,
+        "lastPrintedTime_s": 5e-05,
+        "outer": 2,
+        "text": "[1] --> FOAM FATAL ERROR:"
+      }
+    },
+    "eventCounts": {
+      "foam_fatal": 8
+    },
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated."
+  },
+  "bundle": "/kfs3/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz",
+  "bundleSha256": "b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0",
+  "interpretation": {
+    "pressureMinimumMatchesV4": true,
+    "faceDiagonalMaximumRatio": 12861900865.31712,
+    "mixtureInverseDiagonalMinimumReductionFactor": 73.55266941032892,
+    "stop": "Synchronous pressure guard at line 377 precedes all eight rank fatal errors. MPI_Abort then reports sigSegv stack frames and srun returncode 139 during shutdown. No independent pre-guard segmentation fault is shown.",
+    "caveats": [
+      "Field extrema need not be colocated.",
+      "The reported zero Courant maximum is pre-first-step output.",
+      "Pressure-location velocities are pre-correction values; the case is already invalid after this pressure solve.",
+      "The source/field evidence supports testing pre-pressure drag elimination; it does not establish a complete cause or a working reactor."
+    ],
+    "firstOuterFinalSpeeds_m_s": {
+      "gasPresentAlphaAbove1e_6": 0.01167046340792468,
+      "gasAbsentAlphaAtMost1e_6": 0.545059450633979,
+      "liquidPresentAlphaAbove1e_6": 0.0004892422486170966
+    },
+    "pressureMinimumCell": {
+      "rank": 2,
+      "localCell": 24771,
+      "centre_m": [
+        -0.011711908488150406,
+        0.9935527212562327,
+        0.1912571128506029
+      ],
+      "alphaGas": 0,
+      "alphaLiquid": 1,
+      "gasSpeed_m_s": 0.3875788507000994,
+      "liquidSpeed_m_s": 1.3090791820391285e-07
+    }
+  },
+  "decision": "Implement an isolated two-phase face-drag inverse in both the pressure predictor and pressure coefficient, retaining all v4 initial inputs and original acceptance limits. Build only a new application linked to the verified rate libraries, then run at most 10 ms with synchronous pressure/speed/mixture-flux guards. No production change or operating-simulation acceptance.",
+  "bundleVerification": {
+    "archiveSha256": "b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0",
+    "bundledFileHashesVerified": 20,
+    "includedInitialDictionaryHashesVerified": 13,
+    "allReportedCaseInputsUnchanged": 59
+  },
+  "fullProbeRecords": [
+    {
+      "version": "1",
+      "maxCompletedSteps": "2",
+      "line": 124,
+      "marker": "SC1_PRESSURE_PROBE"
+    },
+    {
+      "sequence": "1",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "momentum",
+      "line": 177,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 178,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 179,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "speed",
+      "scope": "cells",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 180,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 181,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0",
+      "maxAbsent_m_s": "0",
+      "line": 182,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 183,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1000",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 184,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "speed",
+      "scope": "cells",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 185,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 186,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0",
+      "maxAbsent_m_s": "0",
+      "line": 187,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "momentumA",
+      "scope": "cells",
+      "min": "0",
+      "max": "1.6074057430386737",
+      "nonfinite": "0",
+      "line": 188,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "momentumHmag",
+      "scope": "cells",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 189,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "momentumA",
+      "scope": "cells",
+      "min": "0",
+      "max": "1785.4446509804025",
+      "nonfinite": "0",
+      "line": 190,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "momentumHmag",
+      "scope": "cells",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 191,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "faceDiagonalExtra",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0.11282816668027722",
+      "nonfinite": "0",
+      "line": 192,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "faceDiagonalExtra",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0.11282816668027722",
+      "nonfinite": "0",
+      "line": 193,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "alphaRhoOldFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "9.9999999999999974e-07",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 194,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "gas",
+      "term": "rAUfPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.9995981808585602e-05",
+      "max": "50.000000000000014",
+      "nonfinite": "0",
+      "line": 195,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "alphaRhoOldFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0.001",
+      "max": "1000.0000000000001",
+      "nonfinite": "0",
+      "line": 196,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "1",
+      "phase": "liquid",
+      "term": "rAUfPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.9995536786813554e-08",
+      "max": "0.050000000000000003",
+      "nonfinite": "0",
+      "line": 197,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "2",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureBegin",
+      "line": 198,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "2",
+      "phase": "mixture",
+      "term": "pBefore",
+      "scope": "cells",
+      "min": "99982.986916686801",
+      "max": "111878.15039444096",
+      "nonfinite": "0",
+      "line": 199,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "2",
+      "phase": "mixture",
+      "term": "p_rghBefore",
+      "scope": "cells",
+      "min": "100000",
+      "max": "109982.45552411373",
+      "nonfinite": "0",
+      "line": 200,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "2",
+      "phase": "mixture",
+      "term": "mixtureRho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 201,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureInputs",
+      "line": 202,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "3",
+      "phase": "mixture",
+      "term": "rAUfMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.9995536786813554e-08",
+      "max": "4.999927408588476e-05",
+      "nonfinite": "0",
+      "line": 203,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "mixture",
+      "term": "phiHbyAMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.012757836644700236",
+      "max": "0.008192811304695265",
+      "nonfinite": "0",
+      "line": 204,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "mixture",
+      "term": "divPhiHbyA",
+      "scope": "cells",
+      "min": "-785.60424115747833",
+      "max": "1180.4574052483424",
+      "nonfinite": "0",
+      "line": 205,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 206,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "2.0430683995222423e-05",
+      "max": "5.0000000000000009e-05",
+      "nonfinite": "0",
+      "line": 207,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.010882729809498438",
+      "max": "0.016946536854156452",
+      "nonfinite": "0",
+      "line": 208,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.016946536854156452",
+      "max": "0.010882729809498438",
+      "nonfinite": "0",
+      "line": 209,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 210,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "gas",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0",
+      "max": "-0",
+      "nonfinite": "0",
+      "line": 211,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 212,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.7053253760055021e-08",
+      "max": "4.9999999999999998e-08",
+      "nonfinite": "0",
+      "line": 213,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-1.1153909670427582e-05",
+      "max": "1.7369088291278378e-05",
+      "nonfinite": "0",
+      "line": 214,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-1.7369088291278378e-05",
+      "max": "1.1153909670427582e-05",
+      "nonfinite": "0",
+      "line": 215,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 216,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "liquid",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0",
+      "max": "-0",
+      "nonfinite": "0",
+      "line": 217,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "mixture",
+      "term": "pressureDiagonal",
+      "scope": "cells",
+      "min": "1.5933946528370817e-09",
+      "max": "1.3697299399055894e-05",
+      "nonfinite": "0",
+      "line": 218,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "3",
+      "phase": "mixture",
+      "term": "pressureSource",
+      "scope": "cells",
+      "min": "-0.012757836644700237",
+      "max": "0.0084822029794241489",
+      "nonfinite": "0",
+      "line": 219,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "4",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureSolved",
+      "line": 221,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "4",
+      "phase": "mixture",
+      "term": "p_rghSolved",
+      "scope": "cells",
+      "min": "99999.914841264326",
+      "max": "109860.62667438193",
+      "nonfinite": "0",
+      "line": 222,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "4",
+      "phase": "mixture",
+      "term": "pUnclipped",
+      "scope": "cells",
+      "min": "99982.986887332227",
+      "max": "111756.155995504",
+      "nonfinite": "0",
+      "line": 223,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "4",
+      "localCell": "3188",
+      "p_Pa": "99982.986887332227",
+      "x_m": "-0.037746378588775019",
+      "y_m": "1.7342591107539969",
+      "z_m": "0.018670582751323578",
+      "alpha_gas": "1",
+      "speed_gas_m_s": "0",
+      "alpha_liquid": "0",
+      "speed_liquid_m_s": "0",
+      "line": 224,
+      "marker": "SC1_PRESSURE_LOCATION",
+      "rank": 1
+    },
+    {
+      "sequence": "5",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "fluxCorrected",
+      "line": 226,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "5",
+      "phase": "gas",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 227,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "gas",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 228,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "gas",
+      "term": "speed",
+      "scope": "cells",
+      "min": "7.6526981017316684e-09",
+      "max": "0.54505932439909532",
+      "nonfinite": "0",
+      "line": 229,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "gas",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.00042206898335481755",
+      "max": "0.00042207050561325214",
+      "nonfinite": "0",
+      "line": 230,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "gas",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.023192556543144439",
+      "maxAbsent_m_s": "0.54505932439909532",
+      "line": 231,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "5",
+      "phase": "liquid",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 232,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "liquid",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1000",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 233,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "liquid",
+      "term": "speed",
+      "scope": "cells",
+      "min": "6.5036827272327159e-13",
+      "max": "0.00049003891690935805",
+      "nonfinite": "0",
+      "line": 234,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "liquid",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-4.2206895961732307e-07",
+      "max": "4.2206828796734604e-07",
+      "nonfinite": "0",
+      "line": 235,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "5",
+      "phase": "liquid",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.00048975108821891229",
+      "maxAbsent_m_s": "0.00049003891690935805",
+      "line": 236,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "6",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureBegin",
+      "line": 237,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "6",
+      "phase": "mixture",
+      "term": "pBefore",
+      "scope": "cells",
+      "min": "99982.986887332227",
+      "max": "111756.155995504",
+      "nonfinite": "0",
+      "line": 238,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "6",
+      "phase": "mixture",
+      "term": "p_rghBefore",
+      "scope": "cells",
+      "min": "99999.914841264326",
+      "max": "109860.62667438193",
+      "nonfinite": "0",
+      "line": 239,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "6",
+      "phase": "mixture",
+      "term": "mixtureRho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 240,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureInputs",
+      "line": 241,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "7",
+      "phase": "mixture",
+      "term": "rAUfMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.9995536786813554e-08",
+      "max": "4.999927408588476e-05",
+      "nonfinite": "0",
+      "line": 242,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "mixture",
+      "term": "phiHbyAMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.012757836554184741",
+      "max": "0.0081928112456231151",
+      "nonfinite": "0",
+      "line": 243,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "mixture",
+      "term": "divPhiHbyA",
+      "scope": "cells",
+      "min": "-785.60424099057593",
+      "max": "1180.457396910359",
+      "nonfinite": "0",
+      "line": 244,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 245,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "2.0430683995222423e-05",
+      "max": "5.0000000000000009e-05",
+      "nonfinite": "0",
+      "line": 246,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.010882729809498438",
+      "max": "0.016946536854156452",
+      "nonfinite": "0",
+      "line": 247,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.016946536733784053",
+      "max": "0.010882729730905384",
+      "nonfinite": "0",
+      "line": 248,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 249,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "gas",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-3.0197465981334504e-12",
+      "max": "4.6975369769452401e-12",
+      "nonfinite": "0",
+      "line": 250,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 251,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "4.7053253760055021e-08",
+      "max": "4.9999999999999998e-08",
+      "nonfinite": "0",
+      "line": 252,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-1.1153909670427582e-05",
+      "max": "1.7369088291278378e-05",
+      "nonfinite": "0",
+      "line": 253,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-1.7369088589375015e-05",
+      "max": "1.1153909973071516e-05",
+      "nonfinite": "0",
+      "line": 254,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 255,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "liquid",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-2.0298355504004925e-13",
+      "max": "2.0298355799547607e-13",
+      "nonfinite": "0",
+      "line": 256,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "mixture",
+      "term": "pressureDiagonal",
+      "scope": "cells",
+      "min": "1.5933946528370817e-09",
+      "max": "1.3697299399055894e-05",
+      "nonfinite": "0",
+      "line": 257,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "7",
+      "phase": "mixture",
+      "term": "pressureSource",
+      "scope": "cells",
+      "min": "-0.012757836556081138",
+      "max": "0.0084822029781759182",
+      "nonfinite": "0",
+      "line": 258,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "8",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureSolved",
+      "line": 260,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "8",
+      "phase": "mixture",
+      "term": "p_rghSolved",
+      "scope": "cells",
+      "min": "99999.80762271928",
+      "max": "109860.76610605961",
+      "nonfinite": "0",
+      "line": 261,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "8",
+      "phase": "mixture",
+      "term": "pUnclipped",
+      "scope": "cells",
+      "min": "99982.986887706182",
+      "max": "111756.15103699391",
+      "nonfinite": "0",
+      "line": 262,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "8",
+      "localCell": "31527",
+      "p_Pa": "99982.986887706182",
+      "x_m": "-0.034404452001129272",
+      "y_m": "1.7342578479999999",
+      "z_m": "0.52491050169227504",
+      "alpha_gas": "1",
+      "speed_gas_m_s": "9.9728136522762287e-08",
+      "alpha_liquid": "0",
+      "speed_liquid_m_s": "0.00049000940026956675",
+      "line": 263,
+      "marker": "SC1_PRESSURE_LOCATION",
+      "rank": 0
+    },
+    {
+      "sequence": "9",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "fluxCorrected",
+      "line": 265,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "9",
+      "phase": "gas",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 266,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "gas",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 267,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "gas",
+      "term": "speed",
+      "scope": "cells",
+      "min": "2.6568560491659182e-08",
+      "max": "0.54505945063397898",
+      "nonfinite": "0",
+      "line": 268,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "gas",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.00042207285116455649",
+      "max": "0.00042207285128002418",
+      "nonfinite": "0",
+      "line": 269,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "gas",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.011670463407924681",
+      "maxAbsent_m_s": "0.54505945063397898",
+      "line": 270,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "9",
+      "phase": "liquid",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 271,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "liquid",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1000",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 272,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "liquid",
+      "term": "speed",
+      "scope": "cells",
+      "min": "1.878605886544832e-12",
+      "max": "0.00049020001120285786",
+      "nonfinite": "0",
+      "line": 273,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "liquid",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-4.2207253237345057e-07",
+      "max": "4.2207154721169129e-07",
+      "nonfinite": "0",
+      "line": 274,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "9",
+      "phase": "liquid",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.00048924224861709661",
+      "maxAbsent_m_s": "0.00049020001120285786",
+      "line": 275,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "10",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "momentum",
+      "line": 329,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 330,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 331,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "speed",
+      "scope": "cells",
+      "min": "2.6568560491659182e-08",
+      "max": "0.54505945063397898",
+      "nonfinite": "0",
+      "line": 332,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.00042207285116455649",
+      "max": "0.00042207285128002418",
+      "nonfinite": "0",
+      "line": 333,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.011670463407924681",
+      "maxAbsent_m_s": "0.54505945063397898",
+      "line": 334,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "alpha",
+      "scope": "cells",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 335,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "rho",
+      "scope": "cells",
+      "min": "1000",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 336,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "speed",
+      "scope": "cells",
+      "min": "1.878605886544832e-12",
+      "max": "0.00049020001120285786",
+      "nonfinite": "0",
+      "line": 337,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "phasePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-4.2207253237345057e-07",
+      "max": "4.2207154721169129e-07",
+      "nonfinite": "0",
+      "line": 338,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "presentThreshold": "1e-6",
+      "maxPresent_m_s": "0.00048924224861709661",
+      "maxAbsent_m_s": "0.00049020001120285786",
+      "line": 339,
+      "marker": "SC1_PRESSURE_SPEED"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "momentumA",
+      "scope": "cells",
+      "min": "0",
+      "max": "1.7473711402230157",
+      "nonfinite": "0",
+      "line": 340,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "momentumHmag",
+      "scope": "cells",
+      "min": "0",
+      "max": "0.0088271164199915063",
+      "nonfinite": "0",
+      "line": 341,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "momentumA",
+      "scope": "cells",
+      "min": "0",
+      "max": "1785.4446527350581",
+      "nonfinite": "0",
+      "line": 342,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "momentumHmag",
+      "scope": "cells",
+      "min": "0",
+      "max": "0.016581863317929234",
+      "nonfinite": "0",
+      "line": 343,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "faceDiagonalExtra",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1451184694.6572018",
+      "nonfinite": "0",
+      "line": 344,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "faceDiagonalExtra",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1451184694.6572018",
+      "nonfinite": "0",
+      "line": 345,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "alphaRhoOldFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "9.9999999999999974e-07",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 346,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "gas",
+      "term": "rAUfPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "6.8909216287081329e-10",
+      "max": "50.000000000000007",
+      "nonfinite": "0",
+      "line": 347,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "alphaRhoOldFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0.001",
+      "max": "1000.0000000000001",
+      "nonfinite": "0",
+      "line": 348,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "10",
+      "phase": "liquid",
+      "term": "rAUfPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "6.797243007986973e-10",
+      "max": "0.050000000000000003",
+      "nonfinite": "0",
+      "line": 349,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "11",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureBegin",
+      "line": 350,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "11",
+      "phase": "mixture",
+      "term": "pBefore",
+      "scope": "cells",
+      "min": "99982.986887706182",
+      "max": "111756.15103699391",
+      "nonfinite": "0",
+      "line": 351,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "11",
+      "phase": "mixture",
+      "term": "p_rghBefore",
+      "scope": "cells",
+      "min": "99999.80762271928",
+      "max": "109860.76610605961",
+      "nonfinite": "0",
+      "line": 352,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "11",
+      "phase": "mixture",
+      "term": "mixtureRho",
+      "scope": "cells",
+      "min": "1",
+      "max": "1000",
+      "nonfinite": "0",
+      "line": 353,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureInputs",
+      "line": 354,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "12",
+      "phase": "mixture",
+      "term": "rAUfMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "6.797243007986973e-10",
+      "max": "4.9999257727878712e-05",
+      "nonfinite": "0",
+      "line": 355,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "mixture",
+      "term": "phiHbyAMixture",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.010737550827274761",
+      "max": "0.00623979027500481",
+      "nonfinite": "0",
+      "line": 356,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "mixture",
+      "term": "divPhiHbyA",
+      "scope": "cells",
+      "min": "-993.08452673175032",
+      "max": "993.03225110879146",
+      "nonfinite": "0",
+      "line": 357,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 358,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "6.8909216287081327e-16",
+      "max": "5.0000000000000002e-05",
+      "nonfinite": "0",
+      "line": 359,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.0082875446927709161",
+      "max": "0.01426197559386071",
+      "nonfinite": "0",
+      "line": 360,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.01426204231544732",
+      "max": "0.0082876092115653135",
+      "nonfinite": "0",
+      "line": 361,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 362,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "gas",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-2.7051045924750284e-07",
+      "max": "4.2082072209076101e-07",
+      "nonfinite": "0",
+      "line": 363,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "alphaFace",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "1",
+      "nonfinite": "0",
+      "line": 364,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "alphaRAUf",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "8.6878060002173753e-12",
+      "max": "4.9999999999999998e-08",
+      "nonfinite": "0",
+      "line": 365,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "forcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-1.1143295919242987e-05",
+      "max": "1.7359149340320866e-05",
+      "nonfinite": "0",
+      "line": 366,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "phiHbyAPhase",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.0001537889317942153",
+      "max": "0.00023889718734854901",
+      "nonfinite": "0",
+      "line": 367,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "extraForcePhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "0",
+      "max": "0",
+      "nonfinite": "0",
+      "line": 368,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "liquid",
+      "term": "explicitDragPhi",
+      "scope": "allFacesIncludingProcessorCopies",
+      "min": "-0.00023889718735119403",
+      "max": "0.00015378893179666438",
+      "nonfinite": "0",
+      "line": 369,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "mixture",
+      "term": "pressureDiagonal",
+      "scope": "cells",
+      "min": "3.9716936108582547e-11",
+      "max": "1.3697286420490313e-05",
+      "nonfinite": "0",
+      "line": 370,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "12",
+      "phase": "mixture",
+      "term": "pressureSource",
+      "scope": "cells",
+      "min": "-0.010737498886440483",
+      "max": "0.010738064197098992",
+      "nonfinite": "0",
+      "line": 371,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "13",
+      "t_s": "5.0000000000000002e-05",
+      "stage": "pressureSolved",
+      "line": 373,
+      "marker": "SC1_PRESSURE_STAGE"
+    },
+    {
+      "sequence": "13",
+      "phase": "mixture",
+      "term": "p_rghSolved",
+      "scope": "cells",
+      "min": "-2492736.2539448789",
+      "max": "107859.85286943865",
+      "nonfinite": "0",
+      "line": 374,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "13",
+      "phase": "mixture",
+      "term": "pUnclipped",
+      "scope": "cells",
+      "min": "-2499398.1871999367",
+      "max": "99991.933586284227",
+      "nonfinite": "0",
+      "line": 375,
+      "marker": "SC1_PRESSURE_FIELD"
+    },
+    {
+      "sequence": "13",
+      "localCell": "24771",
+      "p_Pa": "-2499398.1871999367",
+      "x_m": "-0.011711908488150406",
+      "y_m": "0.99355272125623273",
+      "z_m": "0.1912571128506029",
+      "alpha_gas": "0",
+      "speed_gas_m_s": "0.3875788507000994",
+      "alpha_liquid": "1",
+      "speed_liquid_m_s": "1.3090791820391285e-07",
+      "line": 376,
+      "marker": "SC1_PRESSURE_LOCATION",
+      "rank": 2
+    },
+    {
+      "reason": "unclippedPressureBelow1000Pa",
+      "min_Pa": "-2499398.1871999367",
+      "line": 377,
+      "marker": "SC1_PRESSURE_STOP"
+    }
+  ]
+}

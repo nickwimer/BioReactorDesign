@@ -1,0 +1,94 @@
+{
+  "suite": "sc1_vof_gradient_console_result",
+  "provenance": "User-pasted Kestrel console only for this candidate. Failure bundle has not been received locally; no independent candidate-log budget or native-field verification is claimed.",
+  "root": "/kfs3/scratch/nwimer/sc1_vof_gradients_20261111T201422Z",
+  "sourceCommit": "2c808bd96b42b769a0b4315994b780922169a341",
+  "variant": "sc1_meml_vof_scalar_gradients_v2",
+  "status": 1,
+  "complete": false,
+  "accepted": false,
+  "reportedLogSha256": "5c7601fc23d7e8261f8f02910104ed9ad3b0bc8179e026861ba7ba8b4a710fc8",
+  "reportedBundle": "/kfs3/scratch/nwimer/sc1_vof_gradients_20261111T201422Z_evidence/reactor_failure_evidence.tar.gz",
+  "reportedBundleSha256": "bcb396f0f0307324d8d2b5333364a4f7f572535245d32c66f19ab2298de47213",
+  "bundleReceived": false,
+  "reported": {
+    "lines": 5163,
+    "endMarkerSeen": false,
+    "printedTimes": 168,
+    "initial": {
+      "liquid_m3": 0.9999999999999843,
+      "gas_m3": 0.6420022691408869,
+      "version": 1
+    },
+    "recordCounts": {
+      "INITIAL": 1,
+      "PRESSURE": 672,
+      "STEP": 168
+    },
+    "malformedRecordCount": 0,
+    "duplicateStepRecords": 0,
+    "lastValidStep": {
+      "t_s": 0.008399999999999977,
+      "dt_s": 5e-05,
+      "liquid_m3": 0.9999999999999819,
+      "gas_m3": 0.6420022691408895,
+      "liquidOut_m3_s": 3.424e-321,
+      "gasOut_m3_s": -4.117014787083113e-12,
+      "postPressureOut_m3_s": -4.1022447686499784e-13,
+      "liquidResidual_kg": -9.992007221626409e-13,
+      "gasResidual_kg": -6.499399492042183e-16,
+      "liquidL1_kg": 9.592326932761353e-11,
+      "gasL1_kg": 1.518838811096367e-13,
+      "alphaMin": -1.1333378679978523e-11,
+      "alphaMax": 1.0000000000113334,
+      "complement": 0.0,
+      "liquidMax_m_s": 0.0010031159176616922,
+      "gasMax_m_s": 0.9725264618737075,
+      "alphaChangeL1_m3": 3.8139220702559863e-08,
+      "Co": 0.0017879160830581477,
+      "alphaCalls": 2.0
+    },
+    "minimumFinitePressure_Pa": 99982.98689720605,
+    "maximumFinitePressure_Pa": 111878.15082823082,
+    "firstLimitEvents": {
+      "liquidMax_m_s": {
+        "line": 4959,
+        "t_s": 0.008399999999999977,
+        "value": 0.0010031159176616922,
+        "limit": 0.001
+      }
+    },
+    "inputIdentity": {
+      "checked": 49,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "stop": {
+      "reason": "solver failure",
+      "line": 4962,
+      "lastPrintedTime": "0.0084",
+      "returncode": 139
+    }
+  },
+  "comparisonAtSameTime": {
+    "time_s": 0.0084,
+    "original": {
+      "liquidMax_m_s": 0.0010031870046817379,
+      "gasMax_m_s": 0.9727328353859714,
+      "Co": 0.001788180145683109
+    },
+    "gradient": {
+      "liquidMax_m_s": 0.0010031159176616922,
+      "gasMax_m_s": 0.9725264618737075,
+      "Co": 0.0017879160830581477
+    },
+    "relativeChangePercent": {
+      "liquidMax_m_s": -0.007086118511689943,
+      "gasMax_m_s": -0.02121584722510894,
+      "Co": -0.014767115360203587
+    }
+  },
+  "interpretation": "The scalar-gradient comparison did not resolve the rest failure: same stop time and <0.022 percent change in the reported phase speed peaks. Good logged mass residuals do not establish equilibrium. Return code 139 is a shutdown status, not a demonstrated independent root cause.",
+  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md for current evidence status and next work. Do not repeat completed CFD."
+}

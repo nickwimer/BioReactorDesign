@@ -1,0 +1,374 @@
+{
+  "lines": 2284,
+  "endMarkerSeen": false,
+  "printedTimes": 18,
+  "lastPrintedTime_s": 0.0009,
+  "pairedStepRecordCount": 17,
+  "lastPairedStepRecordTime_s": 0.00085,
+  "duplicateStepRecords": 0,
+  "malformedStepRecords": 0,
+  "dragNoneSelectionCount": 1,
+  "maxFiniteCourant": 2.7252723295830327e+29,
+  "largestFiniteAlphaMagnitude": 7.433392801508894e+144,
+  "firstEvents": {
+    "alpha_out_of_bounds": {
+      "line": 545,
+      "lastPrintedTime_s": 0.0002,
+      "outer": 2,
+      "text": "liquid fraction, min, max = 0.60901255667764698 -1.232699447738956e-10 1.0000000005446585"
+    },
+    "pressure_limit": {
+      "line": 832,
+      "lastPrintedTime_s": 0.0003,
+      "outer": 2,
+      "text": "limitPressure: p min -73364.513746858589"
+    },
+    "courant_above_0_2": {
+      "line": 1089,
+      "lastPrintedTime_s": 0.0004,
+      "outer": 2,
+      "text": "Courant Number mean: 0.0039355608920831047 max: 0.37319948362935979",
+      "maximum": 0.3731994836293598
+    },
+    "clamp_above_1e_10_m3": {
+      "line": 1617,
+      "lastPrintedTime_s": 0.00065,
+      "outer": 1,
+      "text": "SC1_PHASE_TERM phase=liquid t_s=0.00065 call=1 term=clamp volume_m3=-1.36104293969645e-09 frozenRhoMass_kg=-1.36104293969645e-06"
+    },
+    "alpha_magnitude_above_10": {
+      "line": 1651,
+      "lastPrintedTime_s": 0.00065,
+      "outer": 2,
+      "text": "liquid fraction, min, max = 0.60901255670891485 -16.379226889599494 14.623227456604468"
+    },
+    "floating_point_exception": {
+      "line": 2273,
+      "lastPrintedTime_s": 0.0009,
+      "outer": 2,
+      "text": "[2] #1  Foam::sigFpe::sigHandler(int) at ??:?"
+    },
+    "allocation_time_limit": {
+      "line": 2282,
+      "lastPrintedTime_s": 0.0009,
+      "outer": 2,
+      "text": "[2026-11-11T08:52:48.005] error: *** STEP 19805193.6 ON x1005c4s2b1n0 CANCELLED AT 2026-11-11T08:52:48 DUE TO TIME LIMIT ***"
+    }
+  },
+  "eventCounts": {
+    "alpha_out_of_bounds": 82,
+    "pressure_limit": 38,
+    "courant_above_0_2": 10,
+    "clamp_above_1e_10_m3": 11,
+    "alpha_magnitude_above_10": 52,
+    "floating_point_exception": 2,
+    "allocation_time_limit": 1
+  },
+  "timeline": [
+    {
+      "time_s": 5e-05,
+      "line": 125,
+      "alphaMin": 0.0,
+      "alphaMax": 1.0,
+      "pressureIterationsMax": 280,
+      "pressureLimitCalls": 0
+    },
+    {
+      "time_s": 0.0001,
+      "line": 245,
+      "alphaMin": -1.5501791819467854e-13,
+      "alphaMax": 1.0000000000000002,
+      "pressureIterationsMax": 235,
+      "pressureLimitCalls": 0
+    },
+    {
+      "time_s": 0.00015,
+      "line": 365,
+      "alphaMin": -2.601159716866833e-27,
+      "alphaMax": 1.0,
+      "pressureIterationsMax": 275,
+      "pressureLimitCalls": 0
+    },
+    {
+      "time_s": 0.0002,
+      "line": 485,
+      "alphaMin": -1.232699447738956e-10,
+      "alphaMax": 1.0000000005446585,
+      "pressureIterationsMax": 252,
+      "pressureLimitCalls": 0
+    },
+    {
+      "time_s": 0.00025,
+      "line": 605,
+      "alphaMin": -6.018871338143853e-13,
+      "alphaMax": 1.0,
+      "pressureIterationsMax": 257,
+      "pressureLimitCalls": 0
+    },
+    {
+      "time_s": 0.0003,
+      "line": 725,
+      "alphaMin": -1.521189049404553e-11,
+      "alphaMax": 1.0,
+      "pressureIterationsMax": 280,
+      "pressureLimitCalls": 1
+    },
+    {
+      "time_s": 0.00035,
+      "line": 846,
+      "alphaMin": -1.9255345498304315e-22,
+      "alphaMax": 1.0,
+      "pressureIterationsMax": 284,
+      "pressureLimitCalls": 2
+    },
+    {
+      "time_s": 0.0004,
+      "line": 968,
+      "alphaMin": -1.2360231310575295e-23,
+      "alphaMax": 1.0000000000000002,
+      "pressureIterationsMax": 311,
+      "pressureLimitCalls": 2
+    },
+    {
+      "time_s": 0.00045,
+      "line": 1090,
+      "alphaMin": -3.2755774734298797e-21,
+      "alphaMax": 1.0000000000000002,
+      "pressureIterationsMax": 328,
+      "pressureLimitCalls": 2
+    },
+    {
+      "time_s": 0.0005,
+      "line": 1212,
+      "alphaMin": -8.043899492588771e-20,
+      "alphaMax": 1.0000000000000007,
+      "pressureIterationsMax": 337,
+      "pressureLimitCalls": 2
+    },
+    {
+      "time_s": 0.00055,
+      "line": 1334,
+      "alphaMin": -1.107723600449088e-21,
+      "alphaMax": 1.0000000000009497,
+      "pressureIterationsMax": 346,
+      "pressureLimitCalls": 3
+    },
+    {
+      "time_s": 0.0006,
+      "line": 1457,
+      "alphaMin": -8.453961694637879e-06,
+      "alphaMax": 1.0000000006228693,
+      "pressureIterationsMax": 364,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.00065,
+      "line": 1581,
+      "alphaMin": -20.190013176167522,
+      "alphaMax": 27.12465483049143,
+      "pressureIterationsMax": 350,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.0007,
+      "line": 1705,
+      "alphaMin": -252.35689183145172,
+      "alphaMax": 427.57401745301786,
+      "pressureIterationsMax": 301,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.00075,
+      "line": 1829,
+      "alphaMin": -4294.809218843802,
+      "alphaMax": 5679.814826389715,
+      "pressureIterationsMax": 295,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.0008,
+      "line": 1953,
+      "alphaMin": -95982.37172537073,
+      "alphaMax": 88295.09972260379,
+      "pressureIterationsMax": 339,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.00085,
+      "line": 2077,
+      "alphaMin": -1.157742275704652e+58,
+      "alphaMax": 9.561761100244855e+57,
+      "pressureIterationsMax": 460,
+      "pressureLimitCalls": 4
+    },
+    {
+      "time_s": 0.0009,
+      "line": 2201,
+      "alphaMin": -7.433392801508894e+144,
+      "alphaMax": 7.316027879614551e+144,
+      "pressureIterationsMax": 0,
+      "pressureLimitCalls": 2
+    }
+  ],
+  "timelineTruncated": false,
+  "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+  "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+  "bundle_sha256": "cbe15f3cc08564aed19324ee0c397ae6296ee0475f99dea0ba9ffb290b60adf4",
+  "solver_log_sha256": "4c55d6b46ec8738a4c3f67179843044b2b45b6101bc5a32e51a0c1eb4bba214f",
+  "bundledHashesVerified": 18,
+  "inputIdentityFromKestrelCollector": {
+    "checked": 59,
+    "changed": [],
+    "missing": [],
+    "extra": []
+  },
+  "sourceCommit": "08768434a0cd08f525f16fbbef57276616268a13",
+  "caseRoot": "/kfs3/scratch/nwimer/sc1_reactor_drag_20261111T144728Z",
+  "extraction": "Received bundle; regular members only; all 18 included source-file hashes verified. Original fields/mesh were not included.",
+  "pressureBeforeFirstLimit": {
+    "count": 23,
+    "maxFinalResidual": 9.98529572284873e-13,
+    "lastThree": [
+      {
+        "line": 776,
+        "time_s": 0.0003,
+        "outer": 1,
+        "initial": 0.009845268794071325,
+        "final": 9.452582074685024e-13,
+        "iterations": 260
+      },
+      {
+        "line": 777,
+        "time_s": 0.0003,
+        "outer": 1,
+        "initial": 0.02531788513054377,
+        "final": 9.20327607502342e-13,
+        "iterations": 268
+      },
+      {
+        "line": 831,
+        "time_s": 0.0003,
+        "outer": 2,
+        "initial": 0.015037978385129214,
+        "final": 9.02266074387239e-13,
+        "iterations": 273
+      }
+    ],
+    "firstLimitedSolve": {
+      "line": 831,
+      "time_s": 0.0003,
+      "outer": 2,
+      "initial": 0.015037978385129214,
+      "final": 9.02266074387239e-13,
+      "iterations": 273
+    }
+  },
+  "rates": {
+    "records": 36,
+    "allPhysicalRatesZero": true
+  },
+  "courantTimeline": [
+    {
+      "line": 116,
+      "precedingPrintedTime_s": null,
+      "maximum": 0.0
+    },
+    {
+      "line": 124,
+      "precedingPrintedTime_s": null,
+      "maximum": 0.0
+    },
+    {
+      "line": 244,
+      "precedingPrintedTime_s": 5e-05,
+      "maximum": 7.350114622546201e-05
+    },
+    {
+      "line": 364,
+      "precedingPrintedTime_s": 0.0001,
+      "maximum": 0.00010438641022150428
+    },
+    {
+      "line": 484,
+      "precedingPrintedTime_s": 0.00015,
+      "maximum": 0.0007041158364298463
+    },
+    {
+      "line": 604,
+      "precedingPrintedTime_s": 0.0002,
+      "maximum": 0.003288068164370644
+    },
+    {
+      "line": 724,
+      "precedingPrintedTime_s": 0.00025,
+      "maximum": 0.014498056847437766
+    },
+    {
+      "line": 845,
+      "precedingPrintedTime_s": 0.0003,
+      "maximum": 0.055727610022536705
+    },
+    {
+      "line": 967,
+      "precedingPrintedTime_s": 0.00035,
+      "maximum": 0.15329658847204006
+    },
+    {
+      "line": 1089,
+      "precedingPrintedTime_s": 0.0004,
+      "maximum": 0.3731994836293598
+    },
+    {
+      "line": 1211,
+      "precedingPrintedTime_s": 0.00045,
+      "maximum": 0.7356881675264552
+    },
+    {
+      "line": 1333,
+      "precedingPrintedTime_s": 0.0005,
+      "maximum": 1.3333090743709137
+    },
+    {
+      "line": 1456,
+      "precedingPrintedTime_s": 0.00055,
+      "maximum": 2.4380382627266695
+    },
+    {
+      "line": 1580,
+      "precedingPrintedTime_s": 0.0006,
+      "maximum": 13.080493105069708
+    },
+    {
+      "line": 1704,
+      "precedingPrintedTime_s": 0.00065,
+      "maximum": 20.506495885714376
+    },
+    {
+      "line": 1828,
+      "precedingPrintedTime_s": 0.0007,
+      "maximum": 50.990110486217944
+    },
+    {
+      "line": 1952,
+      "precedingPrintedTime_s": 0.00075,
+      "maximum": 68.32750211816882
+    },
+    {
+      "line": 2076,
+      "precedingPrintedTime_s": 0.0008,
+      "maximum": 58156.92583086515
+    },
+    {
+      "line": 2200,
+      "precedingPrintedTime_s": 0.00085,
+      "maximum": 2.7252723295830327e+29
+    }
+  ],
+  "decision": "Test faceMomentum true with all physical settings, timestep and tolerances unchanged; collect early fields and stop detected failure. Root cause and physical adequacy remain unproven.",
+  "guardReplayOnFailedLog": {
+    "reason": "pressure limiter activated in quiescent vessel",
+    "line": 832,
+    "lastPrintedTime": "0.0003",
+    "text": "limitPressure: p min -73364.513746858589"
+  }
+}

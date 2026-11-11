@@ -1,0 +1,386 @@
+{
+  "provenance": "Original user-supplied console transcription. Correct replacement archive subsequently received and independently verified; see sc1_reactor_vof_hydro_convergence_result_2026-11-11.json.",
+  "console_sha256": "632e67b19f6adc51559fc15e3fd448705e9e9a1801c47987f490e70429c563da",
+  "reportedRun": {
+    "complete": true,
+    "errors": [],
+    "phases": {
+      "liquid": {
+        "initialMass_kg": 999.9999999999843,
+        "finalMass_kg": 999.9999999999845,
+        "boundaryOut_kg": 8.982923069634692e-56,
+        "physicalResidual_kg": 2.220446049250313e-13,
+        "residualL1_kg": 9.769962616701378e-12,
+        "screenTolerance_kg": 1.0000099999999845e-05
+      },
+      "gas": {
+        "initialMass_kg": 0.6420022691408869,
+        "finalMass_kg": 0.6420022691408869,
+        "boundaryOut_kg": -9.612314796684663e-24,
+        "physicalResidual_kg": -9.612314796684663e-24,
+        "residualL1_kg": 1.0658141042308244e-14,
+        "screenTolerance_kg": 6.520022691408869e-09
+      }
+    },
+    "steps": 200,
+    "maxCourant": 3.0506995994302256e-08,
+    "maxLiquid_m_s": 8.856731360170448e-08,
+    "maxGas_m_s": 1.9508961409812425e-05,
+    "minimumPressure_Pa": 99982.98691668686,
+    "pressureIteration": {
+      "complete": true,
+      "observedStepRecords": 200,
+      "unfinishedTime_s": null,
+      "pressureRecords": 19200,
+      "passesPerCorrection": 24,
+      "corrections": 800,
+      "convergedCorrections": 800,
+      "maxFinalPassInitialResidual": 9.98744667660074e-13,
+      "finalPassTolerance": 1e-12,
+      "pressure_iteration_pass": true,
+      "firstUnconvergedCorrection": null,
+      "minimumPressureAllPasses_Pa": 99982.98691668686,
+      "convergenceMeaning": "Final pass in every fixed 24-pass group must enter at <=1e-12 and perform zero linear iterations. This tests explicit-correction convergence, not facewise force balance."
+    },
+    "hydrostaticReference": {
+      "version": 1.0,
+      "frozen": 1.0,
+      "rhoError_kg_m3": 3.54702933691442e-11,
+      "pressureError_Pa": 1.4551915228366852e-11,
+      "initialSpeed_m_s": 0.0
+    },
+    "hydrostatic_pass": true,
+    "meaning": "10-ms fixed-reference startup with 24 pressure passes. Original physical and convergence limits. No stirred/aerated flow, operating checkpoint or biology acceptance.",
+    "comparisonMeaning": "Matched-time differences against the preserved ten-pass control; no tolerance is relaxed based on agreement.",
+    "suite": "sc1_meml_vof_hydrostatic_convergence_v2",
+    "log_sha256": "704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3",
+    "control": {
+      "root": "/kfs3/scratch/nwimer/sc1_vof_hydro_20261111T220400Z",
+      "manifest_sha256": "c8b27f64573dac4ed63d5936f71a2e9a89caa759135d600eb231cbfd13add9aa",
+      "log_sha256": "156073fefe79f07866cbfd65c62e072cf7192145e5727148e9d3d9b4ee7cef4a",
+      "result_sha256": "6aca0527e3a02ffa9474d9840d9f43e8d075af4847f4575d1069cb87a557869a"
+    }
+  },
+  "reportedFinalSnapshot": {
+    "time_s": 0.01,
+    "liquidVolume_L": 999.9999999999998,
+    "alphaChangeL1_m3": 4.242905345914197e-14,
+    "pressureMinimum_Pa": 99982.98691668686,
+    "pressureMaximum_Pa": 111878.15039447187,
+    "phases": {
+      "liquid": {
+        "present": {
+          "cells": 172224,
+          "rms_m_s": 1.533322234192442e-09,
+          "meanVertical_m_s": 5.802262465008837e-15,
+          "max_m_s": 8.856731360170448e-08,
+          "peak": {
+            "cell": 210602,
+            "centre_m": [
+              -0.04803445066339132,
+              1.0186656229773616,
+              -0.27892316604536715
+            ],
+            "alphaLiquid": 0.4946031451138722,
+            "velocity_m_s": [
+              -8.743355095869757e-08,
+              2.391362119477962e-09,
+              -1.392209009412836e-08
+            ]
+          }
+        },
+        "bulk": {
+          "cells": 170304,
+          "rms_m_s": 5.028331211764357e-10,
+          "meanVertical_m_s": 5.438284406108199e-15,
+          "max_m_s": 2.150315789079089e-08,
+          "peak": {
+            "cell": 208039,
+            "centre_m": [
+              0.16238314053621952,
+              1.006111474316035,
+              -0.23195502981724053
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              1.7759482117860858e-08,
+              1.3622189607860027e-09,
+              1.204703090742852e-08
+            ]
+          }
+        },
+        "interface": {
+          "cells": 1920,
+          "rms_m_s": 1.9494135540706442e-08,
+          "meanVertical_m_s": 7.131619270921627e-14,
+          "max_m_s": 8.856731360170448e-08,
+          "peak": {
+            "cell": 210602,
+            "centre_m": [
+              -0.04803445066339132,
+              1.0186656229773616,
+              -0.27892316604536715
+            ],
+            "alphaLiquid": 0.4946031451138722,
+            "velocity_m_s": [
+              -8.743355095869757e-08,
+              2.391362119477962e-09,
+              -1.392209009412836e-08
+            ]
+          }
+        },
+        "wallAdjacent": {
+          "cells": 10464,
+          "rms_m_s": 1.0337806267761375e-12,
+          "meanVertical_m_s": 5.043168586582127e-13,
+          "max_m_s": 4.6961649412601285e-12,
+          "peak": {
+            "cell": 162289,
+            "centre_m": [
+              0.44242271207066014,
+              0.96927961605,
+              -0.08800334900718904
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              -3.2258671190723706e-12,
+              3.3531277721544516e-12,
+              6.358306608012793e-13
+            ]
+          }
+        },
+        "propellerAdjacent": {
+          "cells": 6104,
+          "rms_m_s": 1.1569044528742017e-10,
+          "meanVertical_m_s": 5.0018338642712155e-14,
+          "max_m_s": 2.1736156911026076e-09,
+          "peak": {
+            "cell": 164852,
+            "centre_m": [
+              0.03959868450822343,
+              1.0186621254461254,
+              -0.013497788088781644
+            ],
+            "alphaLiquid": 0.4948829476806144,
+            "velocity_m_s": [
+              -2.0688250192765697e-09,
+              5.6890795631242855e-11,
+              6.643279683975468e-10
+            ]
+          }
+        }
+      },
+      "gas": {
+        "present": {
+          "cells": 111360,
+          "rms_m_s": 5.688907164267967e-07,
+          "meanVertical_m_s": -2.6761768158121986e-12,
+          "max_m_s": 1.9508961409812425e-05,
+          "peak": {
+            "cell": 210542,
+            "centre_m": [
+              -0.01005552378715107,
+              1.0312197753209564,
+              -0.282738433369888
+            ],
+            "alphaLiquid": 0.0,
+            "velocity_m_s": [
+              1.9507197957154197e-05,
+              1.8670905852470067e-08,
+              -2.616381990920757e-07
+            ]
+          }
+        },
+        "bulk": {
+          "cells": 109440,
+          "rms_m_s": 5.714028624526263e-07,
+          "meanVertical_m_s": -2.7019343615106323e-12,
+          "max_m_s": 1.9508961409812425e-05,
+          "peak": {
+            "cell": 210542,
+            "centre_m": [
+              -0.01005552378715107,
+              1.0312197753209564,
+              -0.282738433369888
+            ],
+            "alphaLiquid": 0.0,
+            "velocity_m_s": [
+              1.9507197957154197e-05,
+              1.8670905852470067e-08,
+              -2.616381990920757e-07
+            ]
+          }
+        },
+        "interface": {
+          "cells": 1920,
+          "rms_m_s": 1.950002974396963e-08,
+          "meanVertical_m_s": 2.304551576771988e-13,
+          "max_m_s": 8.856731360170448e-08,
+          "peak": {
+            "cell": 210602,
+            "centre_m": [
+              -0.04803445066339132,
+              1.0186656229773616,
+              -0.27892316604536715
+            ],
+            "alphaLiquid": 0.4946031451138722,
+            "velocity_m_s": [
+              -8.743355095869757e-08,
+              2.391362119477962e-09,
+              -1.392209009412836e-08
+            ]
+          }
+        },
+        "wallAdjacent": {
+          "cells": 5568,
+          "rms_m_s": 6.657521588599604e-10,
+          "meanVertical_m_s": -4.475538918186472e-10,
+          "max_m_s": 2.6653804691693882e-09,
+          "peak": {
+            "cell": 272213,
+            "centre_m": [
+              -0.4424227120706601,
+              1.03121684,
+              0.08800334900718905
+            ],
+            "alphaLiquid": 0.0,
+            "velocity_m_s": [
+              2.61408651739406e-09,
+              -2.6933641883445828e-11,
+              -5.196915469229002e-10
+            ]
+          }
+        },
+        "propellerAdjacent": {
+          "cells": 2784,
+          "rms_m_s": 5.236348243474159e-09,
+          "meanVertical_m_s": 7.219635995169133e-10,
+          "max_m_s": 3.945794605519375e-08,
+          "peak": {
+            "cell": 165219,
+            "centre_m": [
+              0.034807126597747144,
+              1.031216458777043,
+              -0.023203691155411377
+            ],
+            "alphaLiquid": 0.0,
+            "velocity_m_s": [
+              2.075472028967747e-08,
+              1.8372106693989687e-09,
+              3.350814452559373e-08
+            ]
+          }
+        }
+      }
+    }
+  },
+  "reportedFinalComparison": {
+    "time_s": 0.01,
+    "liquidVolumeDifference_L": 0.0,
+    "liquidPeakDifference_m_s": 6.617444900424221e-23,
+    "gasPeakDifference_m_s": -2.0328790734103208e-20
+  },
+  "reportedEvidenceSummary": {
+    "lines": 42716,
+    "endMarkerSeen": true,
+    "printedTimes": 200,
+    "lastPrintedTime_s": 0.01,
+    "pairedStepRecordCount": 0,
+    "lastPairedStepRecordTime_s": null,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 0,
+    "maxFiniteCourant": 3.035765139087953e-08,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {},
+    "eventCounts": {},
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "vof": {
+      "recordCounts": {
+        "INITIAL": 1,
+        "PRESSURE": 19200,
+        "STEP": 200
+      },
+      "validStepRecordCount": 200,
+      "uniqueStepTimeCount": 200,
+      "duplicateStepRecords": 0,
+      "malformedRecordCount": 0,
+      "firstMalformedRecord": null,
+      "initial": {
+        "liquid_m3": 0.9999999999999843,
+        "gas_m3": 0.6420022691408869,
+        "version": 1.0
+      },
+      "lastValidStep": {
+        "line": 42711,
+        "record": {
+          "t_s": 0.009999999999999967,
+          "dt_s": 5e-05,
+          "liquid_m3": 0.9999999999999846,
+          "gas_m3": 0.6420022691408869,
+          "liquidOut_m3_s": -1.2917047637444849e-54,
+          "gasOut_m3_s": -1.0130280629132327e-21,
+          "postPressureOut_m3_s": -3.9146645606498813e-22,
+          "liquidResidual_kg": -1.1102230246251565e-13,
+          "gasResidual_kg": -5.065140314566164e-26,
+          "liquidL1_kg": 9.769962616701378e-12,
+          "gasL1_kg": 1.0658141042308253e-14,
+          "alphaMin": 0.0,
+          "alphaMax": 1.0,
+          "complement": 0.0,
+          "liquidMax_m_s": 8.856731360170448e-08,
+          "gasMax_m_s": 1.9508961409812425e-05,
+          "alphaChangeL1_m3": 4.2429053459141926e-14,
+          "Co": 3.0506995994302256e-08,
+          "alphaCalls": 2.0
+        }
+      },
+      "minimumFinitePressure_Pa": 99982.98691668686,
+      "maximumFinitePressure_Pa": 111878.15039447621,
+      "maximumLoggedCo": 3.0506995994302256e-08,
+      "maximumLiquidSpeed_m_s": 8.856731360170448e-08,
+      "maximumGasSpeed_m_s": 1.9508961409812425e-05,
+      "largestFiniteAlphaMagnitude": 1.0,
+      "firstLimitEvents": {},
+      "limitEventCounts": {},
+      "meaning": "Logged diagnostics only. A step is printed before its guard; record counts are not accepted steps. No independent budget reconciliation, field validation or startup acceptance.",
+      "budgetLimitMeaning": "Initial-inventory limits are evaluated only with one valid version-1 initial record.",
+      "legacyCounterMeaning": "Top-level pairedStepRecordCount counts SC1_TWO_STEP only, not SC1_VOF_STEP."
+    },
+    "root": "/kfs3/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z",
+    "variant": "sc1_meml_vof_hydrostatic_convergence_v2",
+    "sourceCommit": "652de393d9d12b53e115c827c7cb8a0c598ae441",
+    "solverLogSha256": "704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3",
+    "inputIdentity": {
+      "checked": 51,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated."
+  },
+  "reportedStatus": 0,
+  "reportedBundlePath": "/kfs3/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z_evidence/reactor_failure_evidence.tar.gz",
+  "reportedBundleSha256": "cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3",
+  "receivedAttachment": {
+    "sha256": "33f5a524c9440516b0e2477c830ef7378ea64ef3e9d4b41f2c0de6f135296fad",
+    "rootInManifest": "/kfs3/scratch/nwimer/sc1_vof_hydro_20261111T220400Z",
+    "matchesNewRun": false,
+    "meaning": "Byte-for-byte duplicate of the previously verified ten-pass archive; cannot verify the new 24-pass run."
+  },
+  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md. Archive gap closed; implement longer-rest and fixed-reference perturbation validation without rerunning completed CFD.",
+  "verificationPendingAtInitialReceipt": [
+    "Correct 24-pass archive digest and member checks",
+    "Independent parsing of its complete log and comparison result",
+    "Native arrays remain on Kestrel; a standard small evidence bundle does not include them"
+  ],
+  "followupVerification": {
+    "archiveVerified": true,
+    "sha256": "cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3",
+    "result": "sc1_reactor_vof_hydro_convergence_result_2026-11-11.json",
+    "scope": "All 17 listed digests, 11 included input hashes, complete log budgets and 800 pressure groups checked; native arrays and external binaries are not included."
+  }
+}

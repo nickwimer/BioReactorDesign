@@ -1,0 +1,5 @@
+headspaceEntrainingDeposition.C
+headspaceEntrainmentNucleation.C
+
+# Independent scratch library: do not replace verified BiRD or O2 film libs.
+LIB = /scratch/nwimer/sc1_headspace_entrainment_20261104/lib/libsc1HeadspaceEntrainmentModels

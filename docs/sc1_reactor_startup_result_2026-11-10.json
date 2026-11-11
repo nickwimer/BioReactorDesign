@@ -1,0 +1,138 @@
+{
+  "provenance": {
+    "source": "User-pasted Kestrel console output; selected exact metrics, not a substitute for the raw solver log",
+    "source_commit": "e586c47286b2dc9a2f514fb59a5f35f714f0946d",
+    "root": "/kfs3/scratch/nwimer/sc1_reactor_startup_20261111T045638Z",
+    "build": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z",
+    "log_sha256": "987019c594cfdc0a856472d67aa1ce99885d6205d1e9ed56b8973623040fe33b"
+  },
+  "complete": true,
+  "screen_pass": true,
+  "diagnostic_pass": true,
+  "startup_pass": false,
+  "exit_status": 2,
+  "steps": 200,
+  "dt_s": 5e-05,
+  "endTime_s": 0.01,
+  "maxCourant": 0.6239911029205629,
+  "errors": [],
+  "quiescent_errors": [
+    "Mixture Courant number exceeded 0.2",
+    "Quiescent liquid speed exceeded 1 mm/s"
+  ],
+  "initial": {
+    "cells": 281664,
+    "volume_m3": 1.6420022691408904,
+    "liquid_volume_m3": 0.9999999999999999,
+    "gas_volume_m3": 0.6420022691408908,
+    "interface_midheight_m": 1.0185981622921294,
+    "transition_width_m": 0.0125
+  },
+  "phases": {
+    "gas": {
+      "initialMass_kg": 0.642002269140887,
+      "finalMass_kg": 0.64200226914089,
+      "deltaMass_kg": 2.4377033161157025e-15,
+      "boundaryOut_kg": 7.402080333440133e-14,
+      "optionSource_kg": 0.0,
+      "transferSource_kg": 0.0,
+      "physicalResidual_kg": 7.645850665051703e-14,
+      "residualL1_kg": 8.079028304339642e-14,
+      "screenTolerance_kg": 6.520022765429711e-09,
+      "allOuterSplitL1Volume_m3": 0.0,
+      "alphaMinimum": 0.0,
+      "alphaMaximum": 1.0
+    },
+    "liquid": {
+      "initialMass_kg": 1000.00000000001,
+      "finalMass_kg": 1000.0,
+      "deltaMass_kg": -2.4377448064026465e-12,
+      "boundaryOut_kg": 0.0,
+      "optionSource_kg": 0.0,
+      "transferSource_kg": 0.0,
+      "physicalResidual_kg": -2.4377448064026465e-12,
+      "residualL1_kg": 3.344917609101449e-12,
+      "screenTolerance_kg": 1.00001e-05,
+      "allOuterSplitL1Volume_m3": 0.0,
+      "alphaMinimum": 0.0,
+      "alphaMaximum": 1.0
+    }
+  },
+  "snapshots": [
+    {
+      "time_s": 0.002,
+      "liquidVolume_L": 999.9999999999998,
+      "alphaChangeL1_m3": 3.719467854438421e-09,
+      "velocity": {
+        "gas": {
+          "maxPresent_m_s": 0.4682124780038029,
+          "phaseWeightedRms_m_s": 0.02854176683804072
+        },
+        "liquid": {
+          "maxPresent_m_s": 0.019397512005463673,
+          "phaseWeightedRms_m_s": 0.0016227273899109308
+        }
+      }
+    },
+    {
+      "time_s": 0.004,
+      "liquidVolume_L": 999.9999999999994,
+      "alphaChangeL1_m3": 1.3108701035600126e-08,
+      "velocity": {
+        "gas": {
+          "maxPresent_m_s": 0.9319034176135448,
+          "phaseWeightedRms_m_s": 0.054644950970551845
+        },
+        "liquid": {
+          "maxPresent_m_s": 0.03864805029307496,
+          "phaseWeightedRms_m_s": 0.003225504213661791
+        }
+      }
+    },
+    {
+      "time_s": 0.006,
+      "liquidVolume_L": 999.9999999999992,
+      "alphaChangeL1_m3": 2.8450126779531317e-08,
+      "velocity": {
+        "gas": {
+          "maxPresent_m_s": 1.3960109074674059,
+          "phaseWeightedRms_m_s": 0.08176427788079792
+        },
+        "liquid": {
+          "maxPresent_m_s": 0.057887160583119705,
+          "phaseWeightedRms_m_s": 0.00482689219671813
+        }
+      }
+    },
+    {
+      "time_s": 0.008,
+      "liquidVolume_L": 999.9999999999981,
+      "alphaChangeL1_m3": 5.024353925001184e-08,
+      "velocity": {
+        "gas": {
+          "maxPresent_m_s": 1.8592107493432768,
+          "phaseWeightedRms_m_s": 0.10919008303521724
+        },
+        "liquid": {
+          "maxPresent_m_s": 0.07712349456965993,
+          "phaseWeightedRms_m_s": 0.006428148404563013
+        }
+      }
+    },
+    {
+      "time_s": 0.01,
+      "liquidVolume_L": 999.9999999999975,
+      "alphaChangeL1_m3": 7.916063403590663e-08,
+      "velocity": {
+        "gas": {
+          "maxPresent_m_s": 2.3207742503465263,
+          "phaseWeightedRms_m_s": 0.13666553483358704
+        },
+        "liquid": {
+          "maxPresent_m_s": 0.09635726562250972,
+          "phaseWeightedRms_m_s": 0.008029364322886303
+        }
+      }
+    }
+  ]
+}

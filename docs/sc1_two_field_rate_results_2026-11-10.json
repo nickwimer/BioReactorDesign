@@ -1,0 +1,733 @@
+{
+  "provenance": {
+    "source": "User-supplied Kestrel console transcript; raw solver logs remain on Kestrel",
+    "filename": "Pasted text(20261111-031312).txt",
+    "sha256": "342a66c94a7d8ef03d6bdebe0735d2da6e80c143f20f560b372dfe28823f94b9",
+    "source_commit": "d83bc83e29f39a34498a2913ac7d3f762e708cb7",
+    "build_root": "/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z",
+    "cases_root": "/kfs3/scratch/nwimer/sc1_two_field_rates_cases_20261111T021516Z"
+  },
+  "assets": {
+    "bin/birdTwoFieldRates": "34c7f5dae2739f2b1a40776dff142f9bfb4e7ebda495ca2134438202cf01bc54",
+    "lib/libbirdeulerianInterfacialCompositionModels.so": "ab19f4a19b344e30829b1662f88d2c45dac65022f83193b5f4321ab8e2841649",
+    "lib/libbirdeulerianInterfacialModels.so": "3dfd2332b13b1689fc465bee880e9df9aee4bc0d5f9fff9ac94c446b07b71232",
+    "lib/libbirdphaseSystem.so": "6ae6f57fa85d8dd44b356a8de566ec991591b1e3b8ed16a34309d63facf95d8f",
+    "lib/libbirdmultiphaseMomentumTransportModels.so": "24b10084e0fb998a7297e5a9eae62157cca6681a4a0e959a264695933e9c2451",
+    "lib/libbirdmultiphaseReactions.so": "859f19614ad51ab765b1cf8451b10803dfcb1ce7aa3525a903e17ea7deae56a9",
+    "lib/libbirdmultiphaseSystems.so": "148f86c6cb4bd316c0da8e241d27bb75c6e11eb060f8ad21a593b45f3d14fad6"
+  },
+  "reports": [
+    {
+      "case": "closed_no_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 0.0005,
+          "finalMass_kg": 0.000500000000000061,
+          "deltaMass_kg": 6.110443488027293e-17,
+          "boundaryOut_kg": 0.0,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 6.110443488027293e-17,
+          "residualL1_kg": 5.769354784863862e-16,
+          "screenTolerance_kg": 1.5e-12,
+          "finalOuterRescaleVolume_m3": 7.752045533271372e-20,
+          "finalOuterSplitVolume_m3": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.5,
+          "finalMass_kg": 0.499999999999939,
+          "deltaMass_kg": -6.11045889484697e-14,
+          "boundaryOut_kg": 0.0,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -6.11045889484697e-14,
+          "residualL1_kg": 5.770176179219254e-13,
+          "screenTolerance_kg": 5.01e-10,
+          "finalOuterRescaleVolume_m3": 1.2858637765678101e-19,
+          "finalOuterSplitVolume_m3": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 3360,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "sourceFloor": null,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 0,
+      "log_sha256": "a532e59a98b7d0107cb97eeb6849e60bb3450e71572de4c955b95868703a8466"
+    },
+    {
+      "case": "closed_gas_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 0.0005,
+          "finalMass_kg": 0.000500000000000093,
+          "deltaMass_kg": 9.277898424502305e-17,
+          "boundaryOut_kg": 0.0,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 9.277898424502305e-17,
+          "residualL1_kg": 4.894737643911179e-16,
+          "screenTolerance_kg": 1.5e-12,
+          "finalOuterRescaleVolume_m3": 0,
+          "finalOuterSplitVolume_m3": 0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.5,
+          "finalMass_kg": 0.499999999999907,
+          "deltaMass_kg": -9.277435852805425e-14,
+          "boundaryOut_kg": 0.0,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -9.277435852805425e-14,
+          "residualL1_kg": 4.895160184386637e-13,
+          "screenTolerance_kg": 5.01e-10,
+          "finalOuterRescaleVolume_m3": 0.0,
+          "finalOuterSplitVolume_m3": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 2128,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "sourceFloor": null,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 0,
+      "log_sha256": "9ad622af7250fac95f35ed259177865cd4b8b63a2a6b067dbc1e9ac2312dd121"
+    },
+    {
+      "case": "source_no_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 0.0005,
+          "finalMass_kg": 0.000499909580856825,
+          "deltaMass_kg": -9.041914317518895e-08,
+          "boundaryOut_kg": 9.04191374331792e-08,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -5.742009747825391e-15,
+          "residualL1_kg": 6.122027062821979e-15,
+          "screenTolerance_kg": 1.904191374331792e-10,
+          "finalOuterRescaleVolume_m3": 3.0999895359040594e-14,
+          "finalOuterSplitVolume_m3": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.5,
+          "finalMass_kg": 0.500090419143175,
+          "deltaMass_kg": 9.041914317521618e-05,
+          "boundaryOut_kg": 9.580924787716157e-06,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 6.796293226441216e-11,
+          "residualL1_kg": 6.991205047567109e-11,
+          "screenTolerance_kg": 1.0009999999999999e-07,
+          "finalOuterRescaleVolume_m3": 3.100526953236917e-14,
+          "finalOuterSplitVolume_m3": -2.7426926832094186e-24,
+          "allOuterSplitL1Volume_m3": 5.603122946087185e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 3360,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "sourceFloor": null,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 199,
+      "log_sha256": "b81983dee75b94fd79542c641d0f43129a9fb309123eb8fe9cea7cc297b1d7e7"
+    },
+    {
+      "case": "source_gas_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 0.0005,
+          "finalMass_kg": 0.000499909580887829,
+          "deltaMass_kg": -9.041911217155635e-08,
+          "boundaryOut_kg": 9.041907543275881e-08,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -3.6738797539834215e-14,
+          "residualL1_kg": 3.79419149386864e-14,
+          "screenTolerance_kg": 1.9041907543275884e-10,
+          "finalOuterRescaleVolume_m3": 0,
+          "finalOuterSplitVolume_m3": 0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.5,
+          "finalMass_kg": 0.500090419112172,
+          "deltaMass_kg": 9.041911217155564e-05,
+          "boundaryOut_kg": 9.580924769262218e-06,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 3.694081779173838e-11,
+          "residualL1_kg": 3.8064394580038755e-11,
+          "screenTolerance_kg": 1.0009999999999999e-07,
+          "finalOuterRescaleVolume_m3": 0.0,
+          "finalOuterSplitVolume_m3": -2.117582368135748e-26,
+          "allOuterSplitL1Volume_m3": 1.088437337221775e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 2128,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "sourceFloor": null,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 199,
+      "log_sha256": "d4229cde5e7963fef8f99d230c8fb2cf79354b563d3c53787bd96f314ef22e7d"
+    },
+    {
+      "case": "bound_coarse_no_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999999996e-09,
+          "finalMass_kg": 9.99526064307186e-09,
+          "deltaMass_kg": -4.739356928135357e-12,
+          "boundaryOut_kg": 4.739357132946738e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 2.048113814005651e-19,
+          "residualL1_kg": 3.669221142637075e-18,
+          "screenTolerance_kg": 5.739357132946738e-15,
+          "finalOuterRescaleVolume_m3": -4.265810123605384e-21,
+          "finalOuterSplitVolume_m3": 0.0,
+          "alphaMinimum": 9.99331794390567e-06,
+          "alphaMaximum": 9.99667201070213e-06,
+          "nearBoundSteps": 100,
+          "maxAbsStepResidual_kg": 1.93701626201882e-18,
+          "residualL1OverInitialMass": 3.66922114263709e-10,
+          "residualL1OverThroughput": 7.742022894053785e-07,
+          "finalOuterSplitL1Volume_m3": 0.0,
+          "finalOuterSplitFrozenMass_kg": 0.0,
+          "finalOuterImplicitSourceFrozenMass_kg": 2.092833728191353e-19,
+          "finalOuterRescaleFrozenMass_kg": -4.265810123605384e-21,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.999990004739358,
+          "deltaMass_kg": 4.73935695799455e-09,
+          "boundaryOut_kg": 9.999526020011109e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -4.4293098442329805e-13,
+          "residualL1_kg": 4.839701929125197e-13,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": -4.218266361211162e-16,
+          "finalOuterSplitVolume_m3": -3.559082834531623e-24,
+          "alphaMinimum": 0.999990003327989,
+          "alphaMaximum": 0.999990006682056,
+          "nearBoundSteps": 100,
+          "maxAbsStepResidual_kg": 4.62227129616711e-13,
+          "residualL1OverInitialMass": 4.839750326628473e-13,
+          "residualL1OverThroughput": 4.839701929125198e-09,
+          "finalOuterSplitL1Volume_m3": 3.559082834531623e-24,
+          "finalOuterSplitFrozenMass_kg": -3.559082834531623e-21,
+          "finalOuterImplicitSourceFrozenMass_kg": -2.0935363027942822e-16,
+          "finalOuterRescaleFrozenMass_kg": -4.2182663612111426e-13,
+          "allOuterSplitL1Volume_m3": 7.219838031217925e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 3360,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "contractVersion": 1,
+      "dt_s": 0.001,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": null,
+      "sourceSplitObserved": false,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 199,
+      "log_sha256": "75f112f5bc4968aedcefbb3a937c4f6c69d525761bad304e12a69ed2919b7cc0"
+    },
+    {
+      "case": "bound_coarse_gas_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 100,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999995453e-09,
+          "finalMass_kg": 9.99526022016362e-09,
+          "deltaMass_kg": -4.739779790874372e-12,
+          "boundaryOut_kg": 4.739798712031447e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 1.8921157072536902e-17,
+          "residualL1_kg": 2.0404760479050806e-17,
+          "screenTolerance_kg": 5.739798712031447e-15,
+          "finalOuterRescaleVolume_m3": 0,
+          "finalOuterSplitVolume_m3": 0,
+          "alphaMinimum": 9.99331089768241e-06,
+          "alphaMaximum": 9.99667198520182e-06,
+          "nearBoundSteps": 100,
+          "maxAbsStepResidual_kg": 2.06732044710126e-18,
+          "residualL1OverInitialMass": 2.0404760479143587e-09,
+          "residualL1OverThroughput": 4.304984603513988e-06,
+          "finalOuterSplitL1Volume_m3": 0.0,
+          "finalOuterSplitFrozenMass_kg": 0.0,
+          "finalOuterImplicitSourceFrozenMass_kg": 0.0,
+          "finalOuterRescaleFrozenMass_kg": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.99999000473978,
+          "deltaMass_kg": 4.739779826401499e-09,
+          "boundaryOut_kg": 9.99952602017514e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -1.8422270438775792e-14,
+          "residualL1_kg": 2.007164118315746e-14,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": 0.0,
+          "finalOuterSplitVolume_m3": 2.3830031070834053e-25,
+          "alphaMinimum": 0.999990003328015,
+          "alphaMaximum": 0.999990006689102,
+          "nearBoundSteps": 100,
+          "maxAbsStepResidual_kg": 2.05854149081976e-15,
+          "residualL1OverInitialMass": 2.0071841901576516e-14,
+          "residualL1OverThroughput": 2.0071641183157463e-10,
+          "finalOuterSplitL1Volume_m3": 8.98443598804709e-25,
+          "finalOuterSplitFrozenMass_kg": 2.383003107083395e-22,
+          "finalOuterImplicitSourceFrozenMass_kg": -2.0940591954319144e-16,
+          "finalOuterRescaleFrozenMass_kg": 0.0,
+          "allOuterSplitL1Volume_m3": 1.6648133823910473e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 2128,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "contractVersion": 1,
+      "dt_s": 0.001,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": null,
+      "sourceSplitObserved": false,
+      "diagnostic_pass": true,
+      "rateStates": 200,
+      "positiveRateCalls": 199,
+      "log_sha256": "967b5116b2953c3aa2e2322f5dafd4b56d3ce777963a79975031b2cabab16028"
+    },
+    {
+      "case": "bound_fine_no_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 200,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999999996e-09,
+          "finalMass_kg": 9.99602382573748e-09,
+          "deltaMass_kg": -3.976174262520892e-12,
+          "boundaryOut_kg": 3.976174232344954e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -3.017593980085085e-20,
+          "residualL1_kg": 1.4774162173139909e-18,
+          "screenTolerance_kg": 4.976174232344954e-15,
+          "finalOuterRescaleVolume_m3": -2.3019973226207824e-21,
+          "finalOuterSplitVolume_m3": 0.0,
+          "alphaMinimum": 9.99472849474029e-06,
+          "alphaMaximum": 9.99751047512563e-06,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 7.2362013875657e-19,
+          "residualL1OverInitialMass": 1.4774162173139966e-10,
+          "residualL1OverThroughput": 3.7156727320841843e-07,
+          "finalOuterSplitL1Volume_m3": 0.0,
+          "finalOuterSplitFrozenMass_kg": 0.0,
+          "finalOuterImplicitSourceFrozenMass_kg": -2.767228204607043e-20,
+          "finalOuterRescaleFrozenMass_kg": -2.3019973226207824e-21,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.999990003976174,
+          "deltaMass_kg": 3.976174270281519e-09,
+          "boundaryOut_kg": 9.999602358285131e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -2.428784718919208e-13,
+          "residualL1_kg": 2.7582608527947793e-13,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": -2.2634585178371664e-16,
+          "finalOuterSplitVolume_m3": -3.169358029864585e-24,
+          "alphaMinimum": 0.999990002489525,
+          "alphaMaximum": 0.999990005271505,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 2.58461610512301e-13,
+          "residualL1OverInitialMass": 2.7582884356791413e-13,
+          "residualL1OverThroughput": 2.7582608527947796e-09,
+          "finalOuterSplitL1Volume_m3": 3.1829039266510565e-24,
+          "finalOuterSplitFrozenMass_kg": -3.1693580298645847e-21,
+          "finalOuterImplicitSourceFrozenMass_kg": 2.7653392162958487e-17,
+          "finalOuterRescaleFrozenMass_kg": -2.263458517837157e-13,
+          "allOuterSplitL1Volume_m3": 6.322574024278459e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 6720,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "contractVersion": 1,
+      "dt_s": 0.0005,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": null,
+      "sourceSplitObserved": false,
+      "diagnostic_pass": true,
+      "rateStates": 400,
+      "positiveRateCalls": 399,
+      "log_sha256": "9344f2fce71f428cd617b0a8d440508c84cb70d444ff7d7a63a5bf959bea0d76"
+    },
+    {
+      "case": "bound_fine_gas_reference",
+      "complete": true,
+      "screen_pass": true,
+      "errors": [],
+      "steps": 200,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999995453e-09,
+          "finalMass_kg": 9.99602358978418e-09,
+          "deltaMass_kg": -3.976410170320609e-12,
+          "boundaryOut_kg": 3.97641659353282e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 6.423212212701224e-18,
+          "residualL1_kg": 7.567123961698089e-18,
+          "screenTolerance_kg": 4.97641659353282e-15,
+          "finalOuterRescaleVolume_m3": 0,
+          "finalOuterSplitVolume_m3": 0,
+          "alphaMinimum": 9.99472462470674e-06,
+          "alphaMaximum": 9.99751045926978e-06,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 8.17392520548996e-19,
+          "residualL1OverInitialMass": 7.567123961732497e-10,
+          "residualL1OverThroughput": 1.9030008007725192e-06,
+          "finalOuterSplitL1Volume_m3": 0.0,
+          "finalOuterSplitFrozenMass_kg": 0.0,
+          "finalOuterImplicitSourceFrozenMass_kg": 0.0,
+          "finalOuterRescaleFrozenMass_kg": 0.0,
+          "allOuterSplitL1Volume_m3": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.999990003976411,
+          "deltaMass_kg": 3.9764102059969275e-09,
+          "boundaryOut_kg": 9.999602358335206e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -6.442009903977729e-15,
+          "residualL1_kg": 7.718720195776968e-15,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": 0.0,
+          "finalOuterSplitVolume_m3": -8.519568044739974e-26,
+          "alphaMinimum": 0.999990002489541,
+          "alphaMaximum": 0.999990005275375,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 7.66599892618246e-16,
+          "residualL1OverInitialMass": 7.71879738375082e-15,
+          "residualL1OverThroughput": 7.718720195776968e-11,
+          "finalOuterSplitL1Volume_m3": 8.429263057057043e-25,
+          "finalOuterSplitFrozenMass_kg": -8.519568044740056e-23,
+          "finalOuterImplicitSourceFrozenMass_kg": 2.7642568608806918e-17,
+          "finalOuterRescaleFrozenMass_kg": 0.0,
+          "allOuterSplitL1Volume_m3": 1.6417382518568659e-24
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 4256,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Private two-field nonnegative-rate experiment. Original mass thresholds retained; no reactor, signed-source or interphase-transfer validation.",
+      "suite": "sc1_two_field_nonnegative_rates_v1",
+      "contractVersion": 1,
+      "dt_s": 0.0005,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": null,
+      "sourceSplitObserved": false,
+      "diagnostic_pass": true,
+      "rateStates": 400,
+      "positiveRateCalls": 399,
+      "log_sha256": "ad47f96e19c9cfa61e4454bf1a732e7fe27987ffa25eb2bf637e0f049dccbb95"
+    }
+  ],
+  "comparison": {
+    "suite": "sc1_two_field_nonnegative_rates_v1",
+    "complete": true,
+    "regression_pass": true,
+    "cases": {
+      "closed_no_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "a532e59a98b7d0107cb97eeb6849e60bb3450e71572de4c955b95868703a8466",
+        "control_log_sha256": "9793a67274cf9260750c7b822f24bc0e9cf66a00d04f4b0cd707700042c212df",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 5.769354784863862e-16,
+            "rateResidualL1_kg": 5.769354784863862e-16,
+            "screenTolerance_kg": 1.5e-12,
+            "finalMass_kg": 0.000500000000000061,
+            "boundaryOut_kg": 0.0,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 5.770176179219254e-13,
+            "rateResidualL1_kg": 5.770176179219254e-13,
+            "screenTolerance_kg": 5.01e-10,
+            "finalMass_kg": 0.499999999999939,
+            "boundaryOut_kg": 0.0,
+            "allOuterSplitL1Volume_m3": 0.0
+          }
+        }
+      },
+      "closed_gas_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "9ad622af7250fac95f35ed259177865cd4b8b63a2a6b067dbc1e9ac2312dd121",
+        "control_log_sha256": "1e563cb5179927771ffea8ccf691a89488f71cb871c500dd785117fd7e3e17ac",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 4.894737643911179e-16,
+            "rateResidualL1_kg": 4.894737643911179e-16,
+            "screenTolerance_kg": 1.5e-12,
+            "finalMass_kg": 0.000500000000000093,
+            "boundaryOut_kg": 0.0,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 4.895160184386637e-13,
+            "rateResidualL1_kg": 4.895160184386637e-13,
+            "screenTolerance_kg": 5.01e-10,
+            "finalMass_kg": 0.499999999999907,
+            "boundaryOut_kg": 0.0,
+            "allOuterSplitL1Volume_m3": 0.0
+          }
+        }
+      },
+      "source_no_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "b81983dee75b94fd79542c641d0f43129a9fb309123eb8fe9cea7cc297b1d7e7",
+        "control_log_sha256": "b3124354624ce8ea8ff56e5e7663e89d3e36c385f01e0396e723314576fa6d96",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 6.122027062821979e-15,
+            "rateResidualL1_kg": 6.122027062821979e-15,
+            "screenTolerance_kg": 1.904191374331792e-10,
+            "finalMass_kg": 0.000499909580856825,
+            "boundaryOut_kg": 9.04191374331792e-08,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 6.991205047567109e-11,
+            "rateResidualL1_kg": 6.991205047567109e-11,
+            "screenTolerance_kg": 1.0009999999999999e-07,
+            "finalMass_kg": 0.500090419143175,
+            "boundaryOut_kg": 9.580924787716157e-06,
+            "allOuterSplitL1Volume_m3": 5.603122946087185e-24
+          }
+        }
+      },
+      "source_gas_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "d4229cde5e7963fef8f99d230c8fb2cf79354b563d3c53787bd96f314ef22e7d",
+        "control_log_sha256": "487bec0cc44e837d2de8ae23c075511a0433344afd27736b6d8e14a3ecff7b7d",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 3.79419149386864e-14,
+            "rateResidualL1_kg": 3.79419149386864e-14,
+            "screenTolerance_kg": 1.9041907543275884e-10,
+            "finalMass_kg": 0.000499909580887829,
+            "boundaryOut_kg": 9.041907543275881e-08,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 3.8064394580038755e-11,
+            "rateResidualL1_kg": 3.8064394580038755e-11,
+            "screenTolerance_kg": 1.0009999999999999e-07,
+            "finalMass_kg": 0.500090419112172,
+            "boundaryOut_kg": 9.580924769262218e-06,
+            "allOuterSplitL1Volume_m3": 1.088437337221775e-24
+          }
+        }
+      },
+      "bound_coarse_no_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "75f112f5bc4968aedcefbb3a937c4f6c69d525761bad304e12a69ed2919b7cc0",
+        "control_log_sha256": "fd9347de2238a61671094fdc1c73fdef1c3379f08bb94cdcebd8da72b07619e0",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 8.996994139032305e-13,
+            "rateResidualL1_kg": 3.669221142637075e-18,
+            "screenTolerance_kg": 5.739357132946738e-15,
+            "finalMass_kg": 9.99526064307186e-09,
+            "boundaryOut_kg": 4.739357132946738e-12,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 9.001408870364855e-10,
+            "rateResidualL1_kg": 4.839701929125197e-13,
+            "screenTolerance_kg": 1.0099999999999999e-10,
+            "finalMass_kg": 0.999990004739358,
+            "boundaryOut_kg": 9.999526020011109e-05,
+            "allOuterSplitL1Volume_m3": 7.219838031217925e-24
+          }
+        }
+      },
+      "bound_coarse_gas_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "967b5116b2953c3aa2e2322f5dafd4b56d3ce777963a79975031b2cabab16028",
+        "control_log_sha256": "cbcc168865f05f6b4eb36f3681909d80be8f285a5efdb972538d4fd0093c4e82",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 8.99699284789516e-13,
+            "rateResidualL1_kg": 2.0404760479050806e-17,
+            "screenTolerance_kg": 5.739798712031447e-15,
+            "finalMass_kg": 9.99526022016362e-09,
+            "boundaryOut_kg": 4.739798712031447e-12,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 8.996987667297552e-10,
+            "rateResidualL1_kg": 2.007164118315746e-14,
+            "screenTolerance_kg": 1.0099999999999999e-10,
+            "finalMass_kg": 0.99999000473978,
+            "boundaryOut_kg": 9.99952602017514e-05,
+            "allOuterSplitL1Volume_m3": 1.6648133823910473e-24
+          }
+        }
+      },
+      "bound_fine_no_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "9344f2fce71f428cd617b0a8d440508c84cb70d444ff7d7a63a5bf959bea0d76",
+        "control_log_sha256": "7533ca91f3bf7bcf57d34311be3f7ed002c15794bdc9f86d2c67c56695f87046",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 8.997591237177871e-13,
+            "rateResidualL1_kg": 1.4774162173139909e-18,
+            "screenTolerance_kg": 4.976174232344954e-15,
+            "finalMass_kg": 9.99602382573748e-09,
+            "boundaryOut_kg": 3.976174232344954e-12,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 9.000017554931859e-10,
+            "rateResidualL1_kg": 2.7582608527947793e-13,
+            "screenTolerance_kg": 1.0099999999999999e-10,
+            "finalMass_kg": 0.999990003976174,
+            "boundaryOut_kg": 9.999602358285131e-05,
+            "allOuterSplitL1Volume_m3": 6.322574024278459e-24
+          }
+        }
+      },
+      "bound_fine_gas_reference": {
+        "screen_pass": true,
+        "diagnostic_pass": true,
+        "errors": [],
+        "log_sha256": "ad47f96e19c9cfa61e4454bf1a732e7fe27987ffa25eb2bf637e0f049dccbb95",
+        "control_log_sha256": "2d4685f0a427d380427b0a9a727d7f7ca6dfe8a121aad34eccc0820165b8fe29",
+        "phases": {
+          "gas": {
+            "controlResidualL1_kg": 8.997483498542197e-13,
+            "rateResidualL1_kg": 7.567123961698089e-18,
+            "screenTolerance_kg": 4.97641659353282e-15,
+            "finalMass_kg": 9.99602358978418e-09,
+            "boundaryOut_kg": 3.97641659353282e-12,
+            "allOuterSplitL1Volume_m3": 0.0
+          },
+          "liquid": {
+            "controlResidualL1_kg": 8.997481055502226e-10,
+            "rateResidualL1_kg": 7.718720195776968e-15,
+            "screenTolerance_kg": 1.0099999999999999e-10,
+            "finalMass_kg": 0.999990003976411,
+            "boundaryOut_kg": 9.999602358335206e-05,
+            "allOuterSplitL1Volume_m3": 1.6417382518568659e-24
+          }
+        }
+      }
+    },
+    "meaning": "Numerical regression against unchanged thresholds. Reactor/interface validation remains required."
+  }
+}

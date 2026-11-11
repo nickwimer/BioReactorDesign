@@ -1,0 +1,22 @@
+EXE_INC = \
+    -I$(SC1_BIRD_ROOT)/phaseSystems/lnInclude \
+    -I$(SC1_BIRD_ROOT)/interfacialCompositionModels/lnInclude \
+    -I$(LIB_SRC)/transportModels/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/thermophysicalProperties/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/phaseCompressible/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lbirdeulerianInterfacialCompositionModels \
+    -lbirdphaseSystem \
+    -lfluidThermophysicalModels \
+    -lreactionThermophysicalModels \
+    -lspecie \
+    -lfiniteVolume

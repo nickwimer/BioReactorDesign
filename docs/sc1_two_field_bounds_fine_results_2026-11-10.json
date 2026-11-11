@@ -1,0 +1,252 @@
+{
+  "provenance": {
+    "source": "User-uploaded Kestrel transcript; parsed JSON reports, not raw solver logs",
+    "uploaded_name": "Pasted text(20261111-011306).txt",
+    "transcript_sha256": "ef9082fe15de71b98ee66725a762e8318fdf1450e781bd0f80150c59a60c555a",
+    "run_commit": "75dc65205eeaa7ab545e7072a9be1839bf8b0c32",
+    "case_root": "/kfs3/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z"
+  },
+  "fine_reports": {
+    "bound_fine_no_reference": {
+      "case": "bound_fine_no_reference",
+      "complete": true,
+      "screen_pass": false,
+      "errors": [
+        "gas: phase mass budget exceeds screening tolerance",
+        "liquid: phase mass budget exceeds screening tolerance"
+      ],
+      "steps": 200,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999999996e-09,
+          "finalMass_kg": 9.99692353860331e-09,
+          "deltaMass_kg": -3.076461396693549e-12,
+          "boundaryOut_kg": 3.9762205204113364e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 8.997591237177871e-13,
+          "residualL1_kg": 8.997591237177871e-13,
+          "screenTolerance_kg": 4.976220520411336e-15,
+          "finalOuterRescaleVolume_m3": -2.417822460712906e-21,
+          "finalOuterSplitVolume_m3": 8.997591103656332e-13,
+          "alphaMinimum": 9.9956281053072e-06,
+          "alphaMaximum": 9.99751497400528e-06,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 4.50006991559974e-15,
+          "residualL1OverInitialMass": 8.997591237177907e-05,
+          "residualL1OverThroughput": 0.22628501590870215,
+          "finalOuterSplitL1Volume_m3": 8.997591103656332e-13,
+          "finalOuterSplitFrozenMass_kg": 8.997591103656332e-13,
+          "finalOuterImplicitSourceFrozenMass_kg": 1.577091696058793e-20,
+          "finalOuterRescaleFrozenMass_kg": -2.417822460712906e-21
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.999990003076462,
+          "deltaMass_kg": 3.0764614060707575e-09,
+          "boundaryOut_kg": 9.99960235368385e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -9.000017554931859e-10,
+          "residualL1_kg": 9.000017554931859e-10,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": -2.419175970658226e-16,
+          "finalOuterSplitVolume_m3": -8.997591103659747e-13,
+          "alphaMinimum": 0.999990002485026,
+          "alphaMaximum": 0.999990004371895,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 4.7573988782768e-12,
+          "residualL1OverInitialMass": 9.000107556007437e-10,
+          "residualL1OverThroughput": 9.00001755493186e-06,
+          "finalOuterSplitL1Volume_m3": 8.997591103659747e-13,
+          "finalOuterSplitFrozenMass_kg": -8.997591103659746e-10,
+          "finalOuterImplicitSourceFrozenMass_kg": -1.5772932778359835e-17,
+          "finalOuterRescaleFrozenMass_kg": -2.4191759706582156e-13
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 6720,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Near-bound numerical diagnostic; a completed failed screen remains evidence. No reactor, interface or interphase-transfer validation.",
+      "suite": "sc1_two_field_bounds",
+      "contractVersion": 1,
+      "dt_s": 0.0005,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": 0.0001,
+      "sourceSplitObserved": true,
+      "diagnostic_pass": true,
+      "log_sha256": "7533ca91f3bf7bcf57d34311be3f7ed002c15794bdc9f86d2c67c56695f87046"
+    },
+    "bound_fine_gas_reference": {
+      "case": "bound_fine_gas_reference",
+      "complete": true,
+      "screen_pass": false,
+      "errors": [
+        "gas: phase mass budget exceeds screening tolerance",
+        "liquid: phase mass budget exceeds screening tolerance"
+      ],
+      "steps": 200,
+      "phases": {
+        "gas": {
+          "initialMass_kg": 9.99999999995453e-09,
+          "finalMass_kg": 9.99692328579456e-09,
+          "deltaMass_kg": -3.0767141599198687e-12,
+          "boundaryOut_kg": 3.976462509774087e-12,
+          "optionSource_kg": 0.0,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": 8.997483498542197e-13,
+          "residualL1_kg": 8.997483498542197e-13,
+          "screenTolerance_kg": 4.976462509774087e-15,
+          "finalOuterRescaleVolume_m3": 0,
+          "finalOuterSplitVolume_m3": 0,
+          "alphaMinimum": 9.99562420733735e-06,
+          "alphaMaximum": 9.99751495789347e-06,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 4.49960812152139e-15,
+          "residualL1OverInitialMass": 8.997483498583108e-05,
+          "residualL1OverThroughput": 0.2262685358261649,
+          "finalOuterSplitL1Volume_m3": 0.0,
+          "finalOuterSplitFrozenMass_kg": 0.0,
+          "finalOuterImplicitSourceFrozenMass_kg": 0.0,
+          "finalOuterRescaleFrozenMass_kg": 0.0
+        },
+        "liquid": {
+          "initialMass_kg": 0.999989999999998,
+          "finalMass_kg": 0.999990003076714,
+          "deltaMass_kg": 3.076714197192131e-09,
+          "boundaryOut_kg": 9.999602353769733e-05,
+          "optionSource_kg": 9.999999999999999e-05,
+          "transferSource_kg": 0.0,
+          "physicalResidual_kg": -8.997481055502226e-10,
+          "residualL1_kg": 8.997481055502226e-10,
+          "screenTolerance_kg": 1.0099999999999999e-10,
+          "finalOuterRescaleVolume_m3": 0.0,
+          "finalOuterSplitVolume_m3": -8.99759090655833e-13,
+          "alphaMinimum": 0.999990002485042,
+          "alphaMaximum": 0.999990004375793,
+          "nearBoundSteps": 200,
+          "maxAbsStepResidual_kg": 4.4995662003174e-12,
+          "residualL1OverInitialMass": 8.997571031212556e-10,
+          "residualL1OverThroughput": 8.997481055502226e-06,
+          "finalOuterSplitL1Volume_m3": 8.99759090655833e-13,
+          "finalOuterSplitFrozenMass_kg": -8.997590906558331e-10,
+          "finalOuterImplicitSourceFrozenMass_kg": -1.5773566377824442e-17,
+          "finalOuterRescaleFrozenMass_kg": 0.0
+        }
+      },
+      "timeKeyNormalization": {
+        "tolerance_s": 1e-12,
+        "adjustedRecords": 4256,
+        "maxAdjustment_s": 1.1102230246251565e-16
+      },
+      "meaning": "Near-bound numerical diagnostic; a completed failed screen remains evidence. No reactor, interface or interphase-transfer validation.",
+      "suite": "sc1_two_field_bounds",
+      "contractVersion": 1,
+      "dt_s": 0.0005,
+      "endTime_s": 0.1,
+      "initialFractions": {
+        "gas": 1e-05,
+        "liquid": 0.99999
+      },
+      "sourceFloor": 0.0001,
+      "sourceSplitObserved": true,
+      "diagnostic_pass": true,
+      "log_sha256": "2d4685f0a427d380427b0a9a727d7f7ca6dfe8a121aad34eccc0820165b8fe29"
+    }
+  },
+  "comparison": {
+    "suite": "sc1_two_field_bounds",
+    "complete": true,
+    "comparisons": {
+      "no_reference": {
+        "gas": {
+          "coarseResidualL1_kg": 8.996994139032305e-13,
+          "fineResidualL1_kg": 8.997591237177871e-13,
+          "fineOverCoarseResidualL1": 1.00006636640375,
+          "fineMinusCoarseFinalMass_kg": 7.632437845211478e-13,
+          "fineMinusCoarseBoundaryOut_kg": -7.631840746990051e-13,
+          "coarseFinalOuterSplitVolume_m3": 8.99699360748976e-13,
+          "fineFinalOuterSplitVolume_m3": 8.997591103656332e-13,
+          "coarseFinalOuterRescaleVolume_m3": -4.41365046012577e-21,
+          "fineFinalOuterRescaleVolume_m3": -2.417822460712906e-21
+        },
+        "liquid": {
+          "coarseResidualL1_kg": 9.001408870364855e-10,
+          "fineResidualL1_kg": 9.000017554931859e-10,
+          "fineOverCoarseResidualL1": 0.9998454335923372,
+          "fineMinusCoarseFinalMass_kg": -7.63243024337612e-10,
+          "fineMinusCoarseBoundaryOut_kg": 7.633829192691885e-10,
+          "coarseFinalOuterSplitVolume_m3": -8.996993607492841e-13,
+          "fineFinalOuterSplitVolume_m3": -8.997591103659747e-13,
+          "coarseFinalOuterRescaleVolume_m3": -4.41516614935191e-16,
+          "fineFinalOuterRescaleVolume_m3": -2.419175970658226e-16
+        }
+      },
+      "gas_reference": {
+        "gas": {
+          "coarseResidualL1_kg": 8.99699284789516e-13,
+          "fineResidualL1_kg": 8.997483498542197e-13,
+          "fineOverCoarseResidualL1": 1.0000545349602175,
+          "fineMinusCoarseFinalMass_kg": 7.634316429805464e-13,
+          "fineMinusCoarseBoundaryOut_kg": -7.633825779248559e-13,
+          "coarseFinalOuterSplitVolume_m3": 0,
+          "fineFinalOuterSplitVolume_m3": 0,
+          "coarseFinalOuterRescaleVolume_m3": 0,
+          "fineFinalOuterRescaleVolume_m3": 0
+        },
+        "liquid": {
+          "coarseResidualL1_kg": 8.996987667297552e-10,
+          "fineResidualL1_kg": 8.997481055502226e-10,
+          "fineOverCoarseResidualL1": 1.0000548392665323,
+          "fineMinusCoarseFinalMass_kg": -7.634319842964032e-10,
+          "fineMinusCoarseBoundaryOut_kg": 7.633823044181365e-10,
+          "coarseFinalOuterSplitVolume_m3": -8.996993257360907e-13,
+          "fineFinalOuterSplitVolume_m3": -8.99759090655833e-13,
+          "coarseFinalOuterRescaleVolume_m3": 0.0,
+          "fineFinalOuterRescaleVolume_m3": 0.0
+        }
+      }
+    },
+    "cases": {
+      "bound_coarse_no_reference": {
+        "screen_pass": false,
+        "errors": [
+          "gas: phase mass budget exceeds screening tolerance",
+          "liquid: phase mass budget exceeds screening tolerance"
+        ],
+        "log_sha256": "fd9347de2238a61671094fdc1c73fdef1c3379f08bb94cdcebd8da72b07619e0"
+      },
+      "bound_coarse_gas_reference": {
+        "screen_pass": false,
+        "errors": [
+          "gas: phase mass budget exceeds screening tolerance",
+          "liquid: phase mass budget exceeds screening tolerance"
+        ],
+        "log_sha256": "cbcc168865f05f6b4eb36f3681909d80be8f285a5efdb972538d4fd0093c4e82"
+      },
+      "bound_fine_no_reference": {
+        "screen_pass": false,
+        "errors": [
+          "gas: phase mass budget exceeds screening tolerance",
+          "liquid: phase mass budget exceeds screening tolerance"
+        ],
+        "log_sha256": "7533ca91f3bf7bcf57d34311be3f7ed002c15794bdc9f86d2c67c56695f87046"
+      },
+      "bound_fine_gas_reference": {
+        "screen_pass": false,
+        "errors": [
+          "gas: phase mass budget exceeds screening tolerance",
+          "liquid: phase mass budget exceeds screening tolerance"
+        ],
+        "log_sha256": "2d4685f0a427d380427b0a9a727d7f7ca6dfe8a121aad34eccc0820165b8fe29"
+      }
+    },
+    "meaning": "Two timestep levels show sensitivity, not a demonstrated convergence order. Final-outer terms are iteration diagnostics, not extra physical mass."
+  }
+}

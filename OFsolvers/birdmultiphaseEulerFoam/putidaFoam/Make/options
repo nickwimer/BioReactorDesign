@@ -75,3 +75,7 @@ EXE_LIBS += \
 #     -lmeshTools \
 #     -ldynamicFvMesh
 
+
+# SC1 conservation audit: registered species-transport model access (OF9).
+EXE_INC += -I$(LIB_SRC)/ThermophysicalTransportModels/lnInclude
+EXE_LIBS += -lthermophysicalTransportModels
