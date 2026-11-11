@@ -50,7 +50,7 @@ subsequently compiled but stopped at 0.2 ms with all v4 initial inputs retained.
 Its bundle now confirms the liquid-speed guard. The
 [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
 completed; its verified bundle also reveals horizontal gas motion near the
-interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The spatial archive is verified; next use the [fresh scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md).
+interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The scalar-gradient comparison also failed; next use the [nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

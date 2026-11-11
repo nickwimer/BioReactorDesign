@@ -1,5 +1,10 @@
 # SC1 VOF saved-field inspection
 
+**Current next action:** the scalar-gradient comparison failed at the same
+8.4-ms limit with almost unchanged speeds. Use the
+[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md);
+older commands and candidate descriptions below are historical.
+
 ## Completed Kestrel inspection; archive verified
 
 The command completed with status 0 at `8307261`, writing
@@ -56,7 +61,7 @@ face-force balance. The circumferential motion and shifted stencil motivate a
 specific scalar-gradient comparison; they do not identify gravity versus
 capillarity as the proven cause.
 
-**Next action: the [fresh scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md).**
+**Historical next action: the [scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md), now failed.**
 It uses the already compiled VOF application and changes only four scalar
 `gradSchemes` entries. Existing limits are retained; gas peak speed must also
 remain <=1 mm/s before this candidate can pass. No rebuild is required.
@@ -139,7 +144,7 @@ fi
 ```
 
 The console and archive are received and verified. Preserve every root; use
-the separate scalar-gradient candidate command instead of repeating this inspection.
+the nonorthogonal pressure command linked above instead of repeating this inspection.
 There is no new CFD result until a later, justified candidate is run and checked.
 
 ## Local verification and next decision

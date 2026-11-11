@@ -1,5 +1,10 @@
 # SC1 single-velocity free-surface reference
 
+**Current next action:** the scalar-gradient comparison failed at the same
+8.4-ms limit with almost unchanged speeds. Use the
+[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md);
+older commands and candidate descriptions below are historical.
+
 ## Verified Kestrel result: liquid-speed guard stop at 8.4 ms
 
 The corrected application compiled and passed dependency checks at `a8349f1`
@@ -57,7 +62,7 @@ peak owns a boundary face; the cells differ in azimuth. The gas peak is
 0.955494 m/s. No OpenFOAM command or source modification was needed.
 Its full spatial archive is now verified. The neighbouring columns shift laterally
 with height, and interface/wall motion is much smaller than the bulk-gas peak.
-These observations motivate the [scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md),
+These observations motivated the subsequently failed [scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md),
 using the same compiled solver and fresh t=0 fields. No force term has yet been
 proved responsible. Preserve the original run and do not repeat its inspection.
 

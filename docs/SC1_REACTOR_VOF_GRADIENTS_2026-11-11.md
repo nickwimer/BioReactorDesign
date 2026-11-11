@@ -1,5 +1,25 @@
 # SC1 VOF scalar-gradient comparison
 
+## Kestrel result: failed, no material improvement
+
+At `2c808bd`, `/scratch/nwimer/sc1_vof_gradients_20261111T201422Z` stopped
+at 0.0084 s with status 1, the same time as the original VOF reference.
+The [received console values](sc1_reactor_vof_gradients_result_2026-11-11.json)
+report liquid peak 0.001003115918 m/s and gas peak 0.972526462 m/s.
+Relative to the original at that same time, the liquid peak decreases only
+0.00709% and the gas peak 0.02122%. The first reported limit is liquid speed
+above 1 mm/s. There are 168 step and 672 pressure records, no End marker,
+and unchanged initial-input hashes. These are logged observations, not an
+independently reconciled candidate budget or validated saved fields.
+The failure bundle is preserved on Kestrel but has not been received locally.
+
+This rejects scalar-gradient selection alone as a remedy in this comparison.
+It does not exclude all discretization errors or identify gravity versus
+surface tension as the cause. **Next use the
+[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).**
+It retains these gradient settings and changes only the number of pressure
+nonorthogonal corrections. Do not rerun the historical command below.
+
 ## Evidence and candidate
 
 The [verified spatial archive](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md)
@@ -72,7 +92,7 @@ native velocity maxima must match the audit. Compare the candidate with the
 control at the same 0.25, 1, 4 and 8.25-ms snapshots. Automatic evidence collection
 also runs after failure; failed/incomplete solver runs are not reconstructed.
 
-## Next Kestrel command
+## Historical Kestrel command (already failed)
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit

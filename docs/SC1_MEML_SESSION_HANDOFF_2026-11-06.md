@@ -200,19 +200,30 @@ peak-to-interface-neighbour columns shift laterally about 1.208 mm over
 12.554 mm vertically. This motivates a scalar-gradient discretization comparison;
 the cell-centre stencil does not establish a discrete force budget or root cause.
 
-**Next action: [prepare/run the fresh scalar-gradient candidate](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md).**
-Use existing build `/scratch/nwimer/sc1_vof_build_20261111T191346Z`, failed
-control `/scratch/nwimer/sc1_vof_reference_20261111T191346Z` and verified spatial
-report `/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/report.json`.
-`sc1_reactor_vof_gradients.py` changes only `system/fvSchemes`: leastSquares
-for grad(p_rgh), grad(rho), grad(alpha.liquid) and the named nHat gradient.
-The default/velocity gradient, source/boundary/mesh/fill inputs, solver binary,
-5e-5-s timestep, 10-ms duration and original guards are unchanged. Post-run
-acceptance additionally requires gas peak <=1 mm/s across all logged steps.
-No rebuild or production restart. All 36 focused tests pass; CFD remains pending.
-If it passes, longer-rest and timestep checks are still required before stirring.
-If it fails, retain the automatic evidence bundle; do not relax the limits.
-No phase-count, aeration, oxygen-transfer or biology validation is implied.
+**The scalar-gradient candidate also failed:** at `2c808bd`,
+`/scratch/nwimer/sc1_vof_gradients_20261111T201422Z` stopped at 8.4 ms.
+The console reports liquid/gas peaks 0.001003115918 / 0.972526462 m/s,
+only 0.00709% / 0.02122% lower than the original VOF peaks at the same time.
+The first reported limit remains liquid speed >1 mm/s; there are 168 step
+and 672 pressure records and no End marker. Initial-input hashes are unchanged.
+See the [console result](sc1_reactor_vof_gradients_result_2026-11-11.json).
+The gradient failure archive remains on Kestrel and is not locally verified.
+
+**Next action: [fresh nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).**
+`sc1_reactor_vof_nonorth.py` revalidates the failed gradient control, its exact
+reported log hash and budget prefix, then copies t=0. Only `system/fvSolution`
+changes: nNonOrthogonalCorrectors 0 -> 9 (ten passes per pressure correction).
+The same VOF binary, gradient schemes, mesh/fill, physical coefficients,
+boundaries, 5e-5-s timestep, eight ranks and 10-ms duration are retained.
+The fixed ten-pass choice is a convergence comparison, not an implementation
+of the published adaptive residual-based algorithm and not a guaranteed fix.
+All 8000 pressure observations are checked. The final pass in each of the 800
+pressure groups must enter with residual <=1e-12 and require zero iterations.
+Original limits and gas peak <=1 mm/s are also required. Failed-prefix pressure
+iteration statistics are printed and bundled without claiming startup acceptance.
+All 45 focused tests pass; actual CFD remains pending. No rebuild is needed.
+No working operating simulation, aeration, oxygen-transfer or biology acceptance
+is implied; the four-hour biological update schedule remains unchanged.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
