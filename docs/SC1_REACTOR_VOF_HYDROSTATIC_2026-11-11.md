@@ -9,9 +9,11 @@ peak liquid/gas speeds are 8.85673136e-8 / 1.95089614e-5 m/s and the fill remain
 groups need further convergence. The attached archive and log budgets verify.
 See the [full result](sc1_reactor_vof_hydrostatic_result_2026-11-11.json).
 
-Next use the [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
-with the existing binary and all acceptance limits unchanged. The build/run
-command below is historical; do not repeat the completed ten-pass case.
+The subsequent [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
+now reports PASS using the same binary and limits. The attached archive duplicates
+this ten-pass control; correct new archive verification is pending. See the
+[current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for the remaining work.
+The build/run command below is historical; do not repeat either completed case.
 
 ## Decision from the received force measurements
 

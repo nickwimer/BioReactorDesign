@@ -1,6 +1,35 @@
-# SC1 hydrostatic startup: close the pressure convergence gate
+# SC1 hydrostatic startup: pressure convergence comparison
 
-## Received result
+## Latest result: 24-pass startup reports PASS
+
+The run at `652de39` in
+`/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z` reports
+`VOF_HYDRO_CONVERGENCE=PASS`, status 0, normal End, all 200 steps and 800/800
+converged pressure-correction groups. All original physical screens pass.
+The largest final-pass initial residual is 9.98744667660074e-13, with zero
+linear iterations on every final pass. The run contains 19200 pressure audits.
+The existing hydrostatic binary was reused; only the prescribed pressure-pass
+count changed from the ten-pass control.
+
+Peak liquid/gas speeds remain 8.85673136e-8 / 1.95089614e-5 m/s, maximum Co
+3.05069960e-8, and final native liquid inventory 999.9999999999998 L. Final
+matched-time peak-speed differences from the control are approximately
+6.6e-23 / -2.0e-20 m/s; liquid-volume difference is zero.
+
+**Provenance:** this new result is reported by the supplied console, saved in
+[the console record](sc1_reactor_vof_hydro_convergence_console_2026-11-11.json).
+The attached archive is a byte-for-byte duplicate of the old ten-pass control
+(hash below), not the new run. Correct archive verification remains pending.
+Expected new archive:
+`/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z_evidence/reactor_failure_evidence.tar.gz`,
+SHA-256 `cfc5e595ba4d7a7e6085d1c458dfd3fd7f87236fb2870b9cd3ce6e9160ef5ac3`.
+The reported new solver-log SHA-256 is
+`704c0ccf7b59710b830efc12ad921c0e3442ec6245bff9a702320970809582e3`.
+Obtain that existing bundle; do not rerun this comparison. See the
+[current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for the full evidence scope,
+longer-rest/perturbation work and remaining route to an operating simulation.
+
+## Previous ten-pass control: verified result
 
 The private hydrostatic solver compiled and completed the full 200 steps / 10 ms
 at `f0c220f`, with normal End and all 40 requested reconstructed snapshots.
@@ -77,7 +106,7 @@ the ten-pass control; agreement does not excuse a failed acceptance check.
 The existing application hard stop remains 10 ms; monitored wall time is capped
 at 30 minutes. The previous ten-pass run took 238 seconds of solver wall time.
 
-## Next Kestrel command
+## Historical Kestrel command — completed; do not rerun
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -105,10 +134,11 @@ else
 fi
 ```
 
-Paste the output and attach the printed BUNDLE. A complete pass closes the
-short resting-baseline gate. Then test longer rest and a physical perturbation
-before controlled stirring/aeration. No operating checkpoint or biology result
-is accepted yet; the four-hour biological update schedule remains unchanged.
+The user has run this command and supplied the passing console. Obtain the correct
+existing bundle as described above. Longer rest and physical perturbation testing
+require new duration/restart-aware work; the current binary stops at 10 ms.
+No operating checkpoint or biology result is accepted; the four-hour biological
+update schedule remains unchanged.
 
 ## Validation
 
@@ -117,4 +147,5 @@ initial/final convergence criteria, phase budgets and physical pressure/velocity
 checks. They also exercise immutable control identities, the single dictionary
 change, no-build reuse, overlap/attempt rejection, missing native fields,
 matched-time comparisons and evidence collection on normal and failed runs.
-The new 24-pass CFD comparison has not yet run on Kestrel.
+The 24-pass CFD comparison has now run on Kestrel and reports PASS. This
+documentation update does not change solver code or acceptance thresholds.

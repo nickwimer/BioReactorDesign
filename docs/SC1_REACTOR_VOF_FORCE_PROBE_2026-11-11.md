@@ -11,7 +11,7 @@ peaks; capillarity and matrix-versus-fresh pressure differences are much smaller
 The 83-record prefix comparison passed on Kestrel; its external parent log is
 not in the uploaded archive. This is diagnostic completion, not startup success.
 
-The hydrostatic candidate now passes the physical screens; next use the [24-pass convergence comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md).
+The 24-pass hydrostatic startup now reports PASS. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for the pending archive verification and remaining validation.
 The command below is historical; do not repeat the completed probe.
 
 ## Original motivation

@@ -71,7 +71,7 @@
     "No snapshot reconstruction ran. Processor directory names exist through 0.00825 s but complete native fields remain to be checked.",
     "The stock OF9 momentum/pressure path contains surface-tension and gravity terms. The log alone does not separate their discrete imbalance or identify a correction."
   ],
-  "nextAction": "Hydrostatic startup completed with physical screens passing; next close the pressure-convergence gate using SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md. Full baseline acceptance remains pending.",
+  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md for current evidence status and next work. Do not repeat completed CFD.",
   "meaning": "No startup, operating-checkpoint, aeration, oxygen-transfer or biology acceptance.",
   "verifiedLog": {
     "diagnostics": {

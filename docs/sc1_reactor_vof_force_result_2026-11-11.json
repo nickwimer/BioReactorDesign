@@ -3657,6 +3657,6 @@
     "localForceReconstruction": "All eight samples, sixteen peak cells and their face terms independently reconstructed from the attached log; saved result reproduced.",
     "externalControlPrefix": "83-record prefix agreement reported and executed on Kestrel; parent nonorthogonal log not uploaded, so not independently reverified locally.",
     "runtimeIdentity": "Build/source/library chain checked by the Kestrel script. Binaries, native arrays and external controls absent from the attachment.",
-    "nextAction": "Hydrostatic startup completed with physical screens passing; next close the pressure-convergence gate using SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md. Full baseline acceptance remains pending."
+    "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md for current evidence status and next work. Do not repeat completed CFD."
   }
 }

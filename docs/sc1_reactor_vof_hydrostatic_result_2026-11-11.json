@@ -8601,7 +8601,7 @@
     "localAnalysis": "All 8000 pressure records, 200 steps and both phase budgets re-parsed and matched to the saved report. The saved error list adds the failed pressure-iteration acceptance gate.",
     "nativeFields": "Forty reconstructed snapshots and their physical pressure identities were checked on Kestrel by the pinned workflow. Native arrays are not in the uploaded archive, so not independently re-read locally.",
     "externalIdentity": "The Kestrel workflow verified build/library/control identities; those external files are not in this archive.",
-    "nextAction": "Fresh 24-pass comparison using the same binary and physical limits; SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md."
+    "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md for current evidence status and next work. Do not repeat completed CFD."
   },
   "pressureContractionAnalysis": {
     "failedFinalPassesByCorrection": [

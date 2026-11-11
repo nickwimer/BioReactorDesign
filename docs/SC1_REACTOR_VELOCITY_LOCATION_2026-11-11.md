@@ -53,7 +53,7 @@ disturbance. The near-vent gas peak remains only 9.26e-7 m/s.
 
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
 stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
-The hydrostatic startup completed 10 ms and passed all physical screens; next close its remaining [pressure-convergence gate](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md) with the same binary and limits.
+The latest 24-pass hydrostatic startup reports PASS over 10 ms; verification of the correct archive is pending. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for evidence status and next work; do not repeat the completed comparison.
 It uses the same mesh, fill, initial p_rgh, gravity and physical properties, but
 a shared velocity with the Foundation OF9 interFoam equations, read-only phase
 budgets and the existing startup guards in a separate private application. This establishes a simpler resolved-interface comparison before

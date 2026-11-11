@@ -365,6 +365,6 @@
     "The compact console omits the other region statistics, field hashes and peak-neighbour stencils present in the full report.",
     "Conservation remains good, but the source startup remains failed; no working operating simulation is accepted."
   ],
-  "nextAction": "Hydrostatic startup completed with physical screens passing; next close the pressure-convergence gate using SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md. Full baseline acceptance remains pending.",
+  "nextAction": "Read SC1_CURRENT_HANDOFF_2026-11-11.md for current evidence status and next work. Do not repeat completed CFD.",
   "verifiedResult": "sc1_reactor_vof_spatial_result_2026-11-11.json"
 }

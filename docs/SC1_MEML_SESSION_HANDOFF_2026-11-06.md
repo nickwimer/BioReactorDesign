@@ -1,11 +1,17 @@
 # SC1 MEML oxygen-transfer investigation — new-session handoff
 
+**Current entry point:** [SC1 current handoff — 11 November 2026](SC1_CURRENT_HANDOFF_2026-11-11.md).
+The latest 24-pass hydrostatic startup reports PASS over 10 ms; independent
+verification of its correct archive is pending. Start with that handoff for
+current status and next work. Older “next action” paragraphs below are retained
+as investigation history, not current launch instructions.
+
 **Updated:** 2026-11-11
 
 **Research system:** *Pseudomonas putida* SC1 stirred-tank simulation, OpenFOAM 9 / BiRD, NLR Kestrel  
 **GitHub branch:** `codex/sc1-headspace-bubble-audit-20261029`  
 **Pull request:** https://github.com/nickwimer/BioReactorDesign/pull/4  
-**Status:** Experimental closures compile and run in isolated scratch cases. The oxygen deficit remains unresolved; no experimental closure has been approved for production.
+**Status:** The latest private VOF hydrostatic startup reports a complete short resting-screen pass. Longer rest, physical perturbations, stirring, aeration and oxygen-transfer validation remain. The oxygen deficit is unresolved; no experimental closure has been approved for production.
 
 **User direction (2026-11-10): three fields are optional.** The assistant had
 introduced the gas split as a proposed conservation remedy. The user explicitly
@@ -246,15 +252,16 @@ The failed-group distribution is [200,3,0,0]; both corrections in every final
 outer iteration pass. The first-correction residual is still contracting at
 pass ten (pass-10/pass-9 ratio 0.419 to 0.549). All linear final residuals pass.
 
-**Next action: [24-pass convergence comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md).**
-Reuse the existing `sc1InterFoamHydrostatic` build at
-`/scratch/nwimer/sc1_vof_hydro_build_20261111T220400Z`. A fresh t=0 case changes
-only nNonOrthogonalCorrectors from 9 to 23. Keep every physical and convergence
-limit. The ten-pass completed case remains untouched; matched-time speeds and
-inventories are compared. All 66 focused tests pass. No new compilation is requested. After a full short
-baseline pass, require longer rest and physical perturbation testing before
-stirring/aeration. No operating reactor is accepted; the four-hour biological
-update schedule remains unchanged.
+**Latest result: the [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
+reports PASS at `652de39`**, root
+`/scratch/nwimer/sc1_vof_hydro_convergence_20261111T223454Z`. All 200 steps and
+800/800 pressure groups pass, with unchanged physical limits and essentially
+identical quiet flow. The supplied archive duplicates the old ten-pass archive;
+the correct new bundle still needs independent verification. See the
+[current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for exact identities and
+ordered work. Do not repeat the completed comparison. The current solver is
+limited to 10 ms and fresh starts; longer rest and physical perturbation tests
+need deliberate implementation before stirring/aeration or operating restarts.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

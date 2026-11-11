@@ -64,7 +64,7 @@ The outer-2 liquid explicit drag-flux range dominates its predictor range.
 compiled and stopped at 0.2 ms on the liquid-speed guard; its bundle is now
 verified. The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
 completed; its verified bundle also reveals horizontal gas motion near the
-interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The hydrostatic startup completed 10 ms and passed all physical screens; next close its remaining [pressure-convergence gate](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md) with the same binary and limits.
+interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The latest 24-pass hydrostatic startup reports PASS over 10 ms; verification of the correct archive is pending. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for evidence status and next work; do not repeat the completed comparison.
 It eliminates the symmetric two-phase face drag before assembling both the
 pressure predictor and pressure coefficient. All v4 initial inputs and original
 acceptance limits remain fixed; its monitored run was capped at 10 ms.

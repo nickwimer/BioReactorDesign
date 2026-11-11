@@ -30,7 +30,7 @@ also failed at the same first-step outer iteration; its bundle is now verified. 
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The hydrostatic startup completed 10 ms and passed all physical screens; next close its remaining [pressure-convergence gate](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md) with the same binary and limits.
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The latest 24-pass hydrostatic startup reports PASS over 10 ms; verification of the correct archive is pending. See the [current handoff](SC1_CURRENT_HANDOFF_2026-11-11.md) for evidence status and next work; do not repeat the completed comparison.
 Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
