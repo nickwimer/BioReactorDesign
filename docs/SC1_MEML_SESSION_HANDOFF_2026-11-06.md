@@ -94,12 +94,16 @@ The monitor stopped the step (137; wrapper status 1) and collected evidence.
 All 59 inputs match; alpha remains bounded and max logged mixture Co is only
 0.005974812253287854. There is one paired step record, no End and no reached
 0.00025-s snapshot. Face momentum alone is not the remedy; preserve all roots.
-**Next step: receive the already-created bundle** at
-`/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`.
-The new bundle's hashes and the exact console result are in the linked document.
-No new CFD, rebuild, recollection or parameter change is currently selected.
-All 101 focused tests passed before launch; this update records the runtime
-failure without changing solver/monitor code or acceptance criteria.
+**The face-run bundle is now received and verified:** all 19 included hashes
+match; the full log confirms converged pressure solves, tiny alpha changes and
+zero source/clamp terms before the second-outer pressure failure. See the
+[verified result](sc1_reactor_face_failure_result_2026-11-11.json).
+**Next step:** the [coupled-drag startup](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
+adds only `partialElimination true` to a fresh copy of the failed v3 inputs.
+It reuses the binary, dt, early snapshots and limits; adds determinant monitoring
+and requires all 800 coupled face solves on completion. All 107 focused tests
+pass locally, including scalar tests of the actual elimination/restoration
+loops. The v4 CFD result is pending; do not rerun earlier cases or rebuild.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

@@ -21,7 +21,10 @@ from sc1_reactor_startup_case import DT, STEPS, END, WRITE, FACE_WRITE, PATCHES,
 TAG='sc1_meml_quiescent_startup_v1'
 DRAG_TAG='sc1_meml_quiescent_segregated_drag_v2'
 FACE_TAG='sc1_meml_quiescent_face_momentum_v3'
+COUPLED_TAG='sc1_meml_quiescent_coupled_drag_v4'
+FACE_VARIANTS=(FACE_TAG,COUPLED_TAG)
 FAILED_DRAG_LOG='4c55d6b46ec8738a4c3f67179843044b2b45b6101bc5a32e51a0c1eb4bba214f'
+FAILED_FACE_LOG='083bbd2d39499fff0c19210e2280f3c13d9b0ec55508752953a8d3fe8151654c'
 ARCHIVE=Path('/projects/microenviro/final_runs/reacting_Julia_08282026/meml/putida_sc1_final')
 CELLS=281664
 PINNED=dict(owner='b93ddd6e9322acd08b7c79cdf3fd346b4ba5bef8b92e803446c1fa91f5740b99',
@@ -86,7 +89,7 @@ def prepare(regression_root, archive, out, ranks):
 
 def verify(root):
     root=root.resolve(strict=True); m=json.loads((root/'startup_manifest.json').read_text())
-    if m['variant'] not in (TAG,DRAG_TAG,FACE_TAG) or m['root']!=str(root):raise ValueError('Wrong startup manifest')
+    if m['variant'] not in (TAG,DRAG_TAG,*FACE_VARIANTS) or m['root']!=str(root):raise ValueError('Wrong startup manifest')
     if base.verify_build(Path(m['build']),recipe=RECIPE)['assets']!=m['assets']:
         raise ValueError('Startup build changed')
     _,proof=regression(Path(m['regression_root']))
@@ -96,7 +99,8 @@ def verify(root):
     case=root/'quiescent'
     if case.is_symlink() or base.case_input_hashes(case)!=m['inputs']:
         raise ValueError('Startup inputs changed')
-    generated=case_files(m['ranks'],segregated_drag=m['variant']!=TAG,face_momentum=m['variant']==FACE_TAG)
+    generated=case_files(m['ranks'],segregated_drag=m['variant']!=TAG,
+        face_momentum=m['variant'] in FACE_VARIANTS,coupled_drag=m['variant']==COUPLED_TAG)
     centres=internal(case/'0/C',CELLS,True);volumes=internal(case/'0/V',CELLS)
     fields,initial=initialized_fields(centres,volumes);generated.update(fields)
     if initial!=m['initial']:raise ValueError('Startup initialization changed')
@@ -104,23 +108,29 @@ def verify(root):
         if base.sha(case/rel)!=hashlib.sha256(text.encode()).hexdigest():
             raise ValueError('Startup differs from its recipe: '+rel)
     if 'Mesh OK.' not in (case/'log.checkMesh').read_text():raise ValueError('Missing successful mesh check')
-    if m['variant'] in (DRAG_TAG,FACE_TAG):
+    if m['variant'] in (DRAG_TAG,*FACE_VARIANTS):
         parent,report=saved_startup(Path(m['baseline']['root']))
         if baseline_identity(Path(m['baseline']['root']),report)!=m['baseline']:
             raise ValueError('Saved startup control changed')
         expected=dict(parent['inputs'])
         expected['constant/phaseProperties']=hashlib.sha256(generated['constant/phaseProperties'].encode()).hexdigest()
-        if m['variant']==FACE_TAG:
+        if m['variant'] in FACE_VARIANTS:
             for rel in ('system/fvSolution','system/controlDict'):
                 expected[rel]=hashlib.sha256(generated[rel].encode()).hexdigest()
         if m['inputs']!=expected or m['initial']!=parent['initial'] or any(
             m[k]!=parent[k] for k in ('ranks','build','assets','archive','mesh_hashes','regression_root','regression_sha256')):
             raise ValueError('Startup comparison changed more than its declared dictionaries')
-    if m['variant']==FACE_TAG:
+    if m['variant'] in FACE_VARIANTS:
         failed,identity=failed_drag(Path(m['failed_control']['root']))
         if identity!=m['failed_control'] or any(m[k]!=failed[k] for k in
             ('initial','ranks','build','assets','archive','mesh_hashes','regression_root','regression_sha256','baseline')):
             raise ValueError('Failed drag control changed')
+    if m['variant']==COUPLED_TAG:
+        failed,identity=failed_face(Path(m['face_control']['root']))
+        expected=dict(failed['inputs']);expected['system/fvSolution']=base.sha(case/'system/fvSolution')
+        if identity!=m['face_control'] or m['inputs']!=expected or any(m[k]!=failed[k] for k in
+            ('initial','ranks','build','assets','archive','mesh_hashes','regression_root','regression_sha256','baseline','failed_control')):
+            raise ValueError('Failed face control changed')
     return m
 
 
@@ -173,39 +183,50 @@ def prepare_drag(baseline_root,out):
 
 def failed_drag(root):
     """Verify the preserved attempted v2 inputs/log, without calling its success analyzer."""
+    return failed_case(root,DRAG_TAG,FAILED_DRAG_LOG,'failed v2 drag control')
+
+
+def failed_face(root):
+    return failed_case(root,FACE_TAG,FAILED_FACE_LOG,'failed v3 face control')
+
+
+def failed_case(root,variant,log_sha,label):
     root=root.resolve(strict=True)
-    if json.loads((root/'startup_manifest.json').read_text())['variant']!=DRAG_TAG:
-        raise ValueError('Face comparison requires the failed v2 drag control')
+    if json.loads((root/'startup_manifest.json').read_text())['variant']!=variant:
+        raise ValueError('Comparison requires the '+label)
     m=verify(root);case=root/'quiescent'
     for name in ('attempt.json','log.solver'):
         if (case/name).is_symlink() or not (case/name).is_file():raise ValueError('Missing/redirected failed control')
     if json.loads((case/'attempt.json').read_text())!={k:m[k] for k in ('build','assets','ranks')}:
         raise ValueError('Failed control attempt mismatch')
     digest=base.sha(case/'log.solver')
-    if digest!=FAILED_DRAG_LOG:raise ValueError('Failed control log differs from received evidence')
+    if digest!=log_sha:raise ValueError('Failed control log differs from received evidence')
     return m,dict(root=str(root),log_sha256=digest,manifest_sha256=base.sha(root/'startup_manifest.json'))
 
 
-def prepare_face(failed_root,out):
-    failed_root=failed_root.resolve(strict=True);m,identity=failed_drag(failed_root)
+def prepare_face(failed_root,out,*,coupled=False):
+    failed_root=failed_root.resolve(strict=True)
+    m,identity=(failed_face if coupled else failed_drag)(failed_root)
     require_allocation(m['ranks'])
-    out=base.fresh(out,(failed_root,Path(m['baseline']['root']),Path(m['archive']),
+    out=base.fresh(out,(failed_root,Path(m.get('failed_control',identity)['root']),Path(m['baseline']['root']),Path(m['archive']),
                        Path(m['build']),Path(m['regression_root']),base.REPO))
     out.mkdir(parents=True,exist_ok=False);case=out/'quiescent';source=failed_root/'quiescent'
     for folder in ('0','constant','system'):shutil.copytree(source/folder,case/folder)
     for name in ('log.checkMesh','log.writeCellCentres','log.writeCellVolumes'):
         shutil.copy2(source/name,case/name)
-    generated=case_files(m['ranks'],segregated_drag=True,face_momentum=True);expected=dict(m['inputs'])
-    for rel in ('system/fvSolution','system/controlDict'):
+    generated=case_files(m['ranks'],segregated_drag=True,face_momentum=True,coupled_drag=coupled);expected=dict(m['inputs'])
+    for rel in (('system/fvSolution',) if coupled else ('system/fvSolution','system/controlDict')):
         (case/rel).write_text(generated[rel]);expected[rel]=base.sha(case/rel)
     if base.case_input_hashes(case)!=expected or base.case_input_hashes(source)!=m['inputs'] or any(
         base.sha(failed_root/rel)!=digest for rel,digest in
         (('startup_manifest.json',identity['manifest_sha256']),('quiescent/log.solver',identity['log_sha256']))):
         raise ValueError('Inputs/control changed during face comparison preparation')
-    manifest=dict(m,variant=FACE_TAG,root=str(out),inputs=expected,failed_control=identity,
+    manifest=dict(m,variant=COUPLED_TAG if coupled else FACE_TAG,root=str(out),inputs=expected,
         source_commit=subprocess.check_output(['git','-C',str(base.REPO),'rev-parse','HEAD'],text=True).strip())
+    manifest['face_control' if coupled else 'failed_control']=identity
     base.write_json(out/'startup_manifest.json',manifest)
-    print('REACTOR_STARTUP='+str(out)+' (fresh t=0; face momentum; snapshots every 0.25 ms; no CFD launched)',flush=True)
+    change='coupled face drag' if coupled else 'face momentum'
+    print('REACTOR_STARTUP='+str(out)+f' (fresh t=0; {change}; snapshots every 0.25 ms; no CFD launched)',flush=True)
     return out
 
 
@@ -222,9 +243,9 @@ def contract(initial):
 
 def analyze(case, m):
     text=(case/'log.solver').read_text(); spec=contract(m['initial'])
-    if m.get('variant',TAG) in (DRAG_TAG,FACE_TAG) and text.splitlines().count('Selecting drag blending method: none')!=1:
+    if m.get('variant',TAG) in (DRAG_TAG,*FACE_VARIANTS) and text.splitlines().count('Selecting drag blending method: none')!=1:
         raise ValueError('Missing unique runtime selection of segregated drag blending')
-    if m.get('variant')==FACE_TAG:
+    if m.get('variant') in FACE_VARIANTS:
         if text.splitlines().count('Constructing face momentum equations')!=2*STEPS:
             raise ValueError('Missing complete face momentum runtime coverage')
         from sc1_reactor_watch import Monitor
@@ -233,11 +254,18 @@ def analyze(case, m):
             if monitor.feed(line):raise ValueError('Numerical stop condition in saved face log: '+monitor.reason['reason'])
     report=summarize_contract(text,'meml_quiescent',spec,closed=False,reference=True)
     report=validate_rates(text,report,spec,source_expected=False)
+    if m.get('variant')==COUPLED_TAG:
+        from sc1_reactor_watch import drag_determinant
+        determinants=[drag_determinant(line) for line in text.splitlines() if 'Inverting drag system:' in line]
+        if len(determinants)!=4*STEPS or any(v is None or not np.isfinite(v) or v<=0 for v in determinants):
+            raise ValueError('Missing/invalid complete coupled face-drag determinant coverage')
+        report['dragCoupling']=dict(calls=len(determinants),minimumFaceDeterminant=min(determinants),
+            meaning='Finite positive matrix determinant; does not establish conditioning or physical validity.')
     courant=[float(v) for v in re.findall(r'^Courant Number mean: \S+ max: (\S+)',text,re.M)]
     if not courant or not all(np.isfinite(courant)):raise ValueError('Missing/nonfinite Courant evidence')
     v=internal(case/'0/V',CELLS); a0=internal(case/'0/alpha.liquid',CELLS)
     measurements=[]
-    interval=FACE_WRITE if m.get('variant')==FACE_TAG else WRITE
+    interval=FACE_WRITE if m.get('variant') in FACE_VARIANTS else WRITE
     for step in range(interval,STEPS+1,interval):
         time=f'{step*DT:.12g}'; folder=case/time
         a=internal(folder/'alpha.liquid',CELLS); b=internal(folder/'alpha.gas',CELLS)
@@ -289,7 +317,7 @@ def run(root):
         base.execute(['decomposePar','-fileHandler','uncollated'],case,case/'log.decomposePar',env)
         command=['srun','-n',str(m['ranks']),'--cpus-per-task=1',app,'-parallel','-fileHandler','uncollated']
     else:command=[app,'-fileHandler','uncollated']
-    if m.get('variant')==FACE_TAG:
+    if m.get('variant') in FACE_VARIANTS:
         from sc1_reactor_watch import execute
         if m['ranks']>1:command[1:1]=['--kill-on-bad-exit=1','--time=00:30:00']
         try:execute(command,case,case/'log.solver',env)
@@ -300,7 +328,7 @@ def run(root):
             raise
     else:base.execute(command,case,case/'log.solver',env)
     if m['ranks']>1:
-        interval=FACE_WRITE if m.get('variant')==FACE_TAG else WRITE
+        interval=FACE_WRITE if m.get('variant') in FACE_VARIANTS else WRITE
         base.execute(['reconstructPar','-time',f'{interval*DT:.12g}:{END:.12g}',
             '-fileHandler','uncollated'],case,case/'log.reconstructPar',env)
     if base.case_input_hashes(case)!=m['inputs']:raise ValueError('Initial inputs changed during startup')
@@ -311,12 +339,13 @@ def run(root):
         comparison=compare_flow(root,m,report)
         base.write_json(root/'drag_comparison.json',comparison)
         print(json.dumps(comparison,indent=2),flush=True)
-    if m.get('variant')==FACE_TAG:
+    if m.get('variant') in FACE_VARIANTS:
         from sc1_reactor_startup_flow import flow
-        comparison=dict(suite=FACE_TAG,failed_control=m['failed_control'],
-            physical_change='PIMPLE faceMomentum true',finalFlow=flow(case,CELLS),
+        coupled=m['variant']==COUPLED_TAG
+        comparison=dict(suite=m['variant'],failed_control=m['face_control' if coupled else 'failed_control'],
+            numerical_change='PIMPLE partialElimination true' if coupled else 'PIMPLE faceMomentum true',finalFlow=flow(case,CELLS),
             meaning='Fresh 10-ms quiescent screen; does not validate an operating reactor.')
-        base.write_json(root/'face_comparison.json',comparison)
+        base.write_json(root/('coupled_comparison.json' if coupled else 'face_comparison.json'),comparison)
         print(json.dumps(comparison,indent=2),flush=True)
     print('REACTOR_STARTUP='+('PASS' if report['startup_pass'] else 'FAIL'),flush=True)
     return report
@@ -329,6 +358,7 @@ def main(argv=None):
     s.add_argument('--ranks',type=int,default=8)
     s=subs.add_parser('prepare-drag');s.add_argument('--baseline-root',type=Path,required=True);s.add_argument('--out',type=Path,required=True)
     s=subs.add_parser('prepare-face');s.add_argument('--failed-root',type=Path,required=True);s.add_argument('--out',type=Path,required=True)
+    s=subs.add_parser('prepare-coupled');s.add_argument('--failed-root',type=Path,required=True);s.add_argument('--out',type=Path,required=True)
     s=subs.add_parser('run');s.add_argument('--root',type=Path,required=True);s.add_argument('--run',action='store_true',required=True)
     s=subs.add_parser('analyze');s.add_argument('--root',type=Path,required=True)
     a=p.parse_args(argv)
@@ -336,6 +366,7 @@ def main(argv=None):
         require_allocation(a.ranks);prepare(a.regression_root,a.archive,a.out,a.ranks)
     elif a.action=='prepare-drag':prepare_drag(a.baseline_root,a.out)
     elif a.action=='prepare-face':prepare_face(a.failed_root,a.out)
+    elif a.action=='prepare-coupled':prepare_face(a.failed_root,a.out,coupled=True)
     elif a.action=='run':return 0 if run(a.root)['startup_pass'] else 2
     else:
         root=a.root.resolve(strict=True);m=verify(root)

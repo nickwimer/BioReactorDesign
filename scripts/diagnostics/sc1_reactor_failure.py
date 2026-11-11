@@ -14,7 +14,7 @@ import sys
 import tarfile
 
 VARIANTS=('sc1_meml_quiescent_startup_v1','sc1_meml_quiescent_segregated_drag_v2',
-          'sc1_meml_quiescent_face_momentum_v3')
+          'sc1_meml_quiescent_face_momentum_v3','sc1_meml_quiescent_coupled_drag_v4')
 REPO=Path(__file__).resolve().parents[2]
 
 

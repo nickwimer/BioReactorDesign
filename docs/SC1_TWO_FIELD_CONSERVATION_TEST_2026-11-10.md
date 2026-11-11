@@ -24,7 +24,7 @@ A drag-blending cancellation was identified; its isolated correction
 [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
 collection and bundle inspection are complete. The subsequent
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed;
-its automatically created bundle is the next input needed.
+its bundle is now inspected. The [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) is next.
 Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen

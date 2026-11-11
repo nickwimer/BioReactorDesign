@@ -1,5 +1,5 @@
 {
-  "provenance": "User-pasted Kestrel console output; new raw-log bundle not yet received or independently verified.",
+  "provenance": "Received reactor_failure_evidence.tar(1).gz; archive and all bundled evidence hashes verified; full 254-line log inspected.",
   "sourceCommit": "760452111832ad56128ec90582df63e5ce40bed5",
   "variant": "sc1_meml_quiescent_face_momentum_v3",
   "root": "/kfs3/scratch/nwimer/sc1_reactor_face_20261111T163440Z",
@@ -18,7 +18,7 @@
     "printedTimes": 2,
     "lastPrintedTime_s": 0.0001,
     "pairedStepRecordCount": 1,
-    "lastPairedStepRecordTime_s": 0.00005,
+    "lastPairedStepRecordTime_s": 5e-05,
     "duplicateStepRecords": 0,
     "malformedStepRecords": 0,
     "dragNoneSelectionCount": 1,
@@ -27,16 +27,169 @@
     "firstEvents": {
       "pressure_limit": {
         "line": 232,
-        "lastPrintedTime_s": 0.00005,
+        "lastPrintedTime_s": 5e-05,
         "outer": 2,
         "text": "limitPressure: p min -2499398.2044661008"
       }
     },
-    "eventCounts": {"pressure_limit": 1},
-    "inputIdentity": {"checked": 59, "changed": [], "missing": [], "extra": []},
+    "eventCounts": {
+      "pressure_limit": 1
+    },
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
     "solverLogSha256": "083bbd2d39499fff0c19210e2280f3c13d9b0ec55508752953a8d3fe8151654c"
   },
   "bundle": "/kfs3/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz",
   "bundleSha256": "8eac9f4f97692121eea0c7ff35efdc8a94e0fd0d8890134dbb6ad35a6abd7bfb",
-  "decision": "Preserve the attempted root. Receive and inspect the already-created bundle before selecting another numerical change; no rerun or recollection."
+  "decision": "Test partialElimination true from a fresh copy of this v3 case, preserving all other inputs and existing stop/acceptance criteria; require 800 finite positive face-drag determinants on a complete run.",
+  "verifiedBundle": {
+    "evidenceFiles": 19,
+    "includedInitialInputs": 13,
+    "faceMomentumAssemblyRecords": 2,
+    "coupledDragRecords": 0,
+    "pressureSolves": [
+      {
+        "line": 176,
+        "time_s": 5e-05,
+        "outer": 1,
+        "initial": 0.0013841964345522111,
+        "final": 9.142023104000988e-13,
+        "iterations": 244
+      },
+      {
+        "line": 177,
+        "time_s": 5e-05,
+        "outer": 1,
+        "initial": 6.82442422465105e-07,
+        "final": 9.80655227967793e-13,
+        "iterations": 185
+      },
+      {
+        "line": 231,
+        "time_s": 5e-05,
+        "outer": 2,
+        "initial": 0.004172250179253803,
+        "final": 9.638234817342113e-13,
+        "iterations": 345
+      },
+      {
+        "line": 234,
+        "time_s": 5e-05,
+        "outer": 2,
+        "initial": 2.610930784784995e-05,
+        "final": 9.673835323954384e-13,
+        "iterations": 301
+      }
+    ],
+    "physicalRateRecords": 3,
+    "allPhysicalRatesZero": true,
+    "acceptedStepRecords": [
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.642002269140888,
+        "mass_kg": 0.642002269140888,
+        "deltaMass_kg": 8.69423639963861e-18,
+        "boundaryOut_kg": -4.60205026496456e-17,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": -3.7326266250007e-17,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.999999999999985,
+        "mass_kg": 1000.00000000001,
+        "deltaMass_kg": -8.74439430617408e-15,
+        "boundaryOut_kg": 0.0,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": -8.74439430617408e-15,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      }
+    ],
+    "alphaSolveRecords": [
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 1.0,
+        "solved": 0.0,
+        "mulesCalls": 0.0,
+        "deltaVolume_m3": 0.0,
+        "deltaFrozenRhoMass_kg": 0.0,
+        "changeL1Volume_m3": 0.0,
+        "unassignedVolume_m3": 0.0,
+        "unassignedFrozenRhoMass_kg": 0.0,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 1.0,
+        "solved": 1.0,
+        "mulesCalls": 6.0,
+        "deltaVolume_m3": -9.85336656179546e-22,
+        "deltaFrozenRhoMass_kg": -9.85336656179547e-19,
+        "changeL1Volume_m3": 2.73870850954795e-20,
+        "unassignedVolume_m3": 0.0,
+        "unassignedFrozenRhoMass_kg": 0.0,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 2.0,
+        "solved": 0.0,
+        "mulesCalls": 0.0,
+        "deltaVolume_m3": 8.69423639963861e-18,
+        "deltaFrozenRhoMass_kg": 8.69423639963861e-18,
+        "changeL1Volume_m3": 1.14518505643799e-11,
+        "unassignedVolume_m3": -1.0097419586829e-27,
+        "unassignedFrozenRhoMass_kg": -1.0097419586829e-27,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 2.0,
+        "solved": 1.0,
+        "mulesCalls": 6.0,
+        "deltaVolume_m3": -8.69522437004605e-18,
+        "deltaFrozenRhoMass_kg": -8.69522436990872e-15,
+        "changeL1Volume_m3": 1.14518505493816e-11,
+        "unassignedVolume_m3": 3.02922587604869e-27,
+        "unassignedFrozenRhoMass_kg": -2.99852972050473e-24,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 2.22454122451684e-22
+      }
+    ],
+    "zeroObservedTerms": {
+      "rawDgdt": true,
+      "pressureDilatation": true,
+      "splitAtSourceAlpha": true,
+      "clamp": true,
+      "rescale": true
+    },
+    "limitation": "Only included small input files independently checked against the manifest; native initial fields/mesh remain on Kestrel. One accepted step is not a passed startup."
+  }
 }

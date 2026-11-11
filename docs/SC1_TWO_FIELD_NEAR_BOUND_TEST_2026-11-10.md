@@ -22,7 +22,7 @@ subsequently conserved mass but failed quiescence. Its isolated drag-blending
 correction [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md);
 the bundle is received and inspected. The subsequent
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed;
-its automatically created bundle is the next input needed.
+its bundle is now inspected. The [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) is next.
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split

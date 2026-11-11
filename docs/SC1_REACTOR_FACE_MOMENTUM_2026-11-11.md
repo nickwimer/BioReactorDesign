@@ -8,7 +8,7 @@ status 1. The monitor detected `limitPressure: p min -2499398.2044661008` Pa
 at line 232, t=0.00005 s, outer 2, and stopped its child step (return code 137).
 This is a failed startup. Face momentum alone has not supplied the remedy.
 The [console result](sc1_reactor_face_failure_result_2026-11-11.json) is recorded;
-the new raw-log bundle has not yet been received.
+the new raw-log bundle is now received and verified.
 
 The collector reports all 59 input hashes unchanged, a unique restored-drag
 selection, alpha magnitude at most 1, and maximum logged mixture Co
@@ -24,25 +24,30 @@ first scheduled snapshot at 0.00025 s was not reached. A paired record or
 return code 137 here is not evidence of a valid checkpoint or an OOM diagnosis.
 There is no reported FPE or allocation timeout in this collection summary.
 
-**Next step: attach the automatically generated existing bundle. No new pull,
-collection, build or CFD command is needed.**
+**The bundle has been received and inspected.** All 19 bundled hashes match,
+including the raw log and guard record; 13 included initial dictionaries match
+the manifest. The full log confirms the first pressure-limiter event after the
+second outer momentum assembly, converged linear solves, tiny alpha changes and
+zero source/clamp terms. **The next step is the fresh
+[coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md).**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 
 - Reported bundle SHA256: `8eac9f4f97692121eea0c7ff35efdc8a94e0fd0d8890134dbb6ad35a6abd7bfb`.
 - Reported solver-log SHA256: `083bbd2d39499fff0c19210e2280f3c13d9b0ec55508752953a8d3fe8151654c`.
 
-On receipt, verify the new hashes and examine both outer iterations' pressure
-solves, source/alpha-stage records and actual face-path selection. The older
-v2 bundle already received has a different hash and does not substitute for it.
+Both outer iterations' pressure solves, source/alpha-stage records and actual
+face-path selection have been examined. The older v2 bundle is preserved
+separately and has a different hash.
 Preserve all three vessel roots and do not repeat or extend the failed run.
 
 Source review confirms that `AFfs()` places face drag on each phase's diagonal
 and `phiKdPhifs()` supplies the other phase's flux explicitly. The available
 `partialEliminationf()` instead constructs and inverts a coupled drag matrix
 and then restores mixture flux. That option remains disabled in this run.
-This is a coupling hypothesis to evaluate against the full first-step record,
-not a selected fix. No new solver configuration is introduced by this update.
+The full first-step record supports testing that option while all other inputs
+remain fixed. The linked v4 preparation enables it in a fresh copy; this does
+not establish a remedy before the new CFD result.
 
 ## Evidence and decision
 

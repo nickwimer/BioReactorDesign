@@ -8,6 +8,13 @@ import subprocess
 import time
 
 
+def drag_determinant(text):
+    match=re.fullmatch(r'Inverting drag system:\s+Min face det = (\S+)',text.strip())
+    if not match:return None
+    try:return float(match[1])
+    except ValueError:return math.nan
+
+
 class Monitor:
     def __init__(self):
         self.line=0;self.time=None;self.reason=None
@@ -31,6 +38,10 @@ class Monitor:
             if not all(math.isfinite(x) for x in values):reason='nonfinite alpha subcycle'
             elif values[1]<-1e-8 or values[2]>1+1e-8:reason='alpha subcycle exceeded [0,1] by more than 1e-8'
         if text.startswith('limitPressure:'):reason='pressure limiter activated in quiescent vessel'
+        if text.startswith('Inverting drag system:'):
+            value=drag_determinant(text)
+            if value is None or not math.isfinite(value) or value<=0:
+                reason='nonpositive, nonfinite or malformed face drag determinant'
         lower=text.lower()
         banner=re.match(r'^sigfpe\s*:\s*enabling floating point exception trapping\b',lower)
         if not banner and any(s in lower for s in ('floating point exception','sigfpe::sighandler','foam fatal','segmentation fault')):

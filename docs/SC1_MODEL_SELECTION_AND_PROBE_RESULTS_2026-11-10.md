@@ -238,7 +238,7 @@ nearly cancels the listed segregated drag. The comparison restoring only its
 weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
 collection and bundle inspection are complete; the
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed.
-Its automatically created bundle is the next input needed. Physical
+Its bundle is now inspected; the [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) is next. Physical
 adequacy remains to be established.
 
 ## Next decision: continue validating the simpler candidate
