@@ -237,7 +237,7 @@ def require_fresh_case(root, name, manifest):
         raise ValueError('Case inputs changed: '+str(case))
 
 
-def completed_report(root, name, manifest):
+def completed_report(root, name, manifest, *, summarize_log=summarize, require_pass=True):
     """Validate a saved run and return its report without writing or running CFD."""
     case=root/name
     if case.is_symlink() or not case.is_dir():
@@ -261,9 +261,9 @@ def completed_report(root, name, manifest):
     if 'Mesh OK.' not in (case/'log.checkMesh').read_text():
         raise ValueError('Completed case lacks successful mesh check')
     raw=(case/'log.solver').read_bytes()
-    report=summarize(raw.decode(),name)
+    report=summarize_log(raw.decode(),name)
     report['log_sha256']=hashlib.sha256(raw).hexdigest()
-    if not report['screen_pass']:
+    if require_pass and not report['screen_pass']:
         raise ValueError('Completed case failed its numerical screen: '+str(report['errors']))
     if sha(case/'log.solver')!=report['log_sha256'] or case_input_hashes(case)!=inputs:
         raise ValueError('Completed evidence changed during validation')
@@ -274,7 +274,7 @@ def completed_report(root, name, manifest):
     return report
 
 
-def run_fresh_cases(root, manifest, names):
+def run_fresh_cases(root, manifest, names, *, summarize_log=summarize):
     m=manifest
     env=environment(Path(m['build']))
     for name in names:
@@ -292,7 +292,7 @@ def run_fresh_cases(root, manifest, names):
         after=case_input_hashes(case)
         if after!=initialized: raise ValueError('Initial fields or dictionaries changed during solve')
         try:
-            report=summarize((case/'log.solver').read_text(),name)
+            report=summarize_log((case/'log.solver').read_text(),name)
         except ValueError as error:
             raise ValueError(f'{error}; preserve {case / "log.solver"}; '
                              'reanalyze the saved log without rerunning CFD') from error

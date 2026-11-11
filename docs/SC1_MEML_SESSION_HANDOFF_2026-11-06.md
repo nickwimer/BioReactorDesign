@@ -51,8 +51,10 @@ boundary/source and pressure/density contributions still need measurement.
 **The isolated two-field test harness builds and passes runtime-library
 verification on Kestrel. All four baseline cases now pass all 100 steps of
 the numerical screen: the closed pair at `56a84d7` and the source pair at
-`ef74cf6`. Preserve the completed suite; do not rerun it. Next implementation
-is a separate source test near phase-fraction bounds, then timestep sensitivity.**
+`ef74cf6`. Preserve the completed suite; do not rerun it. The separate
+near-bound source and half-timestep harness is now ready for its coarse-pair
+launch; no near-bound CFD has run yet.** See the [new test contract and exact
+launch](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md).
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
@@ -161,11 +163,22 @@ the runtime reports; raw evidence remains on Kestrel. Both two-field reference
 settings remain viable candidates. The uniform 50/50 source fixture does not
 exercise the near-bound source-splitting mechanism diagnosed in the earlier
 three-field probe or explain archived EMM excess liquid. See the [completed
-source budgets and next implementation](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-implementation-test-source-splitting-near-phase-bounds).
+source budgets](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-implementation-test-source-splitting-near-phase-bounds).
 Preserve all completed and failed roots. **No rebuild, repeat of these four
-cases, or reactor launch is the next action.** Implement a separate near-bound
-fixture and matching initial-inventory/report contract before a new CFD
-command; the baseline parser must not be reused after ad hoc alpha edits.
+cases, or reactor launch is the next action.** The [separate near-bound
+harness](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) now creates four fresh
+cases with alphaL=0.99999 / alphaG=0.00001: both reference settings at dt=0.001
+and 0.0005 s, each to 0.1 s. It derives the existing verified build from the
+completed baseline and revalidates every saved baseline result before launch.
+All 53 focused tests pass locally, including unchanged baseline report output
+and mocked preservation checks. No compiled source or baseline recipe changed.
+The next command prepares the new cases and runs only the coarse pair. Review
+its reports before the fine pair. `diagnostic_pass` requires valid setup,
+regime and accounting; `screen_pass` also requires the phase mass thresholds.
+A complete mass-screen failure can proceed to timestep sensitivity only if
+its diagnostics pass. No tolerances are automatically loosened. The existing
+observer checks accepted-step bounds and split terms, not source-assembly
+alpha bins. No near-bound CFD result is available yet.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
@@ -190,7 +203,8 @@ Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELEC
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
 runtime-verified; all four closed/source baseline cases pass. Near-bound
-source and timestep checks are next, using separate fresh fixtures.
+source and timestep checks are implemented, using separate fresh fixtures;
+run their coarse pair next via the linked instructions.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory

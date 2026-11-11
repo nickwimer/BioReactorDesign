@@ -208,13 +208,15 @@ it does not prove a third field is necessary or establish full-reactor validity.
 
 The known-source fixture starts at equal phase fractions, has constant
 densities, and shows essentially zero source-split contribution. It does not
-reproduce the earlier probe's near-pure-liquid regime. Next implement a
-separate matched near-bound source test, with explicit inventory/tolerance
-and report contracts, before adding timestep sensitivity and resolved-interface
-physics. Retain a physically feasible source/outlet balance, measure both
-phase budgets and the intended alpha regime, and preserve the original solver
-floors while diagnosing them. No new launch command for that fixture exists
-in this documentation-only result update.
+reproduce the earlier probe's near-pure-liquid regime. The [separate matched
+near-bound source test](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) is now
+implemented, with explicit inventory/tolerance contracts and matched
+dt=0.001 / 0.0005 s pairs at alphaL=0.99999. It keeps the same source/outlet
+balance and original solver floors, measures both budgets and accepted-step
+alpha regimes, and requires an observed source-split effect. All 53 focused
+tests pass locally; CFD is mocked in local runner tests. The next action is
+the coarse-pair launch using the existing build. No near-bound runtime result
+or resolved-interface validation is available yet.
 
 ## Next decision: continue validating the simpler candidate
 

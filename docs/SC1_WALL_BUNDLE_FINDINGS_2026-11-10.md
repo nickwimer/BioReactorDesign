@@ -263,11 +263,12 @@ exported 0.009581 g. Liquid cumulative absolute residuals are
 Gas export likewise accounts for its inventory loss. All four baseline cases
 are complete, supporting further evaluation of two fields without selecting
 one reference setting. The 50/50 source fixture has effectively zero source
-splitting and does not test the prior near-bound defect. Next implement a
-separate near-bound source fixture and timestep check; do not rerun this suite.
-No code changed for this result update; the prior 39 harness tests passed.
-Preserve all attempts and reuse the verified build where applicable. It is not an
-SC1 reactor case.
+splitting and does not test the prior near-bound defect. The [separate
+near-bound source fixture and timestep check](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md)
+are now implemented; all 53 focused local tests pass, with CFD execution mocked.
+Run only the new coarse pair first using the verified build. No near-bound
+runtime result is available yet. Preserve all attempts and do not rerun the
+baseline suite. This remains a numerical fixture, not an SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard.

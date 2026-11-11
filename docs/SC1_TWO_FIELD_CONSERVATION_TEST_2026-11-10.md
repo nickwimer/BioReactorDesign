@@ -11,9 +11,10 @@ The continuation at `56a84d7` saved the no-reference result without rerunning
 CFD, then completed the gas-reference partner. The source pair subsequently
 completed at `ef74cf6`, also with both screens passing. All four `result.json`
 files now exist with log hashes. **This suite is complete; preserve it and do
-not rerun any case or rebuild.** Next implementation is a separate paired
-source test near phase-fraction bounds, followed by controlled timestep and
-interface checks. No new stress-test or SC1 reactor launch is included here.
+not rerun any case or rebuild.** The separate [near-bound source and
+half-timestep harness](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) is now
+implemented and locally tested. Its coarse-pair launch is the next action;
+no near-bound CFD result is available yet. Interface checks remain later work.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -446,24 +447,22 @@ negative dilatation by `max(alpha,1e-4)`. This mechanism remains present in
 the two-field solver; a mid-fraction pass cannot dismiss its effect near a
 bound.
 
-The next separate fixture should compare the same reference settings with
-a near-pure-liquid initial state, a known physically feasible source and a
-pressure-compatible outlet. Its specification must declare measured initial
-phase inventories, expected integrated source, phase-specific tolerances
-appropriate to the small gas inventory, and output proving the intended
-bound regime was exercised. Retain all source-splitting, rescaling and
-accepted-step ledgers. Then halve the timestep at the same physical duration
-and hold other inputs fixed to distinguish temporal effects; vary outer
-iterations separately if needed. Do not change floors or add source back
-based only on this baseline.
+The [separate fixture](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) is now
+implemented with alphaL=0.99999 / alphaG=0.00001, the same liquid feed and
+pressure-compatible outlet, and matched reference pairs at dt=0.001 and
+0.0005 s to 0.1 s. It declares initial inventories, phase-specific tolerances
+for the small gas inventory, accepted-step regime checks and an observed
+source-split requirement. It retains all existing ledgers and solver floors.
+All 53 focused tests pass locally; no new CFD result is claimed.
 
-The current generator and analyzer intentionally encode the baseline's
-initial inventory and 100-step contract. **No near-bound launch command is
-ready in this update.** Implement and validate a separate case/report contract
-before giving a new CFD command; do not hand-edit completed cases or merely
-change alpha in the old fixture. Interphase-transfer and resolved-interface
-checks still precede a matched SC1 nonreacting reactor candidate. Existing
-compiled observers can be reused if their capabilities remain sufficient.
+The original generator is unchanged, and its report entry point retains the
+baseline contract. The new case/report contract and guarded runner reuse the
+verified compiled observers and require all four completed baseline reports.
+Run the coarse pair first using the linked command, then review before the
+half-timestep pair. Do not hand-edit completed cases, loosen thresholds or
+add source back based only on a numerical screen. Interphase-transfer and
+resolved-interface checks still precede a matched SC1 nonreacting reactor
+candidate.
 
 ## Source-pair launch reference (completed)
 
