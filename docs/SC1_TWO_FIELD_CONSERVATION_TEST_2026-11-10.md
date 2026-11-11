@@ -18,8 +18,10 @@ pass, but both phase mass screens fail with either reference setting at both
 timesteps. The approximately 0.900-microgram liquid deficit barely changes
 with half-dt. The [guarded private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
 has built and passed all eight Kestrel regressions at `d83bc83`, with unchanged
-mass thresholds. The next step is the [fresh MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md);
-interface and operating-reactor validation remain pending.
+mass thresholds. The [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+has also completed: its budgets pass but velocities fail the quiescent screen.
+A drag-blending cancellation was identified; its isolated correction is the
+next step. Interface and operating-reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.

@@ -41,7 +41,7 @@ def field(obj, dimensions, internal, vector=False):
     return foam(obj,body,'volVectorField' if vector else 'volScalarField')
 
 
-def case_files(ranks):
+def case_files(ranks, *, segregated_drag=False):
     if not isinstance(ranks,int) or not 1<=ranks<=52:
         raise ValueError('Startup requires 1 to 52 ranks')
     old=fixture('source_gas_reference')
@@ -63,6 +63,14 @@ aspectRatio ();
 drag ((gas and liquid) { type segregated; m 0.5; n 8; });
 virtualMass (); heatTransfer (); phaseTransfer (); lift (); wallLubrication (); turbulentDispersion ();
 ''')
+    if segregated_drag:
+        # The unordered segregated model is multiplied by (1-f1-f2).
+        # The legacy symmetric 0.3/0.7 linear blend makes that nearly zero
+        # for complementary fractions. OF9's none/none blend gives weight 1.
+        anchor='minFullyContinuousAlpha.liquid 0.7; minPartlyContinuousAlpha.liquid 0.3; } }'
+        assert files['constant/phaseProperties'].count(anchor)==1
+        files['constant/phaseProperties']=files['constant/phaseProperties'].replace(
+            anchor,anchor[:-2]+'\n    drag { type none; continuousPhase none; }\n}')
     # MEML globalVars specifies this water-viscosity law at T=303.15 K.
     mu=2.414e-5*10**(247.8/(303.15-140))
     files['constant/thermophysicalProperties.liquid']=files['constant/thermophysicalProperties.liquid'].replace('mu 0.001;',f'mu {mu:.17g};')

@@ -8,8 +8,10 @@ report is complete, with valid diagnostics, passing physical mass screens and
 no errors. The original physical thresholds were retained. Preserve the
 completed build and all eight cases; do not repeat the historical command below.
 
-The next executable step is the [fresh MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md).
-It reuses this verified binary without changing its applicability guards.
+The first [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+completed with valid mass budgets but excessive velocities. Its dictionary
+nearly canceled segregated drag through blending. The next isolated comparison
+restores only that drag weight, reusing this verified binary and its guards.
 These regressions establish the correction for their tested source contract;
 reactor wall/free-surface, aeration, oxygen and biology validation remain open.
 All 68 pre-existing focused local tests passed before the Kestrel run.

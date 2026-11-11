@@ -65,14 +65,22 @@ results are retained; near-bound liquid residual L1 drops by about 1,860–116,5
 Original thresholds are unchanged. All diagnostics pass. Preserve every
 completed control/candidate case and both builds; do not rerun these suites.
 
-**Next executable step:** [fresh MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md).
-It reuses the verified binary under its unchanged pure-phase 1/1000 kg/m3 guards,
-copies only the archived mesh, initializes an exact native-volume 1000-L fill
-and hydrostatic pressure, and runs 200 steps (10 ms) with stationary impellers,
-gravity, vent and segregated interface drag. No aeration/feed, PBM, transfer or
-biology is enabled. Local preparation/report/runner checks pass; the new
-actual-mesh CFD remains to be run. Its startup pass is not equilibrium or a
-validated 9.9-s operating-reactor checkpoint.
+**Latest vessel result:** the [first MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+completed at `e586c47` in `/scratch/nwimer/sc1_reactor_startup_20261111T045638Z`.
+Its mass/diagnostic screens pass but quiescence fails (status 2): maximum
+liquid speed 0.0963573 m/s, gas speed 2.320774 m/s, maximum mixture Co 0.623991.
+Liquid stays at 1000 L to printed roundoff; its physical residual L1 is
+3.344917609101449e-12 kg. Preserve this completed control and do not extend it.
+
+**Next executable step:** use `prepare-drag` in the linked startup document.
+The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
+drag weight `1-f1-f2` nearly zero. The new fresh t=0 copy adds only
+`blending/drag { type none; continuousPhase none; }`, restoring weight one.
+It keeps the same verified binary, initial fields, mesh, timestep, ranks and
+acceptance limits. Sixteen startup tests pass, including actual C++ blending
+functions and backward compatibility of the saved v1 control. Corrected CFD
+is pending; its result must establish whether this resolves the acceleration.
+No rotation, aeration, PBM, oxygen transfer or biology is enabled.
 
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
@@ -278,9 +286,10 @@ feasibility remains unproved. No source addback or physical correction is approv
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. The archive/wall review and numerical source-split investigation above
 are complete. The corrected private candidate passes all eight small-case
-regressions; do not repeat them. A fresh quiescent MEML-mesh startup is now
-prepared in code. Run its linked gated command, then evaluate the physical
-startup before extending to a longer quiescent run and stirred flow. The
+regressions; do not repeat them. The first quiescent MEML startup completed
+with passing mass budgets but excessive velocities. Its drag-blending
+cancellation is now diagnosed. Run the linked fresh `prepare-drag` comparison
+before any longer quiescent interval or stirred flow. The
 aerated 9.9-s reactor/oxygen/biology checkpoint remains unvalidated.
 Do not repeat the completed probe. The historical two-field excess inventory
 does not establish that phase count caused it; t=0 and boundary/source budgets

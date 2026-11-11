@@ -17,7 +17,9 @@ The results below retain the original tolerances, recipes and verified build.
 The [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
 has now built and passed all eight Kestrel regressions at `d83bc83`, including
 both near-bound pairs against unchanged thresholds. These failed original
-controls remain unchanged. The next step is the [fresh actual-mesh startup](SC1_REACTOR_STARTUP_2026-11-10.md).
+controls remain unchanged. The [actual-mesh startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+subsequently conserved mass but failed quiescence; its diagnosed drag-blending
+cancellation is the next isolated correction.
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split
