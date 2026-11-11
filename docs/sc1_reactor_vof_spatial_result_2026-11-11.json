@@ -5627,6 +5627,6 @@
       "leastSquares": "https://cpp.openfoam.org/v9/leastSquaresGrad_8C_source.html"
     },
     "inference": "The pure-phase circumferential peaks, shifted neighbour columns and much slower interface/wall motion justify testing scalar gradient reconstruction. Cell-centre stencils are not a face-force budget and do not prove which term is responsible.",
-    "nextAction": "The force probe completed; next test the fixed hydrostatic-reference candidate in SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md. No startup acceptance yet."
+    "nextAction": "Hydrostatic startup completed with physical screens passing; next close the pressure-convergence gate using SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md. Full baseline acceptance remains pending."
   }
 }

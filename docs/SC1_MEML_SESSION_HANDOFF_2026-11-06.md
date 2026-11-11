@@ -230,17 +230,31 @@ horizontal. Local reconstruction verifies all eight samples; the 83-record
 external-control prefix agreement was checked on Kestrel but that parent log
 is not uploaded. See the [full result](sc1_reactor_vof_force_result_2026-11-11.json).
 
-**Next action: [fixed hydrostatic-reference startup](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).**
-The private `sc1InterFoamHydrostatic` application solves for pressure departure
-from the known analytic fill and retains `(rho-rhoH)*g`, with rhoH fixed once.
-Full evolving-density inertia, alpha transport and capillarity remain active.
-Physical p and p_rgh are reconstructed and independently checked in all 40
-snapshots. The original build/fields/mesh and failed roots are preserved.
-The new startup is bounded to 10 ms with the original screens plus gas rest
-and converged pressure passes; no working baseline has been accepted yet.
-All 59 focused tests pass; actual OpenFOAM build/runtime are pending. After a rest pass, require longer
-rest and physical perturbation testing before stirring/aeration. The four-hour
-biological update schedule remains unchanged.
+**The hydrostatic formulation completed 10 ms with all physical screens passing:**
+at `f0c220f`, `/scratch/nwimer/sc1_vof_hydro_20261111T220400Z` reached normal
+End after 200 steps. Peak liquid/gas speeds are 8.85673136e-8 / 1.95089614e-5 m/s;
+maximum Co is 3.05069960e-8. Native liquid inventory remains 1000 L and the
+liquid/gas budget L1 values are 9.76996262e-12 / 1.06581410e-14 kg. All 40
+snapshots were reconstructed and checked by the Kestrel workflow. The received
+archive verifies locally (17 file digests, 11 included input hashes), and all
+log budgets and pressure records reproduce. Native arrays are not uploaded.
+See the [full result](sc1_reactor_vof_hydrostatic_result_2026-11-11.json).
+
+Full acceptance remains false solely because 203/800 pressure-correction groups
+failed the existing final-pass initial residual <=1e-12 / zero-iteration gate.
+The failed-group distribution is [200,3,0,0]; both corrections in every final
+outer iteration pass. The first-correction residual is still contracting at
+pass ten (pass-10/pass-9 ratio 0.419 to 0.549). All linear final residuals pass.
+
+**Next action: [24-pass convergence comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md).**
+Reuse the existing `sc1InterFoamHydrostatic` build at
+`/scratch/nwimer/sc1_vof_hydro_build_20261111T220400Z`. A fresh t=0 case changes
+only nNonOrthogonalCorrectors from 9 to 23. Keep every physical and convergence
+limit. The ten-pass completed case remains untouched; matched-time speeds and
+inventories are compared. All 66 focused tests pass. No new compilation is requested. After a full short
+baseline pass, require longer rest and physical perturbation testing before
+stirring/aeration. No operating reactor is accepted; the four-hour biological
+update schedule remains unchanged.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

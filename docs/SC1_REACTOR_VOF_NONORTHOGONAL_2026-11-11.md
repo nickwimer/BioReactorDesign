@@ -14,7 +14,7 @@ The new failure archive remains on Kestrel and has not been locally verified.
 
 This weighs strongly against explicit pressure-correction lag as the dominant
 cause in this comparison. It does not establish facewise force balance.
-**The force probe has now completed; next: [fixed hydrostatic-reference startup](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).**
+**The hydrostatic candidate now passes physical screens; next: [24-pass convergence comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md).**
 Do not repeat this failed startup or increase the pressure iteration count again.
 
 ## Result motivating this test

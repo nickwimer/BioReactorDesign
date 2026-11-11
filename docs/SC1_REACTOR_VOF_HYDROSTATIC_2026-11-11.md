@@ -1,5 +1,18 @@
 # SC1 VOF hydrostatic pressure perturbation candidate
 
+## Received startup result
+
+The solver compiled and completed 10 ms at `f0c220f` in
+`/scratch/nwimer/sc1_vof_hydro_20261111T220400Z`. All physical screens pass:
+peak liquid/gas speeds are 8.85673136e-8 / 1.95089614e-5 m/s and the fill remains
+1000 L. Full acceptance is false only because 203/800 nonorthogonal correction
+groups need further convergence. The attached archive and log budgets verify.
+See the [full result](sc1_reactor_vof_hydrostatic_result_2026-11-11.json).
+
+Next use the [24-pass comparison](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md)
+with the existing binary and all acceptance limits unchanged. The build/run
+command below is historical; do not repeat the completed ten-pass case.
+
 ## Decision from the received force measurements
 
 The two-step force probe completed at `f951b53` in
@@ -104,7 +117,7 @@ physical pressure reconstructed consistently from pH, pPert and p_rgh.
 A completed failed screen remains evidence. Automatic collection runs on success
 or failure and bundles the log, small inputs and result when available.
 
-## Next Kestrel command
+## Historical Kestrel command
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -151,4 +164,4 @@ The actual profile helper compiles under C++14; its derivative matches -rhoH*g.
 Independent finite-amplitude pressure/density identities and rotated-face
 reconstruction tests retain nonzero buoyancy. These do not substitute for an
 OpenFOAM compilation or CFD perturbation test. OpenFOAM is unavailable locally;
-actual build and runtime remain pending on Kestrel.
+the private build and ten-pass run have now completed on Kestrel. See the received result above.

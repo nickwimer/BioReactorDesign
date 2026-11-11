@@ -50,7 +50,7 @@ subsequently compiled but stopped at 0.2 ms with all v4 initial inputs retained.
 Its bundle now confirms the liquid-speed guard. The
 [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
 completed; its verified bundle also reveals horizontal gas motion near the
-interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The completed force probe identifies a gravity/pressure residual at the sampled peaks; next test the [fixed hydrostatic-reference candidate](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).
+interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The hydrostatic startup completed 10 ms and passed all physical screens; next close its remaining [pressure-convergence gate](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md) with the same binary and limits.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

@@ -50,7 +50,7 @@ Its full bundle is now verified and also shows predominantly horizontal gas
 peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
 stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
-The completed force probe identifies a gravity/pressure residual at the sampled peaks; next test the [fixed hydrostatic-reference candidate](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).
+The hydrostatic startup completed 10 ms and passed all physical screens; next close its remaining [pressure-convergence gate](SC1_REACTOR_VOF_HYDROSTATIC_CONVERGENCE_2026-11-11.md) with the same binary and limits.
 It uses the same mesh and initial fill. The spatial diagnostic does not accept
 this failed parent startup or establish a two-fluid force correction.
 
