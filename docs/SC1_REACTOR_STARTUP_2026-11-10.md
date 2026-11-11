@@ -8,9 +8,13 @@ speed reaches 0.0963573 m/s and mixture Co reaches 0.623991. Preserve this run
 as the control; do not extend it or add rotation.
 
 A configuration error has been identified in the prepared case: its linear
-blending almost cancels the unordered segregated drag. The next action below
-creates a fresh t=0 copy with only a drag-specific blending override. The
-corrected CFD remains to be run. The [private rate-split solver and eight
+blending almost cancels the unordered segregated drag. The matched correction
+at `0876843` **diverged by t=0.0009 s**, with alpha extrema around 1e142,
+then an FPE/time-limit cancellation (wrapper status 1). Its root is
+`/scratch/nwimer/sc1_reactor_drag_20261111T144728Z`. Preserve it and the v1
+control; do not rerun the historical commands below. **The next action is the
+[read-only failed-log collection](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md#next-kestrel-command-collect-existing-evidence-only).**
+The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no rebuild or numerical-suite rerun is needed.
 
@@ -100,7 +104,7 @@ The same default blend appeared in the earlier MEML headspace/liquid recipe;
 that is a reason for a later model review, not proof of the historical reactor
 wall/oxygen problem. Production dictionaries remain unchanged.
 
-## Next Kestrel command: restore the intended drag coupling
+## Historical v2 command (attempted and failed; do not repeat)
 
 `prepare-drag` revalidates the completed control, copies its original `0`,
 `constant` and `system` plus the three mesh-preparation logs, and changes only
@@ -109,7 +113,7 @@ later time, solver log or result. Hash checks enforce this one-file difference
 and identical initial inventories. The saved v1 result remains readable and
 unchanged; the new variant is `sc1_meml_quiescent_segregated_drag_v2`.
 
-`run` requires the unique runtime line `Selecting drag blending method: none`.
+On a complete run, reporting requires the unique runtime line `Selecting drag blending method: none`.
 It runs the same 200 steps and unchanged screens, then records
 `drag_comparison.json` in the new root. The comparison also reads both saved
 end fields to locate peak velocities, separate bulk/interface motion and

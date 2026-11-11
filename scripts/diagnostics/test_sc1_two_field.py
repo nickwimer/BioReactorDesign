@@ -572,6 +572,18 @@ class Isolation(unittest.TestCase):
             self.assertIn('observer.H:70: error: assignment from void',output.getvalue())
             self.assertTrue((root/'build.log').is_file())
 
+    def test_failed_solver_is_not_labelled_a_compiler_error(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);output=io.StringIO()
+            def fail(command,**kwargs):
+                kwargs['stdout'].write('srun: error: task 2: Floating point exception\n')
+                return SimpleNamespace(returncode=143)
+            with patch.object(harness.subprocess,'run',side_effect=fail),redirect_stdout(output):
+                with self.assertRaises(ValueError):harness.execute(['srun','solver'],root,root/'log.solver',{})
+            self.assertIn('First command errors:',output.getvalue())
+            self.assertNotIn('compiler',output.getvalue())
+
     def test_runtime_environment_does_not_change_parent(self):
         before=dict(os.environ)
         env=harness.environment(Path('/scratch/fresh'))

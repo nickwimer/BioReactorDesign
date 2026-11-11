@@ -1,6 +1,6 @@
 # SC1 MEML oxygen-transfer investigation — new-session handoff
 
-**Updated:** 2026-11-10
+**Updated:** 2026-11-11
 
 **Research system:** *Pseudomonas putida* SC1 stirred-tank simulation, OpenFOAM 9 / BiRD, NLR Kestrel  
 **GitHub branch:** `codex/sc1-headspace-bubble-audit-20261029`  
@@ -72,14 +72,27 @@ liquid speed 0.0963573 m/s, gas speed 2.320774 m/s, maximum mixture Co 0.623991.
 Liquid stays at 1000 L to printed roundoff; its physical residual L1 is
 3.344917609101449e-12 kg. Preserve this completed control and do not extend it.
 
-**Next executable step:** use `prepare-drag` in the linked startup document.
+**Latest vessel attempt:** the restored-drag comparison at `0876843` in
+`/scratch/nwimer/sc1_reactor_drag_20261111T144728Z` diverged by t=0.0009 s;
+liquid alpha extrema reached about 1e142 before an FPE/time-limit cancellation.
+The command returned 143, wrapper status 1. This is not simply a timeout and
+not a valid checkpoint. The user already has a new 24-hour allocation.
+Preserve both vessel roots; do not repeat either launch.
+
+**Next executable step:** use the read-only evidence collector in
+[the failure report](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). It finds the first
+failure in the saved full log and bundles the small dictionaries and provenance.
+No OpenFOAM environment, allocation, rebuild or CFD is needed. The excerpt
+does not yet distinguish momentum-coupling instability from the pressure/interface
+balance or timestep response; the next numerical change awaits that evidence.
+
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
-drag weight `1-f1-f2` nearly zero. The new fresh t=0 copy adds only
+drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
 `blending/drag { type none; continuousPhase none; }`, restoring weight one.
-It keeps the same verified binary, initial fields, mesh, timestep, ranks and
+It kept the same verified binary, initial fields, mesh, timestep, ranks and
 acceptance limits. Sixteen startup tests pass, including actual C++ blending
-functions and backward compatibility of the saved v1 control. Corrected CFD
-is pending; its result must establish whether this resolves the acceleration.
+functions and backward compatibility of the saved v1 control. Restored drag
+alone has not produced a working startup.
 No rotation, aeration, PBM, oxygen transfer or biology is enabled.
 
 It compares no-reference and gas-reference settings

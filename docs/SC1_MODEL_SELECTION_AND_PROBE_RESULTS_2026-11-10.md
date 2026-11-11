@@ -234,8 +234,9 @@ The new [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md) reuses
 that verified pure-phase binary, with a measured 1000-L fill, gravity and a vent.
 It completed at `e586c47`: mass/diagnostics pass, but quiescence fails, with
 liquid speed 0.0963573 m/s and Co 0.623991. Source review found that its blending
-nearly cancels the listed segregated drag. The next fresh comparison restores
-only its drag weight; physical adequacy remains to be established.
+nearly cancels the listed segregated drag. The comparison restoring only its
+weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Collect
+the saved full log next; physical adequacy remains to be established.
 
 ## Next decision: continue validating the simpler candidate
 

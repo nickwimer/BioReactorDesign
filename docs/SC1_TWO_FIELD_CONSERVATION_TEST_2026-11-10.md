@@ -20,8 +20,9 @@ with half-dt. The [guarded private rate-split candidate](SC1_TWO_FIELD_RATE_SPLI
 has built and passed all eight Kestrel regressions at `d83bc83`, with unchanged
 mass thresholds. The [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
 has also completed: its budgets pass but velocities fail the quiescent screen.
-A drag-blending cancellation was identified; its isolated correction is the
-next step. Interface and operating-reactor validation remain pending.
+A drag-blending cancellation was identified; its isolated correction
+[diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). The next step
+collects the saved full log without CFD. Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.

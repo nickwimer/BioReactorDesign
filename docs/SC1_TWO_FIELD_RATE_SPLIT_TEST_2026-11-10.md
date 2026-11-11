@@ -10,8 +10,9 @@ completed build and all eight cases; do not repeat the historical command below.
 
 The first [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
 completed with valid mass budgets but excessive velocities. Its dictionary
-nearly canceled segregated drag through blending. The next isolated comparison
-restores only that drag weight, reusing this verified binary and its guards.
+nearly canceled segregated drag through blending. Restoring only that weight
+[diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md), reusing this
+verified binary and its guards. Read-only failed-log collection is next.
 These regressions establish the correction for their tested source contract;
 reactor wall/free-surface, aeration, oxygen and biology validation remain open.
 All 68 pre-existing focused local tests passed before the Kestrel run.
