@@ -51,6 +51,20 @@ def fixture(root):
 
 
 class FailureEvidence(unittest.TestCase):
+    def test_trapping_banner_is_not_an_exception_and_does_not_hide_later_crash(self):
+        banner='sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'log';path.write_text(banner+'Time = 5e-05\nEnd\n')
+            r=failure.scan(path)
+            self.assertNotIn('floating_point_exception',r['firstEvents'])
+            self.assertNotIn('floating_point_exception',r['eventCounts'])
+            path.write_text(banner+LOG);r=failure.scan(path)
+        event=r['firstEvents']['floating_point_exception']
+        self.assertEqual(event['text'],'[2] #1 Foam::sigFpe::sigHandler(int) at ??:?')
+        self.assertEqual(event['lastPrintedTime_s'],.0009)
+        self.assertEqual(event['outer'],2)
+        self.assertEqual(r['eventCounts']['floating_point_exception'],2)
+
     def test_earliest_events_keep_courant_context_and_unclamped_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'log';path.write_text(LOG);r=failure.scan(path)

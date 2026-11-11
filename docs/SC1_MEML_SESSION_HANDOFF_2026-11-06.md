@@ -79,12 +79,14 @@ The command returned 143, wrapper status 1. This is not simply a timeout and
 not a valid checkpoint. The user already has a new 24-hour allocation.
 Preserve both vessel roots; do not repeat either launch.
 
-**Next executable step:** use the read-only evidence collector in
-[the failure report](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). It finds the first
-failure in the saved full log and bundles the small dictionaries and provenance.
-No OpenFOAM environment, allocation, rebuild or CFD is needed. The excerpt
-does not yet distinguish momentum-coupling instability from the pressure/interface
-balance or timestep response; the next numerical change awaits that evidence.
+**Collection completed at `264d209`, status 0:** all 59 initial inputs match.
+Pressure limiting begins at 0.0003 s, before the first logged mixture-Co >0.2
+after printed 0.0004 s. The collector falsely classified the initial FPE-trapping
+banner as a crash; the parser is corrected. See [the chronology and hashes](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md).
+**Next step: receive the existing bundle** from
+`/scratch/nwimer/sc1_reactor_failure_20261111T161441Z/reactor_failure_evidence.tar.gz`.
+Only the summary has been received. No recollection or CFD rerun is needed;
+inspect the bundled early pressure/momentum sequence before changing the solver.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

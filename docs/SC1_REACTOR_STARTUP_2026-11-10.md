@@ -12,8 +12,9 @@ blending almost cancels the unordered segregated drag. The matched correction
 at `0876843` **diverged by t=0.0009 s**, with alpha extrema around 1e142,
 then an FPE/time-limit cancellation (wrapper status 1). Its root is
 `/scratch/nwimer/sc1_reactor_drag_20261111T144728Z`. Preserve it and the v1
-control; do not rerun the historical commands below. **The next action is the
-[read-only failed-log collection](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md#next-kestrel-command-collect-existing-evidence-only).**
+control; do not rerun the historical commands below. **Failed-log collection
+is complete; the next action is to attach the
+[existing evidence bundle](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md#collection-completed-existing-bundle-needed).**
 The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no rebuild or numerical-suite rerun is needed.

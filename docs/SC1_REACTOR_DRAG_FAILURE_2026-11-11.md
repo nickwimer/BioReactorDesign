@@ -1,5 +1,47 @@
 # SC1 restored-drag startup: numerical failure and saved-log inspection
 
+## Collection completed; existing bundle needed
+
+The collector at `264d209` completed with status 0 in
+`/kfs3/scratch/nwimer/sc1_reactor_failure_20261111T161441Z`.
+All 59 recorded initial inputs match, with none missing or extra. The log has
+2,284 lines, 18 printed times and 17 paired step records through 0.00085 s;
+there is no `End` marker. These records do not imply valid accepted states.
+
+| First reported event | Time context | Evidence |
+|---|---|---|
+| Alpha excursion beyond 1e-10 | 0.0002 s, outer 2, line 545 | Min −1.232699447738956e−10, max 1.0000000005446585; initially a very small excursion |
+| Pressure limiter | 0.0003 s, outer 2, line 832 | `p min -73364.513746858589` Pa |
+| Mixture Co >0.2 | After printed 0.0004 s, line 1089 | Max 0.37319948362935979; Courant is printed before the next Time increment |
+| Clamp volume >1e-10 m3 | 0.00065 s, outer 1, line 1617 | −1.36104293969645e−9 m3 |
+| Alpha magnitude >10 | 0.00065 s, outer 2, line 1651 | Min −16.379226889599494, max 14.623227456604468 |
+
+The full-log summary reports maximum finite Co 2.7252723295830327e29 and
+largest finite alpha magnitude 7.433392801508894e144. Pressure limiting
+precedes the first logged mixture-Co breach; this warrants inspecting the
+early pressure/momentum sequence, but does not by itself establish causality
+or rule out a phase-specific Courant problem.
+
+The collector incorrectly called the startup banner `sigFpe : Enabling floating
+point exception trapping (FOAM_SIGFPE).` an exception at line 34. That banner
+only enables trapping. The detector now excludes it, with a regression test
+that still detects the later stack trace and actual crash. The reported first
+FPE line/count must not be used as the failure onset. Other reported events
+are unaffected by this string-matching correction.
+
+The user pasted the collection summary; **the bundle has not yet been received**.
+Attach this existing file; no recollection or CFD rerun is needed:
+
+`/scratch/nwimer/sc1_reactor_failure_20261111T161441Z/reactor_failure_evidence.tar.gz`
+
+- Reported bundle SHA256: `cbe15f3cc08564aed19324ee0c397ae6296ee0475f99dea0ba9ffb290b60adf4`.
+- Reported solver-log SHA256: `4c55d6b46ec8738a4c3f67179843044b2b45b6101bc5a32e51a0c1eb4bba214f`.
+
+Verify those hashes on receipt and analyze the bundled log with the corrected
+parser locally. Inspect the pressure solves and alpha/phase budgets before
+0.0003 s before selecting another coupling/timestep change. The small
+negative-alpha excursion alone is not evidence of the dominant mechanism.
+
 ## Observed result
 
 The matched drag comparison at `0876843` prepared successfully in
@@ -52,7 +94,7 @@ coefficient, timestep, tolerance or coupling option is changed by this update.
 The next CFD candidate should follow that evidence and stop on numerical
 divergence instead of running until the allocation expires.
 
-## Next Kestrel command: collect existing evidence only
+## Historical collection command (completed; do not repeat)
 
 The collector reads the saved root, verifies its attempt against the startup
 manifest, reports changed/missing/extra initial inputs, and finds the first
@@ -108,3 +150,7 @@ input change reporting, path/overwrite protection, concurrent log-change
 rejection and no mutation of the saved case. Runtime errors now say `First
 command errors:`; actual `wmake` failures retain `First compiler errors:`.
 Kestrel log collection and the next CFD remedy remain unexecuted locally.
+After the Kestrel collection exposed the banner misclassification, all eight
+failure-collector tests passed with the corrected detector. The full 92-test
+run above predates this one-line parser correction and added regression test;
+no solver code or startup settings changed.

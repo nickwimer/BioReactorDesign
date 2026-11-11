@@ -283,8 +283,9 @@ resolve wall climbing. The [fresh actual-mesh startup](SC1_REACTOR_STARTUP_2026-
 has now completed with stationary walls/impellers and an exact 1000-L initial
 inventory. Its budgets pass, but liquid speed reaches 0.0963573 m/s in 10 ms.
 The startup blend nearly canceled the listed segregated drag. Restoring that
-weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md); read-only
-saved-log collection is next. Wall climbing is still unresolved.
+weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
+collection is complete; its bundle awaits upload/inspection. Wall climbing is
+still unresolved.
 The preceding three-field diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard. The separate two-field observer

@@ -114,7 +114,8 @@ def scan(path):
                         if phase in seen:duplicates+=1
                         seen.add(phase);last_step[phase]=dict(line=lines,record=fields)
             lower=text.lower()
-            if 'floating point exception' in lower or 'sigfpe::sighandler' in lower:
+            trapping_banner=re.match(r'^sigfpe\s*:\s*enabling floating point exception trapping\b',lower)
+            if not trapping_banner and ('floating point exception' in lower or 'sigfpe::sighandler' in lower):
                 event('floating_point_exception',lines,text)
             if 'foam fatal' in lower:event('foam_fatal',lines,text)
             if 'due to time limit' in lower or 'exceeded its time limit' in lower:
