@@ -36,7 +36,7 @@ Its v4 bundle is now verified. The
 reproduced the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. Next inspect [existing native fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).**
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The [saved-field inspection](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md) completed; attach its existing spatial archive next.**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 

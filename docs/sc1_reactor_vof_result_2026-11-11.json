@@ -71,7 +71,7 @@
     "No snapshot reconstruction ran. Processor directory names exist through 0.00825 s but complete native fields remain to be checked.",
     "The stock OF9 momentum/pressure path contains surface-tension and gravity terms. The log alone does not separate their discrete imbalance or identify a correction."
   ],
-  "nextAction": "Read existing processor outputs at 0.00025, 0.001, 0.004 and 0.00825 s with sc1_reactor_vof_saved.py. Validate cell addressing and compare native inventories/velocities to audit, without CFD or case writes.",
+  "nextAction": "Saved-field inspection completed with status 0. Attach its existing spatial archive before selecting a correction; see sc1_reactor_vof_spatial_console_2026-11-11.json.",
   "meaning": "No startup, operating-checkpoint, aeration, oxygen-transfer or biology acceptance.",
   "verifiedLog": {
     "diagnostics": {
@@ -483,5 +483,6 @@
       }
     ],
     "shutdown": "Guard message precedes FOAM fatal shutdown, MPI_Abort and sigSegv/segmentation-fault records. Return 139 is not evidence of an earlier independent solver crash."
-  }
+  },
+  "spatialFollowup": "sc1_reactor_vof_spatial_console_2026-11-11.json"
 }

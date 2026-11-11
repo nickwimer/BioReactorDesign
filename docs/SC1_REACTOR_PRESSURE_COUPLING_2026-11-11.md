@@ -50,7 +50,7 @@ Its full bundle is now verified and also shows predominantly horizontal gas
 peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
 stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
-Next inspect [existing native fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).
+The [saved-field inspection](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md) completed; attach its existing spatial archive next.
 It uses the same mesh and initial fill. The spatial diagnostic does not accept
 this failed parent startup or establish a two-fluid force correction.
 

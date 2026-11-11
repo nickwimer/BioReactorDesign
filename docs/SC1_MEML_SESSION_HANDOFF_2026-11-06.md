@@ -174,17 +174,29 @@ guard violation is liquid speed 1.003187 mm/s at 8.4 ms (limit 1 mm/s).
 Both independently reconciled phase budgets pass their unchanged numerical
 limits: liquid L1 9.29257e-11 kg, gas 1.29325e-13 kg. Pressure stays between
 99982.986897 and 111878.150896 Pa, and final step Co is 0.00178818.
-However gas speed rises to 0.972733 m/s. Its peak location/direction is unknown.
+However gas speed rises to 0.972733 m/s. The saved 8.25-ms fields now locate
+the approaching peak; see the completed inspection below.
 This is not a quiescent baseline or passed 10-ms startup. Return 139 follows
 the guard/fatal/MPI shutdown; it is not evidence of an earlier independent crash.
 
-**Next action: [read existing VOF processor fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md)**
-at 0.25, 1, 4 and 8.25 ms. `sc1_reactor_vof_saved.py` checks source hashes,
-processor addressing, mapped initial fields and native/audit agreement, then
-reports phase peak locations, directions and neighbour stencils. Python only:
-no OpenFOAM commands, reconstruction, compilation, source edits or CFD.
-Do not rebuild, rerun, relax limits or extend the failed trajectory. The 29
-focused tests pass. No aeration, PBM, oxygen-transfer or biology is validated.
+**Saved-field inspection completed at `8307261`, status 0:**
+`/scratch/nwimer/sc1_vof_spatial_20261111T195107Z`. The [console result](sc1_reactor_vof_spatial_console_2026-11-11.json)
+reports successful native/audit checks at 0.25, 1, 4 and 8.25 ms. At 8.25 ms,
+the gas peak is 0.955494 m/s at r=0.270274 m, 12.618 mm above the initial
+interface in nearly pure gas; the liquid peak is 0.985278 mm/s at r=0.270565 m,
+12.491 mm below in nearly pure liquid. Tangential speed accounts for 99.8265%
+and 99.2520% of those respective peaks. Their tangential signs are opposite,
+but they occupy different cells/azimuths; this is not a colocated force budget.
+Neither cell owns a boundary face. Inventory stays at 1000 L.
+
+**Next action: receive the [existing spatial archive](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).**
+`/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/vof_spatial_evidence.tar.gz`
+has reported SHA256 `957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab`.
+Only the console is received so far. The archive contains field hashes and
+peak-neighbour pressure/alpha stencils needed before choosing the correction.
+Do not repeat inspection, reconstruct, rebuild or rerun CFD. No script, solver,
+guard or build recipe changes in this console-recording update. The source
+startup remains failed; no aeration, oxygen-transfer or biology is validated.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

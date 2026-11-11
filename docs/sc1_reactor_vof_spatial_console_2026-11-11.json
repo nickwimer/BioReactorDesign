@@ -1,0 +1,369 @@
+{
+  "status": "Saved-field inspection completed on Kestrel, status 0; full spatial archive pending receipt",
+  "provenance": "User-attached console text only. The earlier VOF failure archive is verified; this spatial archive has not yet been received or independently verified.",
+  "console_sha256": "1463c385f11ca4a4c6bcf6658711ad4ed7016ebc7112b74ee3fe7a8a558f27b5",
+  "sourceCommit": "83072619f23c6bf491449eaa26f3b270ba5eea04",
+  "sourceCase": "/kfs3/scratch/nwimer/sc1_vof_reference_20261111T191346Z",
+  "inspectionRoot": "/kfs3/scratch/nwimer/sc1_vof_spatial_20261111T195107Z",
+  "bundle": "/kfs3/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/vof_spatial_evidence.tar.gz",
+  "bundleSha256": "957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab",
+  "bundleReceived": false,
+  "bundleVerified": false,
+  "reported": {
+    "loggedPrefix": {
+      "observedSteps": 168,
+      "pressureRecords": 672,
+      "phases": {
+        "liquid": {
+          "initialMass_kg": 999.9999999999843,
+          "finalMass_kg": 999.999999999982,
+          "boundaryOut_kg": 1.73e-322,
+          "physicalResidual_kg": -2.3314683517128287e-12,
+          "residualL1_kg": 9.29256671611256e-11,
+          "screenTolerance_kg": 1.0000099999999845e-05,
+          "withinBudgetTolerance": true,
+          "maxPrintedResidualDifference_kg": 0.0
+        },
+        "gas": {
+          "initialMass_kg": 0.6420022691408869,
+          "finalMass_kg": 0.6420022691408891,
+          "boundaryOut_kg": -1.0591592037639842e-13,
+          "physicalResidual_kg": -1.0369547432714811e-13,
+          "residualL1_kg": 1.29324837862743e-13,
+          "screenTolerance_kg": 6.520022691408869e-09,
+          "withinBudgetTolerance": true,
+          "maxPrintedResidualDifference_kg": 0.0
+        }
+      },
+      "meaning": "Observed prefix only, including its final rejected state; no completed startup acceptance."
+    },
+    "snapshots": [
+      {
+        "time_s": 0.00025,
+        "liquidVolume_L": 999.9999999999994,
+        "volumeVelocityRms_m_s": 0.0010655811134981205,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 1.4007387990107148e-06,
+          "meanVertical_m_s": -3.436097619594966e-11,
+          "max_m_s": 2.9882680600868953e-05,
+          "peak": {
+            "cell": 204379,
+            "centre_m": [
+              0.2653731590106057,
+              1.0061070651131105,
+              -0.05274837608550184
+            ],
+            "alphaLiquid": 1.0000000000000009,
+            "velocity_m_s": [
+              -2.012174159939924e-06,
+              1.434488700159077e-07,
+              -2.9814512866476802e-05
+            ],
+            "radius_m": 0.2705647883648679,
+            "heightFromInitialMidplane_m": -0.012491097179018862,
+            "alphaInitial": 1.0,
+            "adjacentPatches": [],
+            "p_Pa": 100112.52263216439,
+            "p_rgh_Pa": 109982.43294092402,
+            "pressureChangeFromInitial_Pa": -0.022583189711440355,
+            "horizontalSpeed_m_s": 2.988233629278743e-05
+          }
+        },
+        "gasPresent": {
+          "cells": 111360,
+          "rms_m_s": 0.001704138470740623,
+          "meanVertical_m_s": -1.599321299920492e-08,
+          "max_m_s": 0.029173787852392368,
+          "peak": {
+            "cell": 178700,
+            "centre_m": [
+              0.1800259106616982,
+              1.0312157538473703,
+              -0.20158984714925526
+            ],
+            "alphaLiquid": 0.0,
+            "velocity_m_s": [
+              0.020146159924851838,
+              -4.083822513013576e-05,
+              0.021100722029780368
+            ],
+            "radius_m": 0.27027355583414714,
+            "heightFromInitialMidplane_m": 0.012617591555240892,
+            "alphaInitial": 0.0,
+            "adjacentPatches": [],
+            "p_Pa": 99989.83921533001,
+            "p_rgh_Pa": 99999.95544187525,
+            "pressureChangeFromInitial_Pa": -0.04455812474770937,
+            "horizontalSpeed_m_s": 0.029173759269174836
+          }
+        }
+      },
+      {
+        "time_s": 0.001,
+        "liquidVolume_L": 999.9999999999998,
+        "volumeVelocityRms_m_s": 0.004259355050335212,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 5.602570172523911e-06,
+          "meanVertical_m_s": -1.1795160700066306e-10,
+          "max_m_s": 0.00011947050275705732,
+          "peak": {
+            "cell": 204379,
+            "centre_m": [
+              0.2653731590106057,
+              1.0061070651131105,
+              -0.05274837608550184
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              -8.508441806784624e-06,
+              4.458682978774091e-07,
+              -0.00011916630668316254
+            ],
+            "radius_m": 0.2705647883648679,
+            "heightFromInitialMidplane_m": -0.012491097179018862,
+            "alphaInitial": 1.0,
+            "adjacentPatches": [],
+            "p_Pa": 100112.52511405414,
+            "p_rgh_Pa": 109982.43542281375,
+            "pressureChangeFromInitial_Pa": -0.020101299960515462,
+            "horizontalSpeed_m_s": 0.0001194696707557403
+          }
+        },
+        "gasPresent": {
+          "cells": 111360,
+          "rms_m_s": 0.006811805019659771,
+          "meanVertical_m_s": 7.523344386467383e-09,
+          "max_m_s": 0.11658311453244387,
+          "peak": {
+            "cell": 178700,
+            "centre_m": [
+              0.1800259106616982,
+              1.0312157538473703,
+              -0.20158984714925526
+            ],
+            "alphaLiquid": 3.308722450212111e-28,
+            "velocity_m_s": [
+              0.08094514220483255,
+              -7.857645616322189e-05,
+              0.08390173045453174
+            ],
+            "radius_m": 0.27027355583414714,
+            "heightFromInitialMidplane_m": 0.012617591555240892,
+            "alphaInitial": 0.0,
+            "adjacentPatches": [],
+            "p_Pa": 99989.83822991337,
+            "p_rgh_Pa": 99999.95445645861,
+            "pressureChangeFromInitial_Pa": -0.0455435413896339,
+            "horizontalSpeed_m_s": 0.11658308805236488
+          }
+        }
+      },
+      {
+        "time_s": 0.004,
+        "liquidVolume_L": 999.9999999999987,
+        "volumeVelocityRms_m_s": 0.016994086220256877,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 2.2414665615842814e-05,
+          "meanVertical_m_s": 2.1293124068308609e-10,
+          "max_m_s": 0.00047776112690478507,
+          "peak": {
+            "cell": 204379,
+            "centre_m": [
+              0.2653731590106057,
+              1.0061070651131105,
+              -0.05274837608550184
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              -3.491965396178732e-05,
+              8.391754506971457e-07,
+              -0.0004764825368605676
+            ],
+            "radius_m": 0.2705647883648679,
+            "heightFromInitialMidplane_m": -0.012491097179018862,
+            "alphaInitial": 1.0,
+            "adjacentPatches": [],
+            "p_Pa": 100112.52200212545,
+            "p_rgh_Pa": 109982.43231088507,
+            "pressureChangeFromInitial_Pa": -0.023213228647364303,
+            "horizontalSpeed_m_s": 0.00047776038990888847
+          }
+        },
+        "gasPresent": {
+          "cells": 111360,
+          "rms_m_s": 0.027177916867548654,
+          "meanVertical_m_s": 1.2890798359489593e-07,
+          "max_m_s": 0.46503900788526326,
+          "peak": {
+            "cell": 200660,
+            "centre_m": [
+              0.20158984714925526,
+              1.0312157538473703,
+              0.1800259106616982
+            ],
+            "alphaLiquid": 1.0544195193471546e-09,
+            "velocity_m_s": [
+              -0.3323118403493488,
+              -0.00011662055374062074,
+              0.3253153946836597
+            ],
+            "radius_m": 0.27027355583414714,
+            "heightFromInitialMidplane_m": 0.012617591555240892,
+            "alphaInitial": 0.0,
+            "adjacentPatches": [],
+            "p_Pa": 99989.83996319541,
+            "p_rgh_Pa": 99999.95620039673,
+            "pressureChangeFromInitial_Pa": -0.04381025934708305,
+            "horizontalSpeed_m_s": 0.4650389932624536
+          }
+        }
+      },
+      {
+        "time_s": 0.00825,
+        "liquidVolume_L": 999.9999999999978,
+        "volumeVelocityRms_m_s": 0.03491714189316945,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 4.6244519391579394e-05,
+          "meanVertical_m_s": 4.555595885253657e-10,
+          "max_m_s": 0.0009852783830707694,
+          "peak": {
+            "cell": 204379,
+            "centre_m": [
+              0.2653731590106057,
+              1.0061070651131105,
+              -0.05274837608550184
+            ],
+            "alphaLiquid": 0.9999999999999986,
+            "velocity_m_s": [
+              -7.267086810453137e-05,
+              7.140344457430533e-07,
+              -0.000982594487685685
+            ],
+            "radius_m": 0.2705647883648679,
+            "heightFromInitialMidplane_m": -0.012491097179018862,
+            "alphaInitial": 1.0,
+            "adjacentPatches": [],
+            "p_Pa": 100112.52166808766,
+            "p_rgh_Pa": 109982.43197684726,
+            "pressureChangeFromInitial_Pa": -0.023547266435343772,
+            "horizontalSpeed_m_s": 0.000985278124339194
+          }
+        },
+        "gasPresent": {
+          "cells": 111360,
+          "rms_m_s": 0.055841488559381355,
+          "meanVertical_m_s": 2.5021805937696913e-07,
+          "max_m_s": 0.9554938976622148,
+          "peak": {
+            "cell": 199440,
+            "centre_m": [
+              0.14812670541177836,
+              1.0312157538414777,
+              0.22606696824466416
+            ],
+            "alphaLiquid": 2.0160591881435518e-08,
+            "velocity_m_s": [
+              -0.8286609874943694,
+              -0.00012234928837841363,
+              0.4756990028423847
+            ],
+            "radius_m": 0.2702735558420057,
+            "heightFromInitialMidplane_m": 0.012617591549348273,
+            "alphaInitial": 0.0,
+            "adjacentPatches": [],
+            "p_Pa": 99989.84670708812,
+            "p_rgh_Pa": 99999.96313737847,
+            "pressureChangeFromInitial_Pa": -0.03706636669812724,
+            "horizontalSpeed_m_s": 0.9554938898289107
+          }
+        }
+      }
+    ]
+  },
+  "derivedPeakProjections": [
+    {
+      "time_s": 0.00025,
+      "gasPresent": {
+        "cell": 178700,
+        "radial_m_s": -0.002319355809635174,
+        "tangential_m_s": 0.02908141706526826,
+        "vertical_m_s": -4.083822513013576e-05,
+        "tangentialFractionOfSpeed": 0.9968337746338781
+      },
+      "liquidPresent": {
+        "cell": 204379,
+        "radial_m_s": 3.838970068726998e-06,
+        "tangential_m_s": -2.9634714966178757e-05,
+        "vertical_m_s": 1.434488700159077e-07,
+        "tangentialFractionOfSpeed": 0.9917020284089578
+      }
+    },
+    {
+      "time_s": 0.001,
+      "gasPresent": {
+        "cell": 178700,
+        "radial_m_s": -0.008663496773092711,
+        "tangential_m_s": 0.11626074248639597,
+        "vertical_m_s": -7.857645616322189e-05,
+        "tangentialFractionOfSpeed": 0.9972348307270672
+      },
+      "liquidPresent": {
+        "cell": 204379,
+        "radial_m_s": 1.4887070507074088e-05,
+        "tangential_m_s": -0.00011853850582069269,
+        "vertical_m_s": 4.458682978774091e-07,
+        "tangentialFractionOfSpeed": 0.9921989368517194
+      }
+    },
+    {
+      "time_s": 0.004,
+      "gasPresent": {
+        "cell": 200660,
+        "radial_m_s": -0.031173944841601922,
+        "tangential_m_s": 0.46399294220663434,
+        "vertical_m_s": -0.00011662055374062074,
+        "tangentialFractionOfSpeed": 0.9977505850887953
+      },
+      "liquidPresent": {
+        "cell": 204379,
+        "radial_m_s": 5.864377720762861e-05,
+        "tangential_m_s": -0.0004741475483019132,
+        "vertical_m_s": 8.391754506971457e-07,
+        "tangentialFractionOfSpeed": 0.9924364323521198
+      }
+    },
+    {
+      "time_s": 0.00825,
+      "gasPresent": {
+        "cell": 199440,
+        "radial_m_s": -0.05626518126735861,
+        "tangential_m_s": 0.9538358364400731,
+        "vertical_m_s": -0.00012234928837841363,
+        "tangentialFractionOfSpeed": 0.9982647076802914
+      },
+      "liquidPresent": {
+        "cell": 204379,
+        "radial_m_s": 0.00012028677469720925,
+        "tangential_m_s": -0.0009779080090347471,
+        "vertical_m_s": 7.140344457430533e-07,
+        "tangentialFractionOfSpeed": 0.9925195009221136
+      }
+    }
+  ],
+  "projectionConvention": "For centre (x,y,z), r=sqrt(x*x+z*z); radial=(x*Ux+z*Uz)/r; tangential=(-z*Ux+x*Uz)/r. Tangential direction is explicitly defined, not a claim about a global vortex.",
+  "findings": [
+    "The command reports successful complete global-cell addressing, mapped-initial-field and native/audit checks at four saved times. No CFD or case changes occurred.",
+    "At 8.25 ms, the gas peak is 0.9554938976622148 m/s in cell 199440, r=0.2702735558420057 m, y=1.0312157538414777 m, alphaLiquid=2.0160591881435518e-08.",
+    "At 8.25 ms, the liquid peak is 0.0009852783830707694 m/s in cell 204379, r=0.2705647883648679 m, y=1.0061070651131105 m, alphaLiquid=0.9999999999999986.",
+    "The gas/liquid peak cells are approximately 12.618 mm above and 12.491 mm below the initial interface midplane. Neither owns a boundary face.",
+    "Tangential speed is 99.8265 percent of gas peak speed and 99.2520 percent of liquid peak speed at 8.25 ms; signs are opposite under the stated convention.",
+    "The selected peaks lie at different cells/azimuths. This does not establish colocated counterflow, whole-ring circulation, a mesh join, or the driving force.",
+    "The compact console omits the other region statistics, field hashes and peak-neighbour stencils present in the full report.",
+    "Conservation remains good, but the source startup remains failed; no working operating simulation is accepted."
+  ],
+  "nextAction": "Attach the already-created spatial archive. Verify its hash and report/source identities, then inspect neighbour pressure/alpha patterns before selecting a numerical correction. Do not rerun this inspection or CFD."
+}

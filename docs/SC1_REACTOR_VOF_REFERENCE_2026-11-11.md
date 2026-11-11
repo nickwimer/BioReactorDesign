@@ -49,12 +49,14 @@ velocity update. The present log does not identify which spatial term creates
 the observed motion; phase slip has been removed but the reference is not
 quiescent. Do not relax the speed guard or extend the failed trajectory.
 
-**Next action: [inspect the already-written native processor fields](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).**
-Directory listings exist through 8.25 ms. The new read-only Python command checks
-the full global-cell mapping, initial mapped fields, and selected snapshots
-against their logged inventories and velocities before reporting peak locations,
-directions, patch adjacency and immediate-neighbour data. No OpenFOAM executable,
-reconstruction, compilation or CFD is required. The source remains untouched.
+**The [saved-field inspection](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md) has
+completed, status 0.** Its console reports successful mapping/native-audit checks.
+At 8.25 ms, both gas and liquid peaks are almost entirely circumferential, near
+r=0.270 m and about 12.6 mm above / 12.5 mm below the initial interface. Neither
+peak owns a boundary face; the cells differ in azimuth. The gas peak is
+0.955494 m/s. No OpenFOAM command or source modification was needed.
+Next attach its existing archive to inspect the neighbour pressure/alpha stencils;
+only the compact console is received so far. Do not repeat inspection or CFD.
 
 Verified archive SHA256:
 `ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.
