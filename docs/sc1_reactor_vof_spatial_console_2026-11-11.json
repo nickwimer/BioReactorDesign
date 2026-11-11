@@ -1,14 +1,14 @@
 {
-  "status": "Saved-field inspection completed on Kestrel, status 0; full spatial archive pending receipt",
-  "provenance": "User-attached console text only. The earlier VOF failure archive is verified; this spatial archive has not yet been received or independently verified.",
+  "status": "Spatial archive received and verified after the console report",
+  "provenance": "Compact user console, now cross-checked against the received spatial archive. Full result and verification limits are in sc1_reactor_vof_spatial_result_2026-11-11.json.",
   "console_sha256": "1463c385f11ca4a4c6bcf6658711ad4ed7016ebc7112b74ee3fe7a8a558f27b5",
   "sourceCommit": "83072619f23c6bf491449eaa26f3b270ba5eea04",
   "sourceCase": "/kfs3/scratch/nwimer/sc1_vof_reference_20261111T191346Z",
   "inspectionRoot": "/kfs3/scratch/nwimer/sc1_vof_spatial_20261111T195107Z",
   "bundle": "/kfs3/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/vof_spatial_evidence.tar.gz",
   "bundleSha256": "957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab",
-  "bundleReceived": false,
-  "bundleVerified": false,
+  "bundleReceived": true,
+  "bundleVerified": true,
   "reported": {
     "loggedPrefix": {
       "observedSteps": 168,
@@ -365,5 +365,6 @@
     "The compact console omits the other region statistics, field hashes and peak-neighbour stencils present in the full report.",
     "Conservation remains good, but the source startup remains failed; no working operating simulation is accepted."
   ],
-  "nextAction": "Attach the already-created spatial archive. Verify its hash and report/source identities, then inspect neighbour pressure/alpha patterns before selecting a numerical correction. Do not rerun this inspection or CFD."
+  "nextAction": "Use the fresh scalar-gradient comparison documented in SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md; do not repeat the saved-field inspection.",
+  "verifiedResult": "sc1_reactor_vof_spatial_result_2026-11-11.json"
 }

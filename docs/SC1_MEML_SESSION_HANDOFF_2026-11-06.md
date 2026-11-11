@@ -189,14 +189,30 @@ and 99.2520% of those respective peaks. Their tangential signs are opposite,
 but they occupy different cells/azimuths; this is not a colocated force budget.
 Neither cell owns a boundary face. Inventory stays at 1000 L.
 
-**Next action: receive the [existing spatial archive](SC1_REACTOR_VOF_SAVED_FIELDS_2026-11-11.md).**
-`/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/vof_spatial_evidence.tar.gz`
-has reported SHA256 `957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab`.
-Only the console is received so far. The archive contains field hashes and
-peak-neighbour pressure/alpha stencils needed before choosing the correction.
-Do not repeat inspection, reconstruct, rebuild or rerun CFD. No script, solver,
-guard or build recipe changes in this console-recording update. The source
-startup remains failed; no aeration, oxygen-transfer or biology is validated.
+**The spatial archive is now received and verified:** archive SHA256,
+all three included source-file hashes, 49 manifest-matching initial hash entries
+and all four compact snapshots agree. The full report records 185 input hashes;
+native arrays are not bundled, so those cannot be independently rehashed locally.
+The included log reproduces both phase budgets. See the [full verified result](sc1_reactor_vof_spatial_result_2026-11-11.json).
+At 8.25 ms, the gas interface peak is only 0.000115378 m/s versus 0.955494 m/s
+in bulk gas. Gas wall/vent peaks are 0.000391681 / 0.000065398 m/s. Earliest
+peak-to-interface-neighbour columns shift laterally about 1.208 mm over
+12.554 mm vertically. This motivates a scalar-gradient discretization comparison;
+the cell-centre stencil does not establish a discrete force budget or root cause.
+
+**Next action: [prepare/run the fresh scalar-gradient candidate](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md).**
+Use existing build `/scratch/nwimer/sc1_vof_build_20261111T191346Z`, failed
+control `/scratch/nwimer/sc1_vof_reference_20261111T191346Z` and verified spatial
+report `/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/report.json`.
+`sc1_reactor_vof_gradients.py` changes only `system/fvSchemes`: leastSquares
+for grad(p_rgh), grad(rho), grad(alpha.liquid) and the named nHat gradient.
+The default/velocity gradient, source/boundary/mesh/fill inputs, solver binary,
+5e-5-s timestep, 10-ms duration and original guards are unchanged. Post-run
+acceptance additionally requires gas peak <=1 mm/s across all logged steps.
+No rebuild or production restart. All 36 focused tests pass; CFD remains pending.
+If it passes, longer-rest and timestep checks are still required before stirring.
+If it fails, retain the automatic evidence bundle; do not relax the limits.
+No phase-count, aeration, oxygen-transfer or biology validation is implied.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

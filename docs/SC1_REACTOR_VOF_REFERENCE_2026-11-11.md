@@ -55,8 +55,11 @@ At 8.25 ms, both gas and liquid peaks are almost entirely circumferential, near
 r=0.270 m and about 12.6 mm above / 12.5 mm below the initial interface. Neither
 peak owns a boundary face; the cells differ in azimuth. The gas peak is
 0.955494 m/s. No OpenFOAM command or source modification was needed.
-Next attach its existing archive to inspect the neighbour pressure/alpha stencils;
-only the compact console is received so far. Do not repeat inspection or CFD.
+Its full spatial archive is now verified. The neighbouring columns shift laterally
+with height, and interface/wall motion is much smaller than the bulk-gas peak.
+These observations motivate the [scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md),
+using the same compiled solver and fresh t=0 fields. No force term has yet been
+proved responsible. Preserve the original run and do not repeat its inspection.
 
 Verified archive SHA256:
 `ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.

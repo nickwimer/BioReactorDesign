@@ -1,6 +1,6 @@
 # SC1 VOF saved-field inspection
 
-## Completed Kestrel inspection; spatial archive pending
+## Completed Kestrel inspection; archive verified
 
 The command completed with status 0 at `8307261`, writing
 `/scratch/nwimer/sc1_vof_spatial_20261111T195107Z`. It reports successful
@@ -8,7 +8,12 @@ processor/global addressing, mapped initial fields, finite native fields and
 agreement with the logged inventory/velocity at all four selected times.
 No CFD, reconstruction or case changes occurred. The [console result and
 calculated cylindrical components](sc1_reactor_vof_spatial_console_2026-11-11.json)
-are saved; the spatial archive has not yet been received or independently verified.
+are saved and now agree with the [verified full report](sc1_reactor_vof_spatial_result_2026-11-11.json).
+The archive SHA256 and all three included source-file hashes verify. All 49
+initial hash entries match the pinned control manifest. The report records
+185 input hashes; the native arrays themselves are not bundled, so they cannot
+be independently rehashed locally. The included solver log independently
+reproduces the reported phase budgets.
 
 | At 8.25 ms | Gas peak | Liquid peak |
 |---|---:|---:|
@@ -36,18 +41,32 @@ Gas peak speed rises from 0.029174 m/s at 0.25 ms to 0.116583 at 1 ms,
 The failed quiescent startup remains failed; the saved-field command's status 0
 means successful inspection only.
 
-**Next action: attach the existing archive; do not repeat the command below.**
+The full report places the last gas bulk peak at 0.955494 m/s, while the
+interface peak is only 0.000115378 m/s, gas wall-adjacent peak 0.000391681 m/s
+and gas vent-adjacent peak 0.000065398 m/s. Thus the bulk gas peak is about
+8281 times the interface peak. The liquid bulk peak is 0.000985278 m/s;
+liquid wall-adjacent peak is 7.84089e-7 m/s. Boundary influence is not ruled out,
+but the dominant peak cells do not own boundary faces.
 
+At the earliest saved time, each global peak has an interface neighbour with
+alpha about 0.494940. The vertical separation is about 12.554 mm and the lateral
+shift about 1.208 mm. Interface-neighbour pressure has shifted about +15.412 Pa
+from the continuum initialization. These are spatial observations, not an OF
+face-force balance. The circumferential motion and shifted stencil motivate a
+specific scalar-gradient comparison; they do not identify gravity versus
+capillarity as the proven cause.
+
+**Next action: the [fresh scalar-gradient comparison](SC1_REACTOR_VOF_GRADIENTS_2026-11-11.md).**
+It uses the already compiled VOF application and changes only four scalar
+`gradSchemes` entries. Existing limits are retained; gas peak speed must also
+remain <=1 mm/s before this candidate can pass. No rebuild is required.
+
+Verified archive:
 `/scratch/nwimer/sc1_vof_spatial_20261111T195107Z/vof_spatial_evidence.tar.gz`
 
-Reported SHA256:
-`957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab`.
-
-The full report contains phase/region statistics, native-field hashes and exact
-peak-neighbour pressure/alpha/velocity stencils omitted from the compact console.
-Verify the archive and those source identities, then inspect the stencil before
-choosing a force-balance or discretization correction. No rebuild, new run,
-relaxed threshold or new collection is needed to obtain this existing evidence.
+SHA256: `957cecdafd5b34a3220364da9709079bed7231fcbe71d1a87e312bf3311ff4ab`.
+Report SHA256: `f99b20ce7019e4d66a142532885dacc0761289d73174b20b2dc4eb332da0ddcf`.
+Do not repeat the inspection or any failed control run.
 
 ## Purpose and verified evidence
 
@@ -119,8 +138,8 @@ else
 fi
 ```
 
-The console is received. Attach the existing `BUNDLE` listed above and preserve
-every root; no new inspection is required.
+The console and archive are received and verified. Preserve every root; use
+the separate scalar-gradient candidate command instead of repeating this inspection.
 There is no new CFD result until a later, justified candidate is run and checked.
 
 ## Local verification and next decision
@@ -132,8 +151,8 @@ missing and redirected fields, source mutation during reading, output overlap,
 preserved input hashes, and compact archive contents. The actual received log
 also reconciles with this code. No local OpenFOAM or Kestrel field access exists.
 
-Use the measured spatial pattern to choose the next specific force-balance or
-discretization correction. The reference removed independent phase slip but
+The next comparison tests least-squares gradients for pressure, density, phase
+fraction and the named interface-normal gradient. The reference removed independent phase slip but
 did not establish rest. The current evidence does not select a new phase count,
 prove a capillary or gravity cause, justify artificial damping, or validate
 rotation, aeration, PBM, oxygen transfer or biology.
