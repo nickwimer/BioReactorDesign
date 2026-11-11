@@ -284,7 +284,8 @@ has now completed with stationary walls/impellers and an exact 1000-L initial
 inventory. Its budgets pass, but liquid speed reaches 0.0963573 m/s in 10 ms.
 The startup blend nearly canceled the listed segregated drag. Restoring that
 weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
-collection is complete; its bundle awaits upload/inspection. Wall climbing is
+collection and bundle inspection are complete. The next action is the
+[face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md). Wall climbing is
 still unresolved.
 The preceding three-field diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

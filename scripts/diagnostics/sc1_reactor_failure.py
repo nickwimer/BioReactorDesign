@@ -13,7 +13,8 @@ import re
 import sys
 import tarfile
 
-VARIANTS=('sc1_meml_quiescent_startup_v1','sc1_meml_quiescent_segregated_drag_v2')
+VARIANTS=('sc1_meml_quiescent_startup_v1','sc1_meml_quiescent_segregated_drag_v2',
+          'sc1_meml_quiescent_face_momentum_v3')
 REPO=Path(__file__).resolve().parents[2]
 
 
@@ -181,7 +182,7 @@ def collect(root,out):
             if p.is_symlink():raise ValueError('Redirected input: '+str(p))
             if p.is_file() and p.relative_to(root/'quiescent').as_posix() not in m['inputs']:
                 extras.append(p.relative_to(root/'quiescent').as_posix())
-    for name in ('log.checkMesh','log.decomposePar','result.json'):
+    for name in ('log.checkMesh','log.decomposePar','result.json','guard_stop.json'):
         rel='quiescent/'+name
         if (root/rel).exists() or (root/rel).is_symlink():selected[rel]=regular(root,rel)
     hashes={rel:sha(p) for rel,p in selected.items()}

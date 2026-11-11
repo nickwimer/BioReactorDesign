@@ -1,6 +1,14 @@
 # SC1 restored-drag startup: numerical failure and saved-log inspection
 
-## Collection completed; existing bundle needed
+## Bundle received and verified
+
+The bundle below is now received. Its SHA256 and all 18 bundled source-file
+hashes match. The corrected parser places the actual FPE at line 2273,
+t=0.0009 s, outer 2. All 23 pressure solves through the first limiter event
+reach residuals below 1e-12; all 36 physical-rate records are zero. See the
+[parsed result](sc1_reactor_drag_failure_result_2026-11-11.json) and the
+[next face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).
+No recollection or repetition of the failed run is needed.
 
 The collector at `264d209` completed with status 0 in
 `/kfs3/scratch/nwimer/sc1_reactor_failure_20261111T161441Z`.
@@ -29,17 +37,16 @@ that still detects the later stack trace and actual crash. The reported first
 FPE line/count must not be used as the failure onset. Other reported events
 are unaffected by this string-matching correction.
 
-The user pasted the collection summary; **the bundle has not yet been received**.
-Attach this existing file; no recollection or CFD rerun is needed:
+The user first pasted the collection summary, then attached this existing file:
 
 `/scratch/nwimer/sc1_reactor_failure_20261111T161441Z/reactor_failure_evidence.tar.gz`
 
 - Reported bundle SHA256: `cbe15f3cc08564aed19324ee0c397ae6296ee0475f99dea0ba9ffb290b60adf4`.
 - Reported solver-log SHA256: `4c55d6b46ec8738a4c3f67179843044b2b45b6101bc5a32e51a0c1eb4bba214f`.
 
-Verify those hashes on receipt and analyze the bundled log with the corrected
-parser locally. Inspect the pressure solves and alpha/phase budgets before
-0.0003 s before selecting another coupling/timestep change. The small
+Those hashes have been verified and the bundled log analyzed with the corrected
+parser locally. The pressure sequence motivates the linked face-momentum
+comparison with the timestep and tolerances held fixed. The small
 negative-alpha excursion alone is not evidence of the dominant mechanism.
 
 ## Observed result
@@ -149,7 +156,8 @@ step records, nonfinite values, duplicate records, exact full-log inclusion,
 input change reporting, path/overwrite protection, concurrent log-change
 rejection and no mutation of the saved case. Runtime errors now say `First
 command errors:`; actual `wmake` failures retain `First compiler errors:`.
-Kestrel log collection and the next CFD remedy remain unexecuted locally.
+Kestrel log collection is complete and its bundle has been inspected locally;
+the next CFD comparison remains unexecuted locally.
 After the Kestrel collection exposed the banner misclassification, all eight
 failure-collector tests passed with the corrected detector. The full 92-test
 run above predates this one-line parser correction and added regression test;

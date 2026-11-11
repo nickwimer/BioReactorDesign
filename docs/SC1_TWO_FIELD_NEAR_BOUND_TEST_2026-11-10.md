@@ -20,7 +20,8 @@ both near-bound pairs against unchanged thresholds. These failed original
 controls remain unchanged. The [actual-mesh startup](SC1_REACTOR_STARTUP_2026-11-10.md)
 subsequently conserved mass but failed quiescence. Its isolated drag-blending
 correction [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md);
-saved-log collection is complete and the existing bundle awaits upload/inspection.
+the bundle is received and inspected. The next action is the
+[face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split

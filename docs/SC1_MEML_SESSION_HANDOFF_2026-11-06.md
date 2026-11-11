@@ -83,10 +83,15 @@ Preserve both vessel roots; do not repeat either launch.
 Pressure limiting begins at 0.0003 s, before the first logged mixture-Co >0.2
 after printed 0.0004 s. The collector falsely classified the initial FPE-trapping
 banner as a crash; the parser is corrected. See [the chronology and hashes](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md).
-**Next step: receive the existing bundle** from
-`/scratch/nwimer/sc1_reactor_failure_20261111T161441Z/reactor_failure_evidence.tar.gz`.
-Only the summary has been received. No recollection or CFD rerun is needed;
-inspect the bundled early pressure/momentum sequence before changing the solver.
+**The bundle is now received and verified**, including all 18 bundled hashes.
+All 23 pressure solves through the first limiter event reached residuals below
+1e-12; all 36 physical-rate records are zero. The next step is the
+[fresh face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md):
+`prepare-face` from the preserved failed v2 inputs, then monitored `run`.
+Only `faceMomentum true` changes the numerical equations. The timestep,
+physical settings and acceptance limits stay fixed. Early 0.25-ms snapshots
+and automatic stops/bundling prevent another unobserved runaway. All 101
+focused tests pass locally; this new CFD comparison is pending on Kestrel.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

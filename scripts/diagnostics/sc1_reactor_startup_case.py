@@ -11,6 +11,7 @@ from sc1_two_field_rates_instrument import APP
 DT = 0.00005
 STEPS = 200
 WRITE = 40
+FACE_WRITE = 5
 END = DT*STEPS
 WIDTH = 0.0125
 TARGET_M3 = 1.0
@@ -41,9 +42,10 @@ def field(obj, dimensions, internal, vector=False):
     return foam(obj,body,'volVectorField' if vector else 'volScalarField')
 
 
-def case_files(ranks, *, segregated_drag=False):
+def case_files(ranks, *, segregated_drag=False, face_momentum=False):
     if not isinstance(ranks,int) or not 1<=ranks<=52:
         raise ValueError('Startup requires 1 to 52 ranks')
+    if face_momentum and not segregated_drag:raise ValueError('Face comparison requires restored segregated drag')
     old=fixture('source_gas_reference')
     files={k:v for k,v in old.items() if k.startswith('constant/') or k in ('system/fvSchemes','system/fvSolution','system/fvConstraints')}
     files['constant/g']=foam('g','dimensions [0 1 -2 0 0 0 0]; value (0 -9.81 0);','uniformDimensionedVectorField')
@@ -81,6 +83,9 @@ deltaT {DT}; adjustTimeStep false; maxCo 0.2; maxDeltaT {DT};
 writeControl timeStep; writeInterval {WRITE}; purgeWrite 0;
 writeFormat ascii; writePrecision 17; writeCompression off;
 timeFormat general; timePrecision 12; runTimeModifiable false;''')
+    if face_momentum:
+        files['system/fvSolution']=files['system/fvSolution'].replace('PIMPLE {','PIMPLE { faceMomentum true;')
+        files['system/controlDict']=files['system/controlDict'].replace(f'writeInterval {WRITE};',f'writeInterval {FACE_WRITE};')
     files['system/decomposeParDict']=foam('decomposeParDict',f'numberOfSubdomains {ranks}; method scotch;')
     for phase in ('gas','liquid'):
         files['0/alpha.'+phase]=field('alpha.'+phase,'[0 0 0 0 0 0 0]','uniform 0.5')

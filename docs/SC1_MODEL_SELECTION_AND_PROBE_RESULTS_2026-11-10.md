@@ -236,7 +236,8 @@ It completed at `e586c47`: mass/diagnostics pass, but quiescence fails, with
 liquid speed 0.0963573 m/s and Co 0.623991. Source review found that its blending
 nearly cancels the listed segregated drag. The comparison restoring only its
 weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
-collection is complete; upload/inspection of that bundle is next. Physical
+collection and bundle inspection are complete; the
+[face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) is next. Physical
 adequacy remains to be established.
 
 ## Next decision: continue validating the simpler candidate
