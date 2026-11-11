@@ -1,6 +1,20 @@
 # SC1 VOF passive face-force probe
 
-## Why this is next
+## Received result and next action
+
+The probe completed on Kestrel at `f951b53` in
+`/scratch/nwimer/sc1_vof_force_20261111T205814Z`. The attached archive and all
+16 included file hashes verify, and all force vectors reconstruct independently
+from their face records. The [full result](sc1_reactor_vof_force_result_2026-11-11.json)
+identifies a predominantly horizontal gravity/pressure residual at the selected
+peaks; capillarity and matrix-versus-fresh pressure differences are much smaller.
+The 83-record prefix comparison passed on Kestrel; its external parent log is
+not in the uploaded archive. This is diagnostic completion, not startup success.
+
+Next use the [hydrostatic pressure perturbation candidate](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).
+The command below is historical; do not repeat the completed probe.
+
+## Original motivation
 
 The [nonorthogonal comparison](sc1_reactor_vof_nonorth_result_2026-11-11.json)
 reports all 672 observed final pressure passes converged, yet the same 8.4-ms
@@ -75,7 +89,7 @@ and result JSON. Automatic evidence collection includes the full force result
 and log on normal completion and the available log on failure. Console output
 shows the first and last peak records; the bundle contains every observation.
 
-## Next Kestrel command
+## Historical Kestrel command
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -119,7 +133,7 @@ Tests include independent reconstruction on rotated faces, cancellation roundoff
 missing/corrupt observations, passive-prefix disagreement, preserved native
 equation statements, private build destination/source validation, fresh-case
 copying, attempt reuse rejection and automatic failure evidence.
-OpenFOAM is unavailable locally, so actual compilation and runtime remain pending.
+OpenFOAM is unavailable locally. Compilation and the two-step diagnostic have now completed on Kestrel; see the received result above.
 
 `VOF_FORCE_PROBE=COMPLETE` means the diagnostic completed and its checks passed.
 It does not mean the rest failure was corrected. Use the measured term vectors

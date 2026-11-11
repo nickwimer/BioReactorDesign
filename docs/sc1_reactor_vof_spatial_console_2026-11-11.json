@@ -365,6 +365,6 @@
     "The compact console omits the other region statistics, field hashes and peak-neighbour stencils present in the full report.",
     "Conservation remains good, but the source startup remains failed; no working operating simulation is accepted."
   ],
-  "nextAction": "Nonorthogonal pressure convergence did not fix the rest failure. Use the passive two-step force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md.",
+  "nextAction": "The force probe completed; next test the fixed hydrostatic-reference candidate in SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md. No startup acceptance yet.",
   "verifiedResult": "sc1_reactor_vof_spatial_result_2026-11-11.json"
 }

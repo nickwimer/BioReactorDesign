@@ -108,5 +108,5 @@
     }
   },
   "interpretation": "All 672 observed final pressure passes converged, but the same rest failure persists. pressure_iteration_pass is false because the run is incomplete, not because an observed correction failed convergence. Explicit pressure-correction lag is strongly disfavored as the dominant cause in this comparison; no facewise force balance or physical startup is established.",
-  "nextAction": "Passive two-step face-force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md, with a private observer build and unchanged equations/physical inputs."
+  "nextAction": "The force probe completed; next test the fixed hydrostatic-reference candidate in SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md. No startup acceptance yet."
 }

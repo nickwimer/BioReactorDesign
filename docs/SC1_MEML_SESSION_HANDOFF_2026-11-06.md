@@ -219,20 +219,28 @@ corrections. The [console result](sc1_reactor_vof_nonorth_result_2026-11-11.json
 is recorded; its archive remains unreceived locally. Increasing the pressure
 iteration count again is not supported by this evidence.
 
-**Next action: [passive two-step face-force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).**
-`sc1_reactor_vof_force.py` privately builds `sc1InterFoamForces` from the verified
-VOF reference sources, adding only force observations and a two-step bound.
-It starts fresh from the nonorthogonal control, retaining all physical inputs
-and ten pressure passes. Only application name/end time change in controlDict.
-At each of eight final pressure corrections, log gravity, capillary, matrix-
-pressure and net velocity contributions at the global gas/liquid peak cells,
-plus face geometry/terms. Independently reconstruct these from the face data,
-check the native velocity update and compare all 83 audit records with the
-control's two-step prefix. No reconstruction or new physical remedy is applied.
-All 51 focused Python tests pass; OpenFOAM compilation/runtime remain pending.
-The exact equations, existing binary, previous roots and four-hour biological
-update schedule remain preserved. A complete probe is diagnostic evidence only,
-not startup or operating-reactor acceptance.
+**The passive force probe completed:** at `f951b53`,
+`/scratch/nwimer/sc1_vof_force_20261111T205814Z` completed both steps with
+normal End. All 16 archive digests and 10 included input hashes verify locally;
+the force result independently reconstructs from the attached face terms.
+At the first gas peak, zero predictor plus a 0.005836257941 m/s gravity/pressure
+residual produces the velocity. Capillarity is only 5.55103e-8 m/s there;
+fresh versus matrix pressure differs by 8.49e-15 m/s. The imbalance is mainly
+horizontal. Local reconstruction verifies all eight samples; the 83-record
+external-control prefix agreement was checked on Kestrel but that parent log
+is not uploaded. See the [full result](sc1_reactor_vof_force_result_2026-11-11.json).
+
+**Next action: [fixed hydrostatic-reference startup](SC1_REACTOR_VOF_HYDROSTATIC_2026-11-11.md).**
+The private `sc1InterFoamHydrostatic` application solves for pressure departure
+from the known analytic fill and retains `(rho-rhoH)*g`, with rhoH fixed once.
+Full evolving-density inertia, alpha transport and capillarity remain active.
+Physical p and p_rgh are reconstructed and independently checked in all 40
+snapshots. The original build/fields/mesh and failed roots are preserved.
+The new startup is bounded to 10 ms with the original screens plus gas rest
+and converged pressure passes; no working baseline has been accepted yet.
+All 59 focused tests pass; actual OpenFOAM build/runtime are pending. After a rest pass, require longer
+rest and physical perturbation testing before stirring/aeration. The four-hour
+biological update schedule remains unchanged.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
