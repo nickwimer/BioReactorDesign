@@ -9,7 +9,8 @@ reach residuals below 1e-12; all 36 physical-rate records are zero. See the
 [parsed result](sc1_reactor_drag_failure_result_2026-11-11.json) and the
 [subsequent face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md),
 which failed on its first timestep. That new bundle is received and inspected;
-the [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) is next.
+the subsequent [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
+also failed at the same first-step outer iteration. Receive its existing v4 bundle next.
 No recollection or repetition of the failed run is needed.
 
 The collector at `264d209` completed with status 0 in

@@ -28,8 +28,10 @@ There is no reported FPE or allocation timeout in this collection summary.
 including the raw log and guard record; 13 included initial dictionaries match
 the manifest. The full log confirms the first pressure-limiter event after the
 second outer momentum assembly, converged linear solves, tiny alpha changes and
-zero source/clamp terms. **The next step is the fresh
-[coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md).**
+zero source/clamp terms. **The subsequent
+[coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) also failed
+at the same first-step outer iteration, with nearly identical minimum pressure.
+Its already-created v4 bundle is now needed for inspection.**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 
@@ -46,8 +48,8 @@ and `phiKdPhifs()` supplies the other phase's flux explicitly. The available
 `partialEliminationf()` instead constructs and inverts a coupled drag matrix
 and then restores mixture flux. That option remains disabled in this run.
 The full first-step record supports testing that option while all other inputs
-remain fixed. The linked v4 preparation enables it in a fresh copy; this does
-not establish a remedy before the new CFD result.
+remain fixed. That v4 test is now completed with a pressure-stop failure;
+enabling the option alone has not supplied a remedy.
 
 ## Evidence and decision
 

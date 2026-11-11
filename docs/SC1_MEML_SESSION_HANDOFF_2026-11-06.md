@@ -65,7 +65,7 @@ results are retained; near-bound liquid residual L1 drops by about 1,860–116,5
 Original thresholds are unchanged. All diagnostics pass. Preserve every
 completed control/candidate case and both builds; do not rerun these suites.
 
-**Latest vessel result:** the [first MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+**Completed vessel control:** the [first MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md)
 completed at `e586c47` in `/scratch/nwimer/sc1_reactor_startup_20261111T045638Z`.
 Its mass/diagnostic screens pass but quiescence fails (status 2): maximum
 liquid speed 0.0963573 m/s, gas speed 2.320774 m/s, maximum mixture Co 0.623991.
@@ -87,7 +87,7 @@ banner as a crash; the parser is corrected. See [the chronology and hashes](SC1_
 All 23 pressure solves through the first limiter event reached residuals below
 1e-12; all 36 physical-rate records are zero.
 
-**Latest vessel attempt:** the [face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md)
+**Earlier vessel attempt:** the [face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md)
 at `7604521` in `/scratch/nwimer/sc1_reactor_face_20261111T163440Z` failed on
 its first timestep: t=0.00005 s, outer 2, `p min -2499398.2044661008` Pa.
 The monitor stopped the step (137; wrapper status 1) and collected evidence.
@@ -98,12 +98,19 @@ All 59 inputs match; alpha remains bounded and max logged mixture Co is only
 match; the full log confirms converged pressure solves, tiny alpha changes and
 zero source/clamp terms before the second-outer pressure failure. See the
 [verified result](sc1_reactor_face_failure_result_2026-11-11.json).
-**Next step:** the [coupled-drag startup](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
-adds only `partialElimination true` to a fresh copy of the failed v3 inputs.
-It reuses the binary, dt, early snapshots and limits; adds determinant monitoring
-and requires all 800 coupled face solves on completion. All 107 focused tests
-pass locally, including scalar tests of the actual elimination/restoration
-loops. The v4 CFD result is pending; do not rerun earlier cases or rebuild.
+**Latest vessel attempt:** the [coupled-drag startup](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
+at `8b81ede` in `/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z` also
+failed at t=0.00005 s, outer 2: `p min -2499398.1871999367` Pa. This differs
+from v3 by only 0.0173 Pa. The monitor stopped the step (137; wrapper status 1).
+The collector reports all 59 inputs unchanged, two paired records through
+0.0001 s, no End, and max logged mixture Co 0.005975836748875787. No scheduled
+snapshot was reached; this is not a valid restart or a passed startup.
+**Next step: receive the already-created v4 bundle** at
+`/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z_failure/reactor_failure_evidence.tar.gz`.
+The [console result and hashes](sc1_reactor_coupled_failure_result_2026-11-11.json)
+are saved. Inspect its drag determinant and first-step pressure/alpha records
+before choosing another change. All 107 local tests passed before launch;
+they do not establish CFD success. Do not rerun cases, rebuild or relax limits.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

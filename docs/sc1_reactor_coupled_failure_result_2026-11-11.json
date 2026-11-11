@@ -1,0 +1,60 @@
+{
+  "provenance": "User-pasted Kestrel console output; new v4 raw-log bundle has not yet been received or independently verified.",
+  "sourceCommit": "8b81ede6814310d7f9cdf02bbf52e8d3237ac179",
+  "variant": "sc1_meml_quiescent_coupled_drag_v4",
+  "root": "/kfs3/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z",
+  "wrapperStatus": 1,
+  "guard": {
+    "reason": "pressure limiter activated in quiescent vessel",
+    "line": 235,
+    "lastPrintedTime": "5e-05",
+    "text": "limitPressure: p min -2499398.1871999367",
+    "returncode": 137,
+    "meaning": "Stopped failed/incomplete diagnostic; no valid restart implied."
+  },
+  "collection": {
+    "lines": 390,
+    "endMarkerSeen": false,
+    "printedTimes": 3,
+    "lastPrintedTime_s": 0.00015,
+    "pairedStepRecordCount": 2,
+    "lastPairedStepRecordTime_s": 0.0001,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 0.005975836748875787,
+    "largestFiniteAlphaMagnitude": 1.000000000000499,
+    "firstEvents": {
+      "pressure_limit": {
+        "line": 235,
+        "lastPrintedTime_s": 0.00005,
+        "outer": 2,
+        "text": "limitPressure: p min -2499398.1871999367"
+      }
+    },
+    "eventCounts": { "pressure_limit": 1 },
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated.",
+    "solverLogSha256": "d6f4e4b1345fdbe0029598c699e9be1f322479ce77152665ff3988c05052a9ea"
+  },
+  "bundle": "/kfs3/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z_failure/reactor_failure_evidence.tar.gz",
+  "bundleSha256": "0ac651d664f0834d9ecde87cc05bc7c39989ccf1a27bec4837eb49bbb54669b3",
+  "comparison": {
+    "controlVariant": "sc1_meml_quiescent_face_momentum_v3",
+    "controlPressureMinimum_Pa": -2499398.2044661008,
+    "candidatePressureMinimum_Pa": -2499398.1871999367,
+    "sameFirstLimiterTime_s": 0.00005,
+    "sameFirstLimiterOuter": 2,
+    "meaning": "No meaningful improvement in first pressure-limiter onset or minimum. The console does not report drag determinant coverage or individual pressure solves; this does not isolate the cause or rule out all momentum/pressure coupling issues."
+  },
+  "decision": "Preserve the v4 root and all controls. Receive the already-created v4 bundle, verify hashes, inspect coupled-drag determinants and first-step pressure/alpha records against v3 before selecting another solver or case change. Do not repeat, extend, rebuild or relax the stop criteria on the basis of this console result."
+}

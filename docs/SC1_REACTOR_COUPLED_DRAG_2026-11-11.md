@@ -1,6 +1,55 @@
 # SC1 coupled-drag startup comparison
 
-## Received face-run evidence and selected next change
+## Runtime result: failed at the same first-step outer iteration
+
+The v4 run at `8b81ede` in
+`/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z` returned wrapper status 1.
+At t=0.00005 s, outer 2, line 235, the monitor detected
+`limitPressure: p min -2499398.1871999367` Pa and stopped its child step
+(return code 137). See the [recorded console result](sc1_reactor_coupled_failure_result_2026-11-11.json).
+The new raw-log bundle has not yet been received; the older v3 bundle is separate.
+
+| First pressure-limiter event | Face v3 | Coupled-face v4 |
+|---|---:|---:|
+| Time (s) | 0.00005 | 0.00005 |
+| Outer iteration | 2 | 2 |
+| Pressure minimum (Pa) | −2499398.2044661008 | −2499398.1871999367 |
+
+The minima differ by only about 0.0173 Pa. This option has not provided a
+meaningful improvement in startup behavior. It does not rule out every
+momentum/pressure coupling issue or establish the remaining root cause.
+
+The collector reports all 59 input hashes unchanged, maximum logged mixture
+Co 0.005975836748875787, and largest alpha magnitude 1.000000000000499.
+It reports 390 lines, two paired step records through 0.0001 s, and a final
+printed time of 0.00015 s, with no `End`. These extra records can be emitted
+while the monitor stops the process; they do not make the invalid pressure
+state acceptable. The first scheduled snapshot at 0.00025 s was not reached.
+There is no valid restart or full mass/quiescence screen from this attempt.
+
+**Next action: attach the existing v4 bundle:**
+
+`/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z_failure/reactor_failure_evidence.tar.gz`
+
+- Reported bundle SHA256: `0ac651d664f0834d9ecde87cc05bc7c39989ccf1a27bec4837eb49bbb54669b3`.
+- Reported solver-log SHA256: `d6f4e4b1345fdbe0029598c699e9be1f322479ce77152665ff3988c05052a9ea`.
+
+Verify those hashes, then compare the actual drag inversion/determinant records,
+individual pressure solves, alpha/source stages and stop chronology with v3.
+The console alone does not contain those records. No new collection, rerun,
+rebuild, timestep change or tolerance relaxation is needed for this next step.
+Preserve all four vessel roots and the verified small-case regressions.
+
+Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)
+calls `partialEliminationf` after `pEqn.solve()` and the initial phase-flux
+correction. It does not directly replace that pressure equation's assembled
+`rAUf` or `phiHbyA`; it can affect subsequent corrections through the updated
+phase fluxes. This ordering agrees with the
+[Foundation OpenFOAM 9 source](https://cpp.openfoam.org/v9/multiphase_2multiphaseEulerFoam_2multiphaseEulerFoam_2pUf_2pEqn_8H_source.html).
+The bundle comparison comes before deciding whether additional pressure/force
+instrumentation is required. No further configuration change is selected yet.
+
+## Earlier face-run evidence and rationale for the v4 test
 
 The v3 face-momentum bundle is now received as
 `reactor_failure_evidence.tar(1).gz`. Its SHA256 matches
@@ -53,7 +102,7 @@ phases to restore the pressure equation's mixture flux for complementary
 fractions. It retains relative phase flux. This is an existing OpenFOAM/BiRD
 solver path, already compiled into the verified private binary.
 
-The next variant, `sc1_meml_quiescent_coupled_drag_v4`, changes **only
+The tested variant, `sc1_meml_quiescent_coupled_drag_v4`, changes **only
 `PIMPLE/partialElimination true`** relative to the failed v3 input. Face momentum
 remains enabled. No physical coefficient, phase guard, timestep, pressure
 tolerance, corrector count, snapshot interval or acceptance limit changes.
@@ -86,10 +135,10 @@ identity are saved in `coupled_comparison.json`. A stopped solver produces
 the existing automatic failure bundle in `<new-root>_failure`; all earlier
 roots remain unchanged. No automatic extension, rotation or aeration follows.
 
-## Next Kestrel command
+## Historical Kestrel command — completed, do not repeat
 
-This uses the existing verified build and the current allocation. No rebuild
-or rerun of the small numerical suites is needed.
+This was the command used for the failed v4 run above. Its existing bundle is
+the next required evidence; do not launch another copy with this command.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -134,4 +183,6 @@ extracted from `partialEliminationf`, checks them against an independent
 two-by-two analytical solution over weak and strong positive couplings, and
 checks the actual `setMixturePhi` loops for mixture-flux restoration and retained
 relative flux. This verifies isolated algebra, not the full field/pressure solve.
-OpenFOAM/MPI execution is unavailable locally; the v4 CFD run remains pending.
+OpenFOAM/MPI execution is unavailable locally. The subsequent Kestrel v4 run
+failed as recorded above. This documentation update changes no executable code;
+the 107-test result describes the prelaunch implementation, not a CFD pass.
