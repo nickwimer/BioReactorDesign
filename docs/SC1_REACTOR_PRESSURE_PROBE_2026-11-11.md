@@ -5,7 +5,7 @@
 The probe ran at `1dbe432` in
 `/scratch/nwimer/sc1_pressure_probe_20261111T172942Z`, using the new executable
 from `/scratch/nwimer/sc1_pressure_probe_build_20261111T172942Z`.
-The [console result](sc1_reactor_pressure_probe_result_2026-11-11.json) reports
+The [verified result](sc1_reactor_pressure_probe_result_2026-11-11.json) reports
 all 59 initial inputs unchanged. It reaches sequence 13, the third pressure
 solve (first timestep, outer 2), then emits
 `SC1_PRESSURE_STOP reason=unclippedPressureBelow1000Pa` with pressure minimum
@@ -13,8 +13,10 @@ solve (first timestep, outer 2), then emits
 
 This is the intended pre-limit guard, not a passed startup. The external monitor
 reports `solver failure` at the first rank's `FOAM FATAL ERROR`, return code 139,
-and wrapper status 1. The full log is needed to explain all termination details;
-the explicit pressure-stop record already identifies the primary stop condition.
+and wrapper status 1. The full log now confirms the synchronous pressure guard
+precedes all eight rank fatal errors. MPI_Abort then reports sigSegv stack frames
+and srun reports segmentation faults during shutdown; no separate pre-guard
+segmentation fault is shown.
 There are no completed-step records, no `End`, and no two-step completion marker.
 
 | Quantity | Outer 1 | Outer 2 |
@@ -42,19 +44,28 @@ the residual-limited fractions. This identifies relative velocity and the
 local fraction/gradient factors as quantities to inspect. It does not establish
 which cells produce the measured jump or justify changing drag coefficients.
 
-**Next action: attach the already-created probe bundle:**
+**The bundle is now received and verified.** Its archive SHA256 is
+`b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0`;
+all 20 bundled file hashes and all 13 included initial dictionaries match.
+The log SHA256 is
+`d2c5d3b55ad096ee1fc8151a68353828fbfb05db9bc1e5c65af72fa0cc5ef656`.
+All 581 log lines have been inspected; the result JSON now includes all 144
+pressure-probe records. The native mesh, large fields and binaries remain on
+Kestrel and were not independently materialized locally.
 
-`/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz`
+At the end of outer 1, maximum gas speed is 0.54505945 m/s in absent-phase
+cells (alpha <=1e-6), while maximum present-liquid speed is 0.000489242 m/s.
+The first bad pressure is at rank 2, local cell 24771, centre
+(-0.0117119085, 0.9935527213, 0.1912571129) m: alphaGas=0, alphaLiquid=1,
+pre-correction gas speed 0.387578851 m/s and liquid speed 1.30908e-7 m/s.
+The outer-2 liquid explicit drag-flux range dominates its predictor range.
 
-- Reported archive SHA256: `b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0`.
-- Reported solver-log SHA256: `d2c5d3b55ad096ee1fc8151a68353828fbfb05db9bc1e5c65af72fa0cc5ef656`.
-
-The bundle has not yet been received or independently verified. It contains
-the phase-speed, pressure-location, predicted-flux and matrix-source records
-omitted from the compact console summary. Inspect outer-1 present/absent-phase
-speeds, outer-2 coefficients/fluxes and the pressure-minimum cell before selecting
-the next change. No new collection, rerun, rebuild or parameter change is needed
-for this step. Preserve this probe, its build and all earlier controls.
+**Next action: build and test the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).**
+It eliminates the symmetric two-phase face drag before assembling both the
+pressure predictor and pressure coefficient. All v4 initial inputs and original
+acceptance limits remain fixed; a fresh monitored run is capped at 10 ms.
+This is a source/field-supported candidate, not an established cure. Do not
+rerun the completed observer or extend any failed case.
 
 ## Earlier evidence and rationale for the probe
 
@@ -143,7 +154,7 @@ console summary. Rotation, aeration, oxygen and biology remain disabled.
 ## Historical Kestrel command — completed, do not repeat
 
 This command built the application, prepared a fresh copy and ran the probe
-above. Its existing bundle is the next required evidence; do not launch a copy.
+above. Its bundle is now verified; do not launch a copy.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -191,7 +202,8 @@ executes the actual finite-value range accumulator and two-step exit logic.
 
 The full OpenFOAM application and MPI field reductions cannot be compiled/run
 locally. The subsequent Kestrel execution reached the intended pressure guard,
-as recorded above; its raw-log bundle is pending. This update changes only
-documentation/evidence, so the 114-test result remains the prelaunch test result.
+as recorded above; its raw-log bundle is now verified. The 114-test result
+is the original prelaunch result; the subsequent pressure-coupling change has
+its own 122-test record in the linked candidate document.
 Neither that result nor the intended diagnostic stop establishes physical
 validity or a working operating simulation.

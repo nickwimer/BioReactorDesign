@@ -27,7 +27,8 @@ collection and bundle inspection are complete. The subsequent
 its bundle is now inspected. The [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
 also failed at the same first-step outer iteration; its bundle is now verified. The
 [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
-the pressure collapse and stopped before limiting; receive its existing bundle next.
+the pressure collapse and stopped before limiting; its bundle is now verified.
+Next test the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).
 Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen

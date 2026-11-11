@@ -115,15 +115,24 @@ the intended pre-limit stop at the identical v4 pressure minimum, first timestep
 outer 2. The face drag diagonal maximum rises from 0.112828 to 1.45118e9;
 minimum mixture rAUf falls by a factor of 73.55. These global extrema need not
 be colocated. All 59 inputs match; no completed-step records or restart exist.
-The external monitor reports fatal error/139, wrapper status 1; the explicit
-`SC1_PRESSURE_STOP` identifies the primary stop condition. Full termination
-details require the raw log. The reported zero Co is pre-first-step output.
-**Next step: receive the existing probe bundle** at
-`/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz`.
-The [console result and hashes](sc1_reactor_pressure_probe_result_2026-11-11.json)
-are saved. Inspect the omitted phase speeds, minimum-pressure location and
-pressure inputs before changing parameters. All 114 tests passed before launch.
-Do not rerun, rebuild, recollect or relax limits for this evidence handoff.
+The [bundle and full log](sc1_reactor_pressure_probe_result_2026-11-11.json)
+are now received and verified: all 20 file hashes and 13 included dictionaries
+match. The pressure guard precedes all eight fatal errors; return 139 arises
+with MPI_Abort/sigSegv shutdown records afterward. At the minimum-pressure
+cell alphaGas=0 and alphaLiquid=1, with pre-correction gas speed 0.387579 m/s
+and liquid speed 1.30908e-7 m/s. Outer 1 produces absent-gas speeds up to
+0.545059 m/s; outer-2 explicit liquid drag flux dominates its predictor range.
+
+**Next step: build and run the [pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md).**
+The private application eliminates symmetric two-phase face drag in both the
+pressure predictor and pressure coefficient, replacing lagged drag and the
+post-pressure inversion. All v4 initial inputs remain identical. The existing
+rate libraries and pressure-probe recipe are preserved. A fresh monitored
+10-ms startup retains the original conservation/quiescence thresholds and
+stops synchronously on invalid pressure, mixture-flux identity or accepted-step
+liquid speed. All 122 focused local tests pass; OpenFOAM compilation and CFD
+are pending. No operating simulation or physical validation is established.
+Do not repeat the observer, restart failed fields, or rerun completed regressions.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
