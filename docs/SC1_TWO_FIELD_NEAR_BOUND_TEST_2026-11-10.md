@@ -15,9 +15,9 @@ All 53 focused baseline/near-bound tests passed before this runtime result,
 including mocked runner execution and unchanged canonical baseline reports.
 The results below retain the original tolerances, recipes and verified build.
 The [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
-is now implemented and passes 68 focused local checks. The next Kestrel action
-is its separate build and guarded eight-case regression. No candidate CFD
-result is available yet; these completed controls must remain unchanged.
+has now built and passed all eight Kestrel regressions at `d83bc83`, including
+both near-bound pairs against unchanged thresholds. These failed original
+controls remain unchanged. The next step is the [fresh actual-mesh startup](SC1_REACTOR_STARTUP_2026-11-10.md).
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split
@@ -331,8 +331,9 @@ timesteps against the unchanged budgets and thresholds. A new variant needs
 its own verified build and fresh cases; the current baseline build cannot be
 relabeled as corrected. The linked document contains the guarded build and
 regression command. Local C++ algebra/guard and mocked runner checks pass;
-actual candidate OpenFOAM compilation and CFD remain pending. No production
-source change, floor reduction, post-solve addback or reactor launch is included.
+actual candidate OpenFOAM compilation and all eight CFD regressions have now
+passed at `d83bc83`. No production source change, floor reduction or post-solve
+addback was used. The new actual-mesh startup is documented separately.
 
 ## Coarse-pair launch reference (completed; do not repeat)
 

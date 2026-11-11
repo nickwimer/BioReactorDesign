@@ -16,6 +16,13 @@ def summarize(text, case):
     elif case in BOUND_CASES:
         report=bound_report(text,case,require_split_effect=False); spec=contract(case)
     else: raise ValueError('Unknown rate-split case')
+    return validate_rates(text,report,spec,source_expected=not case.startswith('closed_'))
+
+
+def validate_rates(text, report, spec, *, source_expected):
+    """Apply the same runtime evidence checks to an explicit source contract."""
+    if text.splitlines().count('SC1_RATE_LIBRARY version=1')!=1:
+        raise ValueError('Missing unique rate-split runtime marker')
     lines=[line for line in text.splitlines() if line.startswith('SC1_RATE_STATE')]
     rows=parse('\n'.join(line.replace('SC1_RATE_STATE','SC1_PHASE_SOLVE',1) for line in lines))['SC1_PHASE_SOLVE']
     keys={'t_s','call','valid','applied','qGasMin','qGasMax','qLiquidMin','qLiquidMax',
@@ -34,7 +41,7 @@ def summarize(text, case):
         require(r['qGasMin']==r['qGasMax']==0,'Unexpected gas pressure-source rate')
         require(0<=r['qLiquidMin']<=r['qLiquidMax'],'Negative/reversed liquid pressure-source rates')
         require(r['valid']==1 or r['qLiquidMax']==0,'Unavailable rate was used')
-    if case.startswith('closed_'):
+    if not source_expected:
         require(all(r['qLiquidMax']==0 for r in rows),'Unexpected closed-case pressure source')
     else:
         require(any(r['qLiquidMax']>0 for r in rows),'Liquid pressure-source rate was never exercised')

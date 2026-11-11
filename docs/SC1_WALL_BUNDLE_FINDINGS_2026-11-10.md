@@ -276,11 +276,12 @@ Both fine diagnostics pass, but the cumulative liquid deficit remains about
 0.900 micrograms and both phase screens still fail. Half-dt and gas reference
 have not remedied it. The inspected source-floor algebra predicts this scale
 for the nominal fixture. The [restricted private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
-is now implemented with 68 passing local tests; its separate build and eight
-fresh regressions are ready for Kestrel. Thresholds, original solver sources
-and the original verified build remain unchanged. No candidate runtime result
-is available yet. This numerical fixture does not quantify the old EMM excess
-or resolve wall climbing.
+has now built and passed all eight Kestrel regressions at `d83bc83`.
+Thresholds, original solver sources and the original verified build remain
+unchanged. This numerical success does not quantify the old EMM excess or
+resolve wall climbing. The [fresh actual-mesh startup](SC1_REACTOR_STARTUP_2026-11-10.md)
+starts the next hydrodynamic stage with stationary walls/impellers and a flat,
+exact 1000-L initial inventory.
 The preceding three-field diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard. The separate two-field observer

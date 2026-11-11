@@ -57,14 +57,22 @@ at `75dc652`. All four diagnostics pass but all phase mass screens fail;
 halving dt leaves the approximately 0.900-microgram liquid deficit unchanged
 to within 0.016%.** See the [completed comparison and source-algebra review](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md).
 
-**Latest implementation:** the [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
-is ready for its separate Kestrel build and guarded eight-case regression.
-All 68 focused local tests pass, including compilation of the actual source
-kernel and guard header against a minimal API double, preservation checks and
-mocked eight-case execution. Candidate OpenFOAM compilation/CFD remain pending.
-Use the linked single build/prepare/run command; it retains the completed
-controls and the original mass thresholds. These numerical checks do not
-validate reactor hydrodynamics; that is the next stage after a pass.
+**Latest result:** the [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+built and passed all eight Kestrel CFD regressions at `d83bc83`, status 0.
+Build `/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z`; cases
+`/scratch/nwimer/sc1_two_field_rates_cases_20261111T021516Z`. Closed/mid-fraction
+results are retained; near-bound liquid residual L1 drops by about 1,860–116,567×.
+Original thresholds are unchanged. All diagnostics pass. Preserve every
+completed control/candidate case and both builds; do not rerun these suites.
+
+**Next executable step:** [fresh MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md).
+It reuses the verified binary under its unchanged pure-phase 1/1000 kg/m3 guards,
+copies only the archived mesh, initializes an exact native-volume 1000-L fill
+and hydrostatic pressure, and runs 200 steps (10 ms) with stationary impellers,
+gravity, vent and segregated interface drag. No aeration/feed, PBM, transfer or
+biology is enabled. Local preparation/report/runner checks pass; the new
+actual-mesh CFD remains to be run. Its startup pass is not equilibrium or a
+validated 9.9-s operating-reactor checkpoint.
 
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
@@ -238,15 +246,13 @@ The [implemented candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
 is a guarded private two-field source-split variant: for complementary
 fractions and nonnegative rates qi,qj, use increments Su=qi and
 Sp=-(qi+qj), preserving `(1-a)*qi-a*qj` without a small-fraction denominator.
-Source-only algebra/bounds and guard behavior have been checked; full
-pressure/flux-coupled conservation has not. The implementation preserves the
+Source-only algebra/bounds and guards were checked locally, and all eight
+pressure/flux-coupled CFD regressions now pass at `d83bc83`. The implementation preserves the
 original divergence source and all diagnostics, uses the distinct executable
 `birdTwoFieldRates` and library marker, and rejects unsupported states. Only
-the private copied split changes. The linked command builds a fresh private
-variant, verifies its runtime libraries, prepares eight fresh cases and runs
-the regression stages with gates. Closed/mid-fraction screens must pass;
-near-bound diagnostics must pass before finer comparison. Final acceptance
-requires all eight screens with unchanged thresholds. No production sources,
+the private copied split changes. The linked historical command completed
+the fresh build and all eight regression cases with unchanged thresholds.
+Do not repeat it. The actual-mesh quiescent startup is the next action. No production sources,
 original build or completed cases are overwritten. Do not reduce the floor
 or add the measured deficit back after solving.
 The existing three-field executable is not used for these cases.
@@ -270,14 +276,12 @@ raw-target bound excess is only 0.000110285 mg, but coupled phase-sum/pressure
 feasibility remains unproved. No source addback or physical correction is approved.
 
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
-first. Next review the archived two-field initialization, liquid budgets,
-boundaries and MRF setup. The small numerical harness above is compiled and
-runtime-verified; all four closed/source baseline cases pass. Near-bound
-source checks now expose a mass-budget failure in both reference settings
-at both tested timesteps. The source split is the next isolated implementation
-target; the completed tests must not be repeated without a concrete change.
-A matched SC1 reactor candidate is not ready
-to run yet.
+first. The archive/wall review and numerical source-split investigation above
+are complete. The corrected private candidate passes all eight small-case
+regressions; do not repeat them. A fresh quiescent MEML-mesh startup is now
+prepared in code. Run its linked gated command, then evaluate the physical
+startup before extending to a longer quiescent run and stirred flow. The
+aerated 9.9-s reactor/oxygen/biology checkpoint remains unvalidated.
 Do not repeat the completed probe. The historical two-field excess inventory
 does not establish that phase count caused it; t=0 and boundary/source budgets
 were not established. Retain three fields only for a demonstrated physical

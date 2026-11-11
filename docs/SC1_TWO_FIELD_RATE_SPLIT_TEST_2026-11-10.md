@@ -2,14 +2,17 @@
 
 ## Status and purpose
 
-The isolated source-split candidate, guarded build, eight-case regression
-runner and comparison are implemented. **All 68 focused tests pass locally.**
-Local validation covers the actual C++
-algebra, the actual guard header against a minimal API double, private source
-preparation and mocked CFD execution. **OpenFOAM compilation and actual
-candidate CFD remain to be run on Kestrel.** A working reactor simulation is
-the goal; passing these small budgets is the next milestone, not reactor
-validation.
+**Kestrel build and all eight CFD regressions passed at `d83bc83`.**
+The uploaded transcript reports `RATE_REGRESSION=PASS` and status 0. Every
+report is complete, with valid diagnostics, passing physical mass screens and
+no errors. The original physical thresholds were retained. Preserve the
+completed build and all eight cases; do not repeat the historical command below.
+
+The next executable step is the [fresh MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md).
+It reuses this verified binary without changing its applicability guards.
+These regressions establish the correction for their tested source contract;
+reactor wall/free-surface, aeration, oxygen and biology validation remain open.
+All 68 pre-existing focused local tests passed before the Kestrel run.
 
 The [completed control experiment](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md)
 found approximately 0.900 micrograms of liquid mass-budget deficit at both
@@ -18,6 +21,42 @@ The completed baseline and near-bound cases and their verified build are
 preserved. The new executable is `birdTwoFieldRates`, built with all six
 project libraries in a new private root. No file under
 `OFsolvers/birdmultiphaseEulerFoam` is edited by this implementation.
+
+## Completed Kestrel result
+
+- Build: `/kfs3/scratch/nwimer/sc1_two_field_rates_build_20261111T021516Z`.
+- Cases: `/kfs3/scratch/nwimer/sc1_two_field_rates_cases_20261111T021516Z`.
+- Executable SHA256: `34c7f5dae2739f2b1a40776dff142f9bfb4e7ebda495ca2134438202cf01bc54`.
+- Phase-library SHA256: `6ae6f57fa85d8dd44b356a8de566ec991591b1e3b8ed16a34309d63facf95d8f`.
+
+The [exact reports and comparison](sc1_two_field_rate_results_2026-11-10.json)
+include all seven binary hashes, all eight candidate/control log hashes,
+transcript SHA256 and source commit. These are user-supplied console results;
+the raw solver logs and input/build manifests remain on Kestrel. The runtime
+runner revalidated the saved original controls without rerunning CFD.
+
+The four closed/mid-fraction cases retain their original physical results at
+printed precision. The four near-bound cases now also pass:
+
+| Candidate | Gas residual L1 (kg) | Liquid residual L1 (kg) | Liquid L1 reduction vs control |
+|---|---:|---:|---:|
+| `bound_coarse_no_reference` | 3.669221e-18 | 4.839702e-13 | 1,859.9× |
+| `bound_coarse_gas_reference` | 2.040476e-17 | 2.007164e-14 | 44,824.4× |
+| `bound_fine_no_reference` | 1.477416e-18 | 2.758261e-13 | 3,262.9× |
+| `bound_fine_gas_reference` | 7.567124e-18 | 7.718720e-15 | 116,567.0× |
+
+The near-bound liquid threshold stays `1.01e-10 kg`; gas thresholds are about
+`4.98e-15` to `5.74e-15 kg`, computed by the unchanged throughput formula.
+All four gas residuals are also below their thresholds. The sum of absolute
+split volumes over every outer call is at most about `7.22e-24 m3`, below
+`1e-18 m3`. Zero observed floor-induced splitting is the intended result.
+The nonnegative-rate and complementary-fraction guards pass in every case.
+
+Both reference choices pass. Gas reference is used for the next quiescent
+startup because it avoids the rescale branch; this is a controlled implementation
+choice, not evidence that reference reconstruction alone fixes conservation.
+No extrapolation to signed sources, compressible gas, interphase transfer,
+PBM or biological chemistry is established by these tests.
 
 ## Numerical change and limits
 
@@ -107,9 +146,9 @@ its original control, its threshold, final inventory, export, split diagnostic
 and both log hashes. A numerical pass does not select a physically validated
 reactor model.
 
-## Kestrel: build and run the guarded regression
+## Historical Kestrel command (completed; do not repeat)
 
-Use the existing allocation. This command creates a separate build and case
+This completed command is retained for provenance. It created a separate build and case
 root, verifies the new runtime, then runs all eight regressions with the
 progression gates above. It needs the completed controls and their original
 build to remain available at their recorded paths. It launches no reactor CFD.
@@ -171,10 +210,11 @@ PYTHONDONTWRITEBYTECODE=1 python -m unittest discover \
     -s scripts/diagnostics -p 'test_sc1_two_field*.py' -q
 ```
 
-If all eight numerical screens pass on Kestrel, the next stage is a matched
+All eight numerical screens passed on Kestrel. The next stage is a matched
 nonreacting two-field hydrodynamic candidate with the actual reactor geometry,
-fill, vent and MRF treatment. Its applicability guards and source contract
-must be extended deliberately to those settings. Check liquid/gas conservation
+fill, vent and MRF treatment. The first quiescent actual-mesh startup stays within the present
+pure-phase 1/1000 kg/m3 guards. Broader sources/thermodynamics require
+separate evidence before extending the contract. Check liquid/gas conservation
 and wall/free-surface behavior before oxygen transfer and biology. The existing
 biological schedule remains unchanged, and a third phase remains optional
 pending a demonstrated physical need.

@@ -33,6 +33,7 @@ class AuditContract:
     budget_arithmetic_tol: tuple = (1e-12, 1e-12)
     budget_absolute: tuple = (1e-10, 1e-10)
     budget_relative: tuple = (1e-3, 1e-3)
+    option_source_kg_s: tuple = (0, SOURCE_KG_S)
 
 
 BASELINE_CONTRACT = AuditContract()
@@ -171,7 +172,7 @@ def summarize_contract(text, case, contract, *, closed, reference):
         require(close(init['mass_kg'],contract.volumes[i]*(1 if p=='gas' else 1000),contract.mass_initial_tol[i]), 'Incorrect initial phase mass')
         phase_steps = [steps[(t,p)] for t in times]
         sums = {key: math.fsum(r[key] for r in phase_steps) for key in ('deltaMass_kg','boundaryOut_kg','optionSource_kg','transferSource_kg','physicalResidual_kg')}
-        expected_source = SOURCE_KG_S*contract.dt*contract.steps if not closed and p=='liquid' else 0
+        expected_source = contract.option_source_kg_s[i]*contract.dt*contract.steps if not closed else 0
         require(close(sums['optionSource_kg'],expected_source,1e-12), 'Actual assembled source differs from prescribed source')
         require(abs(sums['transferSource_kg'])<1e-13, 'Unexpected interphase mass transfer')
         require(close(phase_steps[-1]['mass_kg']-init['mass_kg'],sums['deltaMass_kg'],contract.mass_identity_tol[i]), 'Accepted-step deltas do not reproduce inventory change')

@@ -228,11 +228,12 @@ essentially unchanged. All four near-bound cases are complete and must be
 preserved. Source algebra predicts about 9e-10 kg lost from the coupled
 dilatation component at these nominal fractions, matching the measured
 deficit. The [guarded private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
-is now implemented, with 68 passing local bounds/source, runtime-guard and
-mocked regression checks. The next Kestrel step is its separate build and
-eight fresh regressions against the unchanged thresholds. Its source-only
-algebra is not validation of pressure-coupled CFD; no candidate runtime result
-or resolved-interface validation is available yet.
+has now built and passed all eight pressure/flux-coupled CFD regressions at
+`d83bc83`, against unchanged thresholds. All original controls remain saved.
+The new [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-10.md) reuses
+that verified pure-phase binary, with a measured 1000-L fill, gravity, a vent
+and resolved-interface drag. This is the next actual-vessel run; resolved-interface
+and stirred/aerated reactor validation are not yet established.
 
 ## Next decision: continue validating the simpler candidate
 
