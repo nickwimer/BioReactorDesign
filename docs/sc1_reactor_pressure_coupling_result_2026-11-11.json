@@ -1,5 +1,5 @@
 {
-  "provenance": "User-pasted Kestrel console output. New pressure-coupled raw-log bundle not yet received or independently verified.",
+  "provenance": "Received reactor_failure_evidence.tar(4).gz. Archive SHA256, all 19 bundled file hashes and all 13 included initial dictionaries independently verified. Native fields/mesh, binaries and external control chains remain on Kestrel.",
   "root": "/kfs3/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z",
   "build": "/kfs3/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z",
   "variant": "sc1_meml_pressure_coupling_v5",
@@ -67,22 +67,1331 @@
   "bundleSha256": "69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0",
   "interpretation": {
     "confirmed": [
-      "Application compilation/dependency verification passed in the pasted output.",
-      "Run stopped at printed time 0.0002 s, with four end-step audit pairs, no End, and wrapper status 1.",
-      "All 59 initial inputs are reported unchanged.",
-      "The compact collector reports fatal errors but does not include their explanatory text."
+      "The synchronous 1-mm/s present-liquid-speed guard stopped the fourth step at 0.0002 s.",
+      "All 16 pressure solves converged below 1e-12 and every observed unclipped pressure minimum remained above 99982 Pa.",
+      "The previous first-step pressure collapse did not recur within this four-step interval.",
+      "All 16 mixture/phase flux checks agree to about 5e-18 m3/s.",
+      "624 field reductions report no nonfinite values.",
+      "MPI_Abort and segmentation-fault shutdown records follow the explicit quiescent guard."
     ],
-    "inference": "Four paired step records are consistent with a stop in sc1QuiescentStep, which follows endStep audit emission. A liquid-speed guard is a leading hypothesis, not a confirmed cause.",
     "unknown": [
-      "Actual fatal-error message and source location.",
-      "Accepted-step liquid speeds and pressure/flux-check histories.",
-      "Whether returncode 139 reflects MPI shutdown as in the previous probe or a distinct failure."
+      "Location, phase fraction and direction of the maximum present-liquid velocity.",
+      "Whether growth is concentrated in the transition layer, boundary-adjacent cells, or the bulk.",
+      "Longer-time pressure/conservation behavior; no 10-ms or operating acceptance."
     ],
     "caveats": [
-      "Small logged Courant and bounded alpha do not establish quiescence or conservation.",
-      "This is 0.2 ms of a planned 10 ms screen, before the first scheduled 0.25-ms snapshot.",
-      "The original pressure collapse is not declared fixed from this console alone."
+      "The log contains pressure-minimum locations, not velocity-maximum locations.",
+      "All 59 initial inputs are reported unchanged by the HPC collector; only the 13 bundled dictionaries are independently checked locally.",
+      "No scheduled 0.25-ms field snapshot was reached."
     ]
   },
-  "decision": "Receive and verify the already-created bundle, inspect the fatal message and immediately preceding SC1_QUIESCENT_STEP, SC1_COUPLED_FLUX and SC1_PRESSURE records. Preserve this build and run. No rerun, rebuild, recollection, restart, parameter change or threshold relaxation is selected."
+  "decision": "Reuse the verified compiled v5 binary for a fresh three-step spatial diagnostic, ending at 0.00015 s and writing every step. Keep all physical settings and guards unchanged; compare its 33 numerical prefix records with this received control, reconstruct only normally completed outputs, and locate liquid/gas/interface/boundary peaks. No tolerance relaxation or momentum/force change before spatial evidence.",
+  "bundleVerification": {
+    "archiveSha256": "69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0",
+    "bundledFileHashesVerified": 19,
+    "includedInitialDictionaryHashesVerified": 13
+  },
+  "verifiedObservations": {
+    "fatalMessage": "Quiescent liquid speed exceeded 1 mm/s",
+    "firstFatalLine": 1392,
+    "firstMessageLine": 1393,
+    "source": "sc1FaceDragCoupling.H:92, sc1QuiescentStep",
+    "pressureSolveCount": 16,
+    "pressureSolves": [
+      {
+        "line": 221,
+        "initial": 0.0013841964437940732,
+        "final": 9.17389804408223e-13,
+        "iterations": 244
+      },
+      {
+        "line": 260,
+        "initial": 6.824521600122883e-07,
+        "final": 9.802662867550773e-13,
+        "iterations": 185
+      },
+      {
+        "line": 374,
+        "initial": 7.369416906409953e-06,
+        "final": 9.999559915982597e-13,
+        "iterations": 228
+      },
+      {
+        "line": 413,
+        "initial": 4.853294163824285e-07,
+        "final": 9.23878183866052e-13,
+        "iterations": 184
+      },
+      {
+        "line": 538,
+        "initial": 0.0005377871068815784,
+        "final": 9.111300759366544e-13,
+        "iterations": 232
+      },
+      {
+        "line": 577,
+        "initial": 4.11654701389394e-07,
+        "final": 8.878991354615225e-13,
+        "iterations": 183
+      },
+      {
+        "line": 691,
+        "initial": 6.726558027293588e-06,
+        "final": 9.028924417598587e-13,
+        "iterations": 225
+      },
+      {
+        "line": 730,
+        "initial": 3.4888566169273656e-07,
+        "final": 9.547432927062492e-13,
+        "iterations": 182
+      },
+      {
+        "line": 855,
+        "initial": 5.774474439530825e-06,
+        "final": 9.597589675241514e-13,
+        "iterations": 216
+      },
+      {
+        "line": 894,
+        "initial": 1.24380955046589e-07,
+        "final": 9.69072338584962e-13,
+        "iterations": 173
+      },
+      {
+        "line": 1008,
+        "initial": 3.2465776095348458e-06,
+        "final": 9.19316052214299e-13,
+        "iterations": 217
+      },
+      {
+        "line": 1047,
+        "initial": 1.4682416803954253e-07,
+        "final": 9.727565235245667e-13,
+        "iterations": 175
+      },
+      {
+        "line": 1172,
+        "initial": 3.4685165741432757e-06,
+        "final": 9.31104180973079e-13,
+        "iterations": 212
+      },
+      {
+        "line": 1211,
+        "initial": 5.923223560337617e-08,
+        "final": 8.823455130196785e-13,
+        "iterations": 166
+      },
+      {
+        "line": 1325,
+        "initial": 2.1438450088903107e-06,
+        "final": 9.839282594915904e-13,
+        "iterations": 213
+      },
+      {
+        "line": 1364,
+        "initial": 7.68842833436764e-08,
+        "final": 8.159490987173407e-13,
+        "iterations": 168
+      }
+    ],
+    "pressureRecords": [
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 224,
+        "sequence": "4",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887332314",
+        "max": "111756.15599731186",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 263,
+        "sequence": "8",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887706182",
+        "max": "111756.15103699479",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 377,
+        "sequence": "13",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986891267763",
+        "max": "111847.78993390084",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 416,
+        "sequence": "17",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986921404052",
+        "max": "111847.79670105662",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 541,
+        "sequence": "22",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986918265946",
+        "max": "111756.80636780144",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 580,
+        "sequence": "26",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986886153391",
+        "max": "111756.80308580378",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 694,
+        "sequence": "31",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986886371524",
+        "max": "111832.81061567628",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 733,
+        "sequence": "35",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.98691298654",
+        "max": "111832.81286782814",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 858,
+        "sequence": "40",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986908202103",
+        "max": "111804.98550257822",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 897,
+        "sequence": "44",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986898890304",
+        "max": "111804.98503314637",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1011,
+        "sequence": "49",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986897775962",
+        "max": "111837.74877741684",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1050,
+        "sequence": "53",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986908666993",
+        "max": "111837.74994343187",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1175,
+        "sequence": "58",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986905053636",
+        "max": "111824.63286195553",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1214,
+        "sequence": "62",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.98690082629",
+        "max": "111824.63263893408",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1328,
+        "sequence": "67",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986899142968",
+        "max": "111841.72518642739",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1367,
+        "sequence": "71",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986904682606",
+        "max": "111841.72581743766",
+        "nonfinite": "0"
+      }
+    ],
+    "minimumUnclippedPressure_Pa": 99982.98688615339,
+    "maximumUnclippedPressure_Pa": 111847.79670105662,
+    "couplingCalls": 8,
+    "fluxChecks": [
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 226,
+        "maxAbsError_m3_s": "4.8916020355037836e-18",
+        "maxAbsMixture_m3_s": "2.3162292348751781e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 265,
+        "maxAbsError_m3_s": "4.3828661064489703e-18",
+        "maxAbsMixture_m3_s": "2.3057661867724466e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 379,
+        "maxAbsError_m3_s": "3.3417170304856259e-18",
+        "maxAbsMixture_m3_s": "2.3048627258075518e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 418,
+        "maxAbsError_m3_s": "3.7838020545033664e-18",
+        "maxAbsMixture_m3_s": "2.2847051868253772e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 543,
+        "maxAbsError_m3_s": "3.6281597504453887e-18",
+        "maxAbsMixture_m3_s": "4.5651845628228642e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 582,
+        "maxAbsError_m3_s": "4.045376416527335e-18",
+        "maxAbsMixture_m3_s": "4.5866294948484457e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 696,
+        "maxAbsError_m3_s": "3.2390275205208428e-18",
+        "maxAbsMixture_m3_s": "4.5877407595740845e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 735,
+        "maxAbsError_m3_s": "3.5296657005474746e-18",
+        "maxAbsMixture_m3_s": "4.5863751103596031e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 860,
+        "maxAbsError_m3_s": "3.9281152928918178e-18",
+        "maxAbsMixture_m3_s": "6.886744432152127e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 899,
+        "maxAbsError_m3_s": "3.4491711007787144e-18",
+        "maxAbsMixture_m3_s": "6.8846977335973772e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1013,
+        "maxAbsError_m3_s": "2.781073863631885e-18",
+        "maxAbsMixture_m3_s": "6.885058551607423e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1052,
+        "maxAbsError_m3_s": "2.6650832894172492e-18",
+        "maxAbsMixture_m3_s": "6.8826933420366087e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1177,
+        "maxAbsError_m3_s": "2.6433780701438578e-18",
+        "maxAbsMixture_m3_s": "9.1782289822252836e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1216,
+        "maxAbsError_m3_s": "3.3460448394505033e-18",
+        "maxAbsMixture_m3_s": "9.1755630151409031e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1330,
+        "maxAbsError_m3_s": "2.7610627102530021e-18",
+        "maxAbsMixture_m3_s": "9.1757396057899892e-06"
+      },
+      {
+        "marker": "SC1_COUPLED_FLUX",
+        "line": 1369,
+        "maxAbsError_m3_s": "2.9394160852092358e-18",
+        "maxAbsMixture_m3_s": "9.1725319720338332e-06"
+      }
+    ],
+    "maximumMixtureFluxError_m3_s": 4.8916020355037836e-18,
+    "quiescentSteps": [
+      {
+        "marker": "SC1_QUIESCENT_STEP",
+        "line": 438,
+        "t_s": "5.0000000000000002e-05",
+        "maxLiquidPresent_m_s": "0.00024497874720414911"
+      },
+      {
+        "marker": "SC1_QUIESCENT_STEP",
+        "line": 755,
+        "t_s": "0.0001",
+        "maxLiquidPresent_m_s": "0.00052935514147787425"
+      },
+      {
+        "marker": "SC1_QUIESCENT_STEP",
+        "line": 1072,
+        "t_s": "0.00015000000000000001",
+        "maxLiquidPresent_m_s": "0.00080010170780422062"
+      },
+      {
+        "marker": "SC1_QUIESCENT_STEP",
+        "line": 1389,
+        "t_s": "0.00020000000000000001",
+        "maxLiquidPresent_m_s": "0.0010598917525355049"
+      }
+    ],
+    "phaseSpeedRecords": [
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 182,
+        "sequence": "1",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0",
+        "maxAbsent_m_s": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 187,
+        "sequence": "1",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0",
+        "maxAbsent_m_s": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 232,
+        "sequence": "5",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.023192556401236727",
+        "maxAbsent_m_s": "0.54505932439957927"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 237,
+        "sequence": "5",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00048975246578352393",
+        "maxAbsent_m_s": "0.00049003891690942809"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 271,
+        "sequence": "9",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.011670463319474271",
+        "maxAbsent_m_s": "0.54505945063443773"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 276,
+        "sequence": "9",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00048924224842368416",
+        "maxAbsent_m_s": "0.00049020003192228956"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 335,
+        "sequence": "10",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.011670463319474271",
+        "maxAbsent_m_s": "0.54505945063443773"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 340,
+        "sequence": "10",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00048924224842368416",
+        "maxAbsent_m_s": "0.00049020003192228956"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 385,
+        "sequence": "14",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.011661114222074855",
+        "maxAbsent_m_s": "1.1683981049232526e-05"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 390,
+        "sequence": "14",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00024498078247187755",
+        "maxAbsent_m_s": "0.011634863466941566"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 424,
+        "sequence": "18",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.017383883873226251",
+        "maxAbsent_m_s": "6.1809705142704849e-06"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 429,
+        "sequence": "18",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00024497874720414911",
+        "maxAbsent_m_s": "0.011547890785200255"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 499,
+        "sequence": "19",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.017383883873226251",
+        "maxAbsent_m_s": "6.1809705142704849e-06"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 504,
+        "sequence": "19",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00024497874720414911",
+        "maxAbsent_m_s": "0.011547890785200255"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 549,
+        "sequence": "23",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.032611385938034129",
+        "maxAbsent_m_s": "0.27438549095937947"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 554,
+        "sequence": "23",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00073226388960627756",
+        "maxAbsent_m_s": "0.023003531186709589"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 588,
+        "sequence": "27",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.023228293687689101",
+        "maxAbsent_m_s": "0.27438368714837336"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 593,
+        "sequence": "27",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00073226446868461818",
+        "maxAbsent_m_s": "0.023091991417337521"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 652,
+        "sequence": "28",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.023228293687689101",
+        "maxAbsent_m_s": "0.27438368714837336"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 657,
+        "sequence": "28",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00073226446868461818",
+        "maxAbsent_m_s": "0.023091991417337521"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 702,
+        "sequence": "32",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.023234178483057508",
+        "maxAbsent_m_s": "0.00012004983135138044"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 707,
+        "sequence": "32",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00052935587805530535",
+        "maxAbsent_m_s": "0.023137735324286441"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 741,
+        "sequence": "36",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.030023885552996912",
+        "maxAbsent_m_s": "0.00011979990993287144"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 746,
+        "sequence": "36",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00052935514147787425",
+        "maxAbsent_m_s": "0.023146643211391701"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 816,
+        "sequence": "37",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.030023885552996912",
+        "maxAbsent_m_s": "0.00011979990993287144"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 821,
+        "sequence": "37",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00052935514147787425",
+        "maxAbsent_m_s": "0.023146643211391701"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 866,
+        "sequence": "41",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.039865400181806662",
+        "maxAbsent_m_s": "0.18420565166918976"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 871,
+        "sequence": "41",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0008877731829472419",
+        "maxAbsent_m_s": "0.034771484511608552"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 905,
+        "sequence": "45",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.035087723602082503",
+        "maxAbsent_m_s": "0.18420569406503814"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 910,
+        "sequence": "45",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00088777353495154629",
+        "maxAbsent_m_s": "0.034755553614310715"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 969,
+        "sequence": "46",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.035087723602082503",
+        "maxAbsent_m_s": "0.18420569406503814"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 974,
+        "sequence": "46",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00088777353495154629",
+        "maxAbsent_m_s": "0.034755553614310715"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1019,
+        "sequence": "50",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.034886962901613819",
+        "maxAbsent_m_s": "0.0002001159236508766"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1024,
+        "sequence": "50",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00080010205651489987",
+        "maxAbsent_m_s": "0.034769756586698917"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1058,
+        "sequence": "54",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.040016717524187458",
+        "maxAbsent_m_s": "0.00020012985072427706"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1063,
+        "sequence": "54",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00080010170780422062",
+        "maxAbsent_m_s": "0.034764221204649233"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1133,
+        "sequence": "55",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.040016717524187458",
+        "maxAbsent_m_s": "0.00020012985072427706"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1138,
+        "sequence": "55",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.00080010170780422062",
+        "maxAbsent_m_s": "0.034764221204649233"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1183,
+        "sequence": "59",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.047975620209347404",
+        "maxAbsent_m_s": "0.13920485161531593"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1188,
+        "sequence": "59",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0011057595568816534",
+        "maxAbsent_m_s": "0.046360415136494942"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1222,
+        "sequence": "63",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.046495402431233138",
+        "maxAbsent_m_s": "0.13920488955439525"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1227,
+        "sequence": "63",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0011057476901767667",
+        "maxAbsent_m_s": "0.046344446602832004"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1286,
+        "sequence": "64",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.046495402431233138",
+        "maxAbsent_m_s": "0.13920488955439525"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1291,
+        "sequence": "64",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0011057476901767667",
+        "maxAbsent_m_s": "0.046344446602832004"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1336,
+        "sequence": "68",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.046494631048989404",
+        "maxAbsent_m_s": "0.00025002435944736857"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1341,
+        "sequence": "68",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0010598599751263297",
+        "maxAbsent_m_s": "0.046350882430090438"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1375,
+        "sequence": "72",
+        "phase": "gas",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.047708753826088079",
+        "maxAbsent_m_s": "0.00025003267461661552"
+      },
+      {
+        "marker": "SC1_PRESSURE_SPEED",
+        "line": 1380,
+        "sequence": "72",
+        "phase": "liquid",
+        "presentThreshold": "1e-6",
+        "maxPresent_m_s": "0.0010598917525355049",
+        "maxAbsent_m_s": "0.046337856767369325"
+      }
+    ],
+    "finiteFieldReductions": 624,
+    "nonfiniteObservedValues": 0,
+    "observedWindowBudgets": {
+      "gas": {
+        "records": [
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 436,
+            "phase": "gas",
+            "t_s": "5e-05",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.642002269140888",
+            "mass_kg": "0.642002269140888",
+            "deltaMass_kg": "8.77648654222934e-18",
+            "boundaryOut_kg": "-4.67105271491355e-17",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "-3.79340406069061e-17",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 753,
+            "phase": "gas",
+            "t_s": "0.0001",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.642002269140887",
+            "mass_kg": "0.642002269140887",
+            "deltaMass_kg": "2.81547064550234e-18",
+            "boundaryOut_kg": "-1.00187050406293e-16",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "-9.73715797607907e-17",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 1070,
+            "phase": "gas",
+            "t_s": "0.00015",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.642002269140887",
+            "mass_kg": "0.642002269140887",
+            "deltaMass_kg": "-1.57474408334457e-17",
+            "boundaryOut_kg": "-1.06389126035375e-16",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "-1.22136566868821e-16",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 1387,
+            "phase": "gas",
+            "t_s": "0.0002",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.642002269140887",
+            "mass_kg": "0.642002269140887",
+            "deltaMass_kg": "-5.24574690689277e-18",
+            "boundaryOut_kg": "2.29107757352632e-16",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "2.23862010445739e-16",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          }
+        ],
+        "deltaMassFromStepSums_kg": -9.401230552606789e-18,
+        "boundaryOut_kg": -2.4178946238171497e-17,
+        "physicalResidual_kg": -3.358017679077882e-17,
+        "residualL1_kg": 4.813041976822568e-16,
+        "meaning": "Observed four-step record window only; the fourth step fails quiescence and no 200-step startup screen is accepted."
+      },
+      "liquid": {
+        "records": [
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 437,
+            "phase": "liquid",
+            "t_s": "5e-05",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.999999999999985",
+            "mass_kg": "1000.00000000001",
+            "deltaMass_kg": "-8.79837162301293e-15",
+            "boundaryOut_kg": "0",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "-8.79837162301293e-15",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 754,
+            "phase": "liquid",
+            "t_s": "0.0001",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.999999999999985",
+            "mass_kg": "1000.00000000001",
+            "deltaMass_kg": "-2.82460375615811e-15",
+            "boundaryOut_kg": "0",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "-2.82460375615811e-15",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 1071,
+            "phase": "liquid",
+            "t_s": "0.00015",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.999999999999985",
+            "mass_kg": "1000.00000000001",
+            "deltaMass_kg": "1.57497713317675e-14",
+            "boundaryOut_kg": "0",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "1.57497713317675e-14",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          },
+          {
+            "marker": "SC1_TWO_STEP",
+            "line": 1388,
+            "phase": "liquid",
+            "t_s": "0.0002",
+            "dt_s": "5e-05",
+            "outers": "2",
+            "volume_m3": "0.999999999999985",
+            "mass_kg": "1000.00000000001",
+            "deltaMass_kg": "5.2255332209e-15",
+            "boundaryOut_kg": "0",
+            "optionSource_kg": "0",
+            "transferSource_kg": "0",
+            "physicalResidual_kg": "5.2255332209e-15",
+            "alphaMin": "0",
+            "alphaMax": "1",
+            "phaseSumMaxError": "0"
+          }
+        ],
+        "deltaMassFromStepSums_kg": 9.35232917349646e-15,
+        "boundaryOut_kg": 0.0,
+        "physicalResidual_kg": 9.35232917349646e-15,
+        "residualL1_kg": 3.259827993183854e-14,
+        "meaning": "Observed four-step record window only; the fourth step fails quiescence and no 200-step startup screen is accepted."
+      }
+    },
+    "rateRecords": [
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 129,
+        "t_s": "5e-05",
+        "call": "1",
+        "valid": "0",
+        "applied": "0",
+        "qGasMin": "0",
+        "qGasMax": "0",
+        "qLiquidMin": "0",
+        "qLiquidMax": "0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 282,
+        "t_s": "5e-05",
+        "call": "2",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 446,
+        "t_s": "0.0001",
+        "call": "1",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 599,
+        "t_s": "0.0001",
+        "call": "2",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 763,
+        "t_s": "0.00015",
+        "call": "1",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 916,
+        "t_s": "0.00015",
+        "call": "2",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 1080,
+        "t_s": "0.0002",
+        "call": "1",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      },
+      {
+        "marker": "SC1_RATE_STATE",
+        "line": 1233,
+        "t_s": "0.0002",
+        "call": "2",
+        "valid": "1",
+        "applied": "2",
+        "qGasMin": "-0",
+        "qGasMax": "-0",
+        "qLiquidMin": "-0",
+        "qLiquidMax": "-0",
+        "alphaSumMaxError": "0",
+        "rawIdentityScaled": "0"
+      }
+    ],
+    "faceDragRecords": [
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 192,
+        "sequence": "1",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 193,
+        "sequence": "1",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 345,
+        "sequence": "10",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184699.4390743",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 346,
+        "sequence": "10",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184699.4390743",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 509,
+        "sequence": "19",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "12946.170315592495",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 510,
+        "sequence": "19",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "12946.170315592495",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 662,
+        "sequence": "28",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "9781309.7902023308",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 663,
+        "sequence": "28",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "9781309.7902023308",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 826,
+        "sequence": "37",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1609431.7574302698",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 827,
+        "sequence": "37",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1609431.7574302698",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 979,
+        "sequence": "46",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "6212279.2041969029",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 980,
+        "sequence": "46",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "6212279.2041969029",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1143,
+        "sequence": "55",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "2692255.0229235888",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1144,
+        "sequence": "55",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "2692255.0229235888",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1296,
+        "sequence": "64",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "5201503.9024311407",
+        "nonfinite": "0"
+      },
+      {
+        "marker": "SC1_PRESSURE_FIELD",
+        "line": 1297,
+        "sequence": "64",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "5201503.9024311407",
+        "nonfinite": "0"
+      }
+    ]
+  }
 }

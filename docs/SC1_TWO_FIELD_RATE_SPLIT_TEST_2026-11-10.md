@@ -20,7 +20,8 @@ at the same first-step outer iteration. Its bundle is now verified. The
 [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
-compiled but stopped at 0.2 ms; inspect its existing bundle next.
+stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
+Next run the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) using its existing build.
 These regressions establish the correction for their tested source contract;
 reactor wall/free-surface, aeration, oxygen and biology validation remain open.
 All 68 pre-existing focused local tests passed before the Kestrel run.

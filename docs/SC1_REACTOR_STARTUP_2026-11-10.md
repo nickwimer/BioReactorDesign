@@ -21,7 +21,8 @@ at the same correction; its bundle is now verified. The
 [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
-compiled but stopped at 0.2 ms; inspect its existing bundle next. Do not rerun cases.**
+stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
+Next run the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) using its existing build. Do not rerun cases.**
 The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no library rebuild or numerical-suite rerun is needed.

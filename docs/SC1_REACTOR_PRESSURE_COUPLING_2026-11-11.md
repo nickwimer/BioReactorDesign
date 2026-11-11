@@ -10,33 +10,43 @@ records executable SHA256
 `e5414f2afb8192d2fe88cd4f881ac554a7605326b1938ccbfe5fc62291937dd4`
 and verified linkage to the same six rate-build libraries.
 
-The collector reports 1,593 log lines, four printed times and four paired
-end-step audit records through 0.0002 s, no `End`, unchanged hashes for all
-59 initial inputs, maximum logged mixture Co 8.394607297373625e-5, and largest
-finite alpha magnitude 1. The first recorded fatal error is line 1392, outer 2.
-The external monitor reports return code 139. **The fatal explanatory text is
-not present in the compact console summary**, so its exact cause and shutdown
-sequence are not yet confirmed.
+**The raw bundle is now received and verified:** archive SHA256
+`69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0`,
+all 19 bundled file hashes and all 13 included initial dictionaries match.
+The full log SHA256 is
+`4c469e3438576ad12139cad251de18b159dd35161cdcb7aede16124b193ecaac`.
+All 59 inputs are reported unchanged by the HPC collector; large fields,
+mesh, build binaries and external controls remain on Kestrel.
 
-Source ordering puts `sc1QuiescentStep` after the end-step audit pair. Thus
-four pairs followed by a same-time fatal error are consistent with the 1-mm/s
-liquid-speed guard; this is an inference requiring the actual log. Do not
-label this a confirmed speed failure, declare the pressure defect fixed, or
-interpret the small logged Co as quiescence acceptance. The run is incomplete
-and has not reached its first 0.25-ms scheduled snapshot.
+The explicit fatal message is **`Quiescent liquid speed exceeded 1 mm/s`**,
+from `sc1QuiescentStep` at `sc1FaceDragCoupling.H:92`. At 0.0002 s the maximum
+speed in liquid cells with alpha>0.01 is 0.0010598917525355049 m/s. MPI_Abort
+and sigSegv shutdown records follow the guard. This is an intended quiescence
+stop, not evidence of an independent segmentation fault preceding it.
 
-**Next action: attach the already-created evidence bundle:**
+| Time (ms) | Present-liquid maximum (mm/s) |
+|---:|---:|
+| 0.05 | 0.244979 |
+| 0.10 | 0.529355 |
+| 0.15 | 0.800102 |
+| 0.20 | 1.059892 — failed |
 
-`/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/reactor_failure_evidence.tar.gz`
+All 16 pressure solves converge below 1e-12. Unclipped static pressures stay
+between 99982.986886 and 111847.796701 Pa. All 16 mixture/phase flux checks
+agree within 4.8916021e-18 m3/s; 624 field reductions contain no nonfinite values.
+The previous first-step pressure collapse did not recur in this short interval.
+Four-step phase-mass residual L1 is 4.8130419768e-16 kg for gas and
+3.2598279932e-14 kg for liquid. These partial-window observations do not accept
+the planned 200-step startup: the fourth step fails quiescence, no `End` exists,
+and no 0.25-ms field write was reached.
 
-- Reported bundle SHA256: `69e5585474cc286dc476341487f03303b7c380f23cac0129c925bd673cf00db0`.
-- Reported solver-log SHA256: `4c469e3438576ad12139cad251de18b159dd35161cdcb7aede16124b193ecaac`.
-
-The new bundle has not yet been received or independently verified. Inspect
-the fatal message and preceding `SC1_QUIESCENT_STEP`, `SC1_COUPLED_FLUX` and
-`SC1_PRESSURE` records. No new collection or HPC run is needed. Preserve the
-compiled candidate, its case and every earlier control. No restart, parameter
-change or threshold relaxation is selected from this console alone.
+**Next action: run the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md).**
+The current log locates pressure minima but not velocity maxima. Reuse this
+verified compiled application in a fresh t=0 case, write every step and end at
+0.15 ms. Compare the measured prefix with this log and reconstruct the three
+normally completed snapshots to identify interface, boundary or bulk motion.
+Only output frequency and diagnostic duration change; all physical settings
+and guards remain fixed. No rebuild, failed-state restart or tolerance change.
 
 ## Evidence and decision
 
@@ -142,8 +152,8 @@ before an operating checkpoint can be accepted.
 
 ## Historical Kestrel command — completed, do not repeat
 
-This command produced the build and stopped run above. Receive its existing
-bundle next; do not launch another copy.
+This command produced the build and stopped run above. Its bundle is now
+verified; use the separate spatial diagnostic instead of repeating it.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -178,7 +188,7 @@ else
 fi
 ```
 
-The output is now recorded above. Attach the existing `BUNDLE`; preserve all roots.
+The output and verified bundle are recorded above; preserve all roots.
 
 ## Local validation
 

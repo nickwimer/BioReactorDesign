@@ -129,20 +129,26 @@ built successfully at `408028e`, with binary SHA256
 and the same six verified rate libraries. Build
 `/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z`; case
 `/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z`.
-The run stopped at 0.0002 s, outer 2 (fatal/139, wrapper status 1): four
-paired end-step records, no End, max logged Co 8.394607297373625e-5, all 59
-inputs reported unchanged. The exact fatal text is omitted from the console.
-A post-step liquid-speed guard is plausible from source ordering, but requires
-the log; neither pressure repair nor quiescence acceptance is established.
+The run stopped at 0.0002 s, outer 2 (guard, then MPI_Abort/139, wrapper status 1).
+The [bundle is now verified](sc1_reactor_pressure_coupling_result_2026-11-11.json):
+archive, all 19 file hashes and 13 included dictionaries match. The exact stop
+is `Quiescent liquid speed exceeded 1 mm/s`; peak liquid speed grows through
+0.245, 0.529, 0.800 and 1.060 mm/s across four steps. All 16 pressure solves
+converge and remain between 99982.986886 and 111847.796701 Pa; all 16 mixture
+flux checks agree to <5e-18 m3/s. No nonfinite values in 624 field reductions.
+The previous pressure collapse does not recur in this interval, but quiescence
+still fails. No 0.25-ms native field snapshot or valid restart was produced.
 
-**Next step: receive the already-created candidate bundle** at
-`/scratch/nwimer/sc1_pressure_coupled_20261111T180325Z_evidence/reactor_failure_evidence.tar.gz`.
-The [console result and hashes](sc1_reactor_pressure_coupling_result_2026-11-11.json)
-are saved; the new raw bundle has not yet been received or independently verified.
-Inspect the fatal message, accepted-step liquid speeds, coupled flux identity
-and pressure history. Preserve the compiled build and all cases. No rebuild,
-rerun, recollection, restart or tolerance change is needed for this handoff.
-All 122 focused tests passed before launch; this update is documentation only.
+**Next step: the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md).**
+Reuse the exact compiled v5 build; copy fresh t=0 inputs and change only
+controlDict endTime to 0.00015 and writeInterval to 1. Keep all guards and
+physical settings. Compare 33 log records with the received v5 prefix, then
+reconstruct the three normally completed snapshots and locate velocity peaks,
+phase fractions, counterflow, pressure changes and boundary adjacency. This
+addresses the missing spatial evidence; it is not a shortened startup pass.
+No new solver build, physical parameter change or threshold relaxation is
+selected. The 122 preceding local regressions and seven new spatial tests pass.
+Preserve every existing build/control, including this failed v5 run.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
