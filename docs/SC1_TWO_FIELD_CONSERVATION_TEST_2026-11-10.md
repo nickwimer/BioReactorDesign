@@ -13,8 +13,9 @@ completed at `ef74cf6`, also with both screens passing. All four `result.json`
 files now exist with log hashes. **This suite is complete; preserve it and do
 not rerun any case or rebuild.** The separate [near-bound source and
 half-timestep harness](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) is now
-implemented and locally tested. Its coarse-pair launch is the next action;
-no near-bound CFD result is available yet. Interface checks remain later work.
+implemented and its coarse pair completed at `78ebbb8`: diagnostics pass,
+but both phase mass screens fail with either reference setting. The prepared
+half-timestep pair is next. Interface checks remain later work.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -453,13 +454,18 @@ pressure-compatible outlet, and matched reference pairs at dt=0.001 and
 0.0005 s to 0.1 s. It declares initial inventories, phase-specific tolerances
 for the small gas inventory, accepted-step regime checks and an observed
 source-split requirement. It retains all existing ledgers and solver floors.
-All 53 focused tests pass locally; no new CFD result is claimed.
+All 53 focused tests passed locally before the coarse run. The coarse pair
+at `78ebbb8` now supplies runtime evidence: liquid budget shortfalls of about
+0.900 micrograms closely match the measured source-split terms, while gas
+reference removes rescaling without removing either mass-screen failure.
+Both diagnostics pass, so the prepared half-timestep comparison can proceed.
 
 The original generator is unchanged, and its report entry point retains the
 baseline contract. The new case/report contract and guarded runner reuse the
 verified compiled observers and require all four completed baseline reports.
-Run the coarse pair first using the linked command, then review before the
-half-timestep pair. Do not hand-edit completed cases, loosen thresholds or
+Preserve the completed coarse pair in
+`/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`; run only the prepared
+half-timestep pair using the linked command. Do not hand-edit cases, loosen thresholds or
 add source back based only on a numerical screen. Interphase-transfer and
 resolved-interface checks still precede a matched SC1 nonreacting reactor
 candidate.

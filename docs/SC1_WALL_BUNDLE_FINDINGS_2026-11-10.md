@@ -265,10 +265,15 @@ are complete, supporting further evaluation of two fields without selecting
 one reference setting. The 50/50 source fixture has effectively zero source
 splitting and does not test the prior near-bound defect. The [separate
 near-bound source fixture and timestep check](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md)
-are now implemented; all 53 focused local tests pass, with CFD execution mocked.
-Run only the new coarse pair first using the verified build. No near-bound
-runtime result is available yet. Preserve all attempts and do not rerun the
-baseline suite. This remains a numerical fixture, not an SC1 reactor case.
+are implemented; all 53 focused local tests passed, with CFD execution mocked.
+The coarse pair subsequently completed at `78ebbb8`. Both diagnostics pass,
+but both phase mass screens fail: about 0.900 micrograms liquid shortfall in
+each variant, closely matching the measured source-split contribution. Gas
+reference eliminates rescaling here without fixing either phase budget.
+The root is `/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`; preserve
+both completed coarse cases and run only its prepared half-timestep pair
+next. Keep thresholds and the verified build unchanged. This numerical
+fixture does not quantify the old EMM excess or resolve wall climbing.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
 by renaming fields or disabling its guard.

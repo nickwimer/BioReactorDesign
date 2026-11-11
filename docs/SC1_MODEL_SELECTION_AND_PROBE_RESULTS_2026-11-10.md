@@ -214,9 +214,16 @@ implemented, with explicit inventory/tolerance contracts and matched
 dt=0.001 / 0.0005 s pairs at alphaL=0.99999. It keeps the same source/outlet
 balance and original solver floors, measures both budgets and accepted-step
 alpha regimes, and requires an observed source-split effect. All 53 focused
-tests pass locally; CFD is mocked in local runner tests. The next action is
-the coarse-pair launch using the existing build. No near-bound runtime result
-or resolved-interface validation is available yet.
+tests passed locally; CFD is mocked in local runner tests. The coarse pair
+then completed at `78ebbb8` in
+`/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`. Both diagnostics pass,
+but both phase mass screens fail. Liquid shortfalls are about 0.900 micrograms
+in either variant (8.91 times the threshold), closely matching the measured
+source-split contribution. Gas-reference rescaling is zero, yet its separate
+gas and liquid budgets still fail. No reference setting is selected as a
+remedy. Preserve the results and run only the already prepared half-timestep
+pair next, with the same build and thresholds. No fine-pair or resolved-interface
+validation result is available yet.
 
 ## Next decision: continue validating the simpler candidate
 
