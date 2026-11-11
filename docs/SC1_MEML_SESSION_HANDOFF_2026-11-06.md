@@ -98,7 +98,7 @@ All 59 inputs match; alpha remains bounded and max logged mixture Co is only
 match; the full log confirms converged pressure solves, tiny alpha changes and
 zero source/clamp terms before the second-outer pressure failure. See the
 [verified result](sc1_reactor_face_failure_result_2026-11-11.json).
-**Latest vessel attempt:** the [coupled-drag startup](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
+**Earlier vessel attempt:** the [coupled-drag startup](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
 at `8b81ede` in `/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z` also
 failed at t=0.00005 s, outer 2: `p min -2499398.1871999367` Pa. This differs
 from v3 by only 0.0173 Pa. The monitor stopped the step (137; wrapper status 1).
@@ -109,12 +109,21 @@ snapshot was reached; this is not a valid restart or a passed startup.
 initial dictionaries match. The [verified result](sc1_reactor_coupled_failure_result_2026-11-11.json)
 confirms active coupled drag, first-step minimum determinant falling from almost
 1 to 0.0135944981275532, eight converged pressure solves and five zero-rate records.
-**Next step:** the [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md)
-builds one private executable against the existing rate libraries, copies all
-v4 inputs unchanged, and observes momentum/pressure coefficients, forces and
-phase speeds. It stops before limiting pressure below 1000 Pa, or after two
-completed steps. All 114 focused tests pass locally; the application build and
-probe execution on Kestrel are pending. Do not rerun old cases or relax limits.
+**Latest vessel diagnostic:** the [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md)
+at `1dbe432` in `/scratch/nwimer/sc1_pressure_probe_20261111T172942Z` reaches
+the intended pre-limit stop at the identical v4 pressure minimum, first timestep
+outer 2. The face drag diagonal maximum rises from 0.112828 to 1.45118e9;
+minimum mixture rAUf falls by a factor of 73.55. These global extrema need not
+be colocated. All 59 inputs match; no completed-step records or restart exist.
+The external monitor reports fatal error/139, wrapper status 1; the explicit
+`SC1_PRESSURE_STOP` identifies the primary stop condition. Full termination
+details require the raw log. The reported zero Co is pre-first-step output.
+**Next step: receive the existing probe bundle** at
+`/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz`.
+The [console result and hashes](sc1_reactor_pressure_probe_result_2026-11-11.json)
+are saved. Inspect the omitted phase speeds, minimum-pressure location and
+pressure inputs before changing parameters. All 114 tests passed before launch.
+Do not rerun, rebuild, recollect or relax limits for this evidence handoff.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

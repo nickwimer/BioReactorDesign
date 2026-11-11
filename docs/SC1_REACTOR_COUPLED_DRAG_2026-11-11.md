@@ -40,10 +40,11 @@ The first-step determinant falls from almost 1 in outer 1 to 0.0135944981275532
 in outer 2. All five physical-rate records are zero; first-step alpha changes
 and equation residuals remain tiny. Later records are after the invalid pressure
 state and do not establish physical validity.
-**Next action:** the [two-step pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md)
-records coefficients, forces, phase speeds and the minimum-pressure cell before
-limiting. It builds one private executable against the same libraries, copies
-all v4 case inputs unchanged, and stops internally at the first invalid pressure.
+The [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now
+reproduced this pressure minimum and stopped before limiting. Its face drag
+diagonal maximum rises from 0.112828 to 1.45118e9 between outer iterations.
+**Next action:** receive the existing probe bundle to inspect phase speeds,
+pressure location and the remaining pressure inputs. All v4 case inputs were retained.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

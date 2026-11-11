@@ -17,8 +17,9 @@ received and verified. The monitored
 [face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) then failed
 on its first timestep. Its bundle is now inspected. The subsequent
 [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) also failed
-at the same correction; its bundle is now verified. The next action is the
-[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md). Do not rerun cases.**
+at the same correction; its bundle is now verified. The
+[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
+the pressure collapse and stopped before limiting; receive its existing bundle next. Do not rerun cases.**
 The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no library rebuild or numerical-suite rerun is needed.

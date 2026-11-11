@@ -23,8 +23,9 @@ correction [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md);
 the bundle is received and inspected. The subsequent
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed;
 its bundle is now inspected. The [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
-also failed at the same first-step outer iteration; its bundle is now verified. The next action is the
-[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md).
+also failed at the same first-step outer iteration; its bundle is now verified. The
+[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
+the pressure collapse and stopped before limiting; receive its existing bundle next.
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split

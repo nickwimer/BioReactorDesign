@@ -31,8 +31,9 @@ second outer momentum assembly, converged linear solves, tiny alpha changes and
 zero source/clamp terms. **The subsequent
 [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md) also failed
 at the same first-step outer iteration, with nearly identical minimum pressure.
-Its v4 bundle is now verified; the next action is the
-[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md).**
+Its v4 bundle is now verified. The
+[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) subsequently
+reproduced the pressure collapse and stopped before limiting; receive its existing bundle next.**
 
 `/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
 

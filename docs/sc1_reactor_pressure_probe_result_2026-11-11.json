@@ -1,0 +1,237 @@
+{
+  "provenance": "User-pasted Kestrel console output; pressure-probe raw-log bundle not yet received or independently verified.",
+  "root": "/kfs3/scratch/nwimer/sc1_pressure_probe_20261111T172942Z",
+  "build": "/kfs3/scratch/nwimer/sc1_pressure_probe_build_20261111T172942Z",
+  "variant": "sc1_meml_pressure_probe_v1",
+  "sourceCommit": "1dbe432f3fe07f6cc82b75ac9233261799b99baf",
+  "wrapperStatus": 1,
+  "guard": {
+    "reason": "solver failure",
+    "line": 380,
+    "lastPrintedTime": "5e-05",
+    "text": "[1] --> FOAM FATAL ERROR:",
+    "returncode": 139,
+    "meaning": "Stopped failed/incomplete diagnostic; no valid restart implied."
+  },
+  "probe": {
+    "suite": "sc1_meml_pressure_probe_v1",
+    "probeMarkerCount": 1,
+    "stages": [
+      {
+        "sequence": "1",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "momentum"
+      },
+      {
+        "sequence": "2",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "3",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "4",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      },
+      {
+        "sequence": "5",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "fluxCorrected"
+      },
+      {
+        "sequence": "6",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "7",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "8",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      },
+      {
+        "sequence": "9",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "fluxCorrected"
+      },
+      {
+        "sequence": "10",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "momentum"
+      },
+      {
+        "sequence": "11",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureBegin"
+      },
+      {
+        "sequence": "12",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureInputs"
+      },
+      {
+        "sequence": "13",
+        "t_s": "5.0000000000000002e-05",
+        "stage": "pressureSolved"
+      }
+    ],
+    "selectedFields": [
+      {
+        "sequence": "1",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "1",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "0.11282816668027722",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "3",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "4.9995536786813554e-08",
+        "max": "4.999927408588476e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "4",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887332227",
+        "max": "111756.155995504",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "7",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "4.9995536786813554e-08",
+        "max": "4.999927408588476e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "8",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "99982.986887706182",
+        "max": "111756.15103699391",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "10",
+        "phase": "gas",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184694.6572018",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "10",
+        "phase": "liquid",
+        "term": "faceDiagonalExtra",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "0",
+        "max": "1451184694.6572018",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "12",
+        "phase": "mixture",
+        "term": "rAUfMixture",
+        "scope": "allFacesIncludingProcessorCopies",
+        "min": "6.797243007986973e-10",
+        "max": "4.9999257727878712e-05",
+        "nonfinite": "0"
+      },
+      {
+        "sequence": "13",
+        "phase": "mixture",
+        "term": "pUnclipped",
+        "scope": "cells",
+        "min": "-2499398.1871999367",
+        "max": "99991.933586284227",
+        "nonfinite": "0"
+      }
+    ],
+    "stops": [
+      {
+        "reason": "unclippedPressureBelow1000Pa",
+        "min_Pa": "-2499398.1871999367"
+      }
+    ],
+    "done": [],
+    "meaning": "Diagnostic evidence only; no startup or conservation acceptance. Full field/location records are in the log.",
+    "log_sha256": "d2c5d3b55ad096ee1fc8151a68353828fbfb05db9bc1e5c65af72fa0cc5ef656"
+  },
+  "collection": {
+    "lines": 581,
+    "endMarkerSeen": false,
+    "printedTimes": 1,
+    "lastPrintedTime_s": 5e-05,
+    "pairedStepRecordCount": 0,
+    "lastPairedStepRecordTime_s": null,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 0.0,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {
+      "foam_fatal": {
+        "line": 380,
+        "lastPrintedTime_s": 5e-05,
+        "outer": 2,
+        "text": "[1] --> FOAM FATAL ERROR:"
+      }
+    },
+    "eventCounts": {
+      "foam_fatal": 8
+    },
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated."
+  },
+  "bundle": "/kfs3/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz",
+  "bundleSha256": "b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0",
+  "interpretation": {
+    "pressureMinimumMatchesV4": true,
+    "faceDiagonalMaximumRatio": 12861900865.31712,
+    "mixtureInverseDiagonalMinimumReductionFactor": 73.55266941032892,
+    "stop": "Explicit pre-limit guard reached after the third pressure solve, first timestep outer 2. The reported fatal/error exit is not a startup pass; the console alone does not explain all termination details behind returncode 139.",
+    "caveats": [
+      "Field extrema need not be colocated.",
+      "The printed Courant maximum of zero reflects pre-first-step logging, not proof of zero phase velocity.",
+      "Phase speed, pressure-location, predicted-flux and matrix-source records are absent from this compact console output."
+    ]
+  },
+  "decision": "Receive and verify the existing pressure-probe bundle, then inspect outer-1 phase speeds and outer-2 coefficients/fluxes and the minimum-pressure location. Preserve all builds and cases; no rerun, recollection, rebuild or parameter change is selected from this console alone."
+}

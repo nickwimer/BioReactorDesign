@@ -1,6 +1,62 @@
 # SC1 first-step pressure probe
 
-## Evidence and next decision
+## Latest result: pressure collapse reproduced before limiting
+
+The probe ran at `1dbe432` in
+`/scratch/nwimer/sc1_pressure_probe_20261111T172942Z`, using the new executable
+from `/scratch/nwimer/sc1_pressure_probe_build_20261111T172942Z`.
+The [console result](sc1_reactor_pressure_probe_result_2026-11-11.json) reports
+all 59 initial inputs unchanged. It reaches sequence 13, the third pressure
+solve (first timestep, outer 2), then emits
+`SC1_PRESSURE_STOP reason=unclippedPressureBelow1000Pa` with pressure minimum
+`-2499398.1871999367` Pa: exactly the printed v4 minimum.
+
+This is the intended pre-limit guard, not a passed startup. The external monitor
+reports `solver failure` at the first rank's `FOAM FATAL ERROR`, return code 139,
+and wrapper status 1. The full log is needed to explain all termination details;
+the explicit pressure-stop record already identifies the primary stop condition.
+There are no completed-step records, no `End`, and no two-step completion marker.
+
+| Quantity | Outer 1 | Outer 2 |
+|---|---:|---:|
+| Maximum face diagonal addition, both phases | 0.11282816668027722 | 1451184694.6572018 |
+| Minimum mixture rAUf | 4.9995536786813554e-8 | 6.797243007986973e-10 |
+| Unclipped pressure minimum after first correction (Pa) | 99982.986887332227 | −2499398.1871999367 |
+
+The maximum face diagonal addition increases by about 1.286e10, while the
+minimum mixture inverse coefficient falls by a factor of 73.55. These are
+global extrema and need not be colocated. The first outer iteration's second
+pressure solve also remains near 99983 Pa. The logged mixture Co maximum of
+zero comes from pre-first-step output; it does not establish zero phase motion.
+
+For this case with no virtual mass,
+[AFfs](../OFsolvers/birdmultiphaseEulerFoam/phaseSystems/PhaseSystems/MomentumTransferPhaseSystem/MomentumTransferPhaseSystem.C)
+adds the face drag coefficient to each phase's diagonal. The
+[segregated model](../OFsolvers/birdmultiphaseEulerFoam/interfacialModels/dragModels/segregated/segregated.C)
+can be rearranged as
+
+`K = m*rhoPair*|Ur|*G/(a1*a2) + n*muAlphaI*G^2`,
+
+where `G` is the regularized interface-gradient magnitude and `a1`, `a2` are
+the residual-limited fractions. This identifies relative velocity and the
+local fraction/gradient factors as quantities to inspect. It does not establish
+which cells produce the measured jump or justify changing drag coefficients.
+
+**Next action: attach the already-created probe bundle:**
+
+`/scratch/nwimer/sc1_pressure_probe_20261111T172942Z_evidence/reactor_failure_evidence.tar.gz`
+
+- Reported archive SHA256: `b08f1f185061ab774fc0a16354947737b1e9578346ca21170a01587ca46f1ef0`.
+- Reported solver-log SHA256: `d2c5d3b55ad096ee1fc8151a68353828fbfb05db9bc1e5c65af72fa0cc5ef656`.
+
+The bundle has not yet been received or independently verified. It contains
+the phase-speed, pressure-location, predicted-flux and matrix-source records
+omitted from the compact console summary. Inspect outer-1 present/absent-phase
+speeds, outer-2 coefficients/fluxes and the pressure-minimum cell before selecting
+the next change. No new collection, rerun, rebuild or parameter change is needed
+for this step. Preserve this probe, its build and all earlier controls.
+
+## Earlier evidence and rationale for the probe
 
 The v4 bundle `reactor_failure_evidence.tar(2).gz` is received and verified.
 Its archive hash matches `0ac651d664f0834d9ecde87cc05bc7c39989ccf1a27bec4837eb49bbb54669b3`;
@@ -27,7 +83,7 @@ All five rate-state records have zero physical source rates. First-step alpha
 changes remain tiny, with zero source-split/clamp/rescale terms.
 
 The first failure is effectively unchanged from v3. Another configuration
-change is not yet supported by the available field evidence. The next run
+change was not supported by the available field evidence. The probe above
 observes the first-step momentum/pressure transition with all case inputs fixed.
 
 ## What the probe changes
@@ -84,10 +140,10 @@ A reproduced pressure failure returns status 1 and is useful diagnostic evidence
 The complete log contains the location and field records omitted from the compact
 console summary. Rotation, aeration, oxygen and biology remain disabled.
 
-## Kestrel command
+## Historical Kestrel command — completed, do not repeat
 
-Use the active allocation. This builds one application, prepares a fresh copy
-and runs only after build/dependency and control verification succeed.
+This command built the application, prepared a fresh copy and ran the probe
+above. Its existing bundle is the next required evidence; do not launch a copy.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -134,5 +190,8 @@ monitored failure collection and absence of reconstruction. A scalar C++ test
 executes the actual finite-value range accumulator and two-step exit logic.
 
 The full OpenFOAM application and MPI field reductions cannot be compiled/run
-locally. Kestrel compilation and the probe result remain pending. These tests
-do not establish physical validity or a working operating simulation.
+locally. The subsequent Kestrel execution reached the intended pressure guard,
+as recorded above; its raw-log bundle is pending. This update changes only
+documentation/evidence, so the 114-test result remains the prelaunch test result.
+Neither that result nor the intended diagnostic stop establishes physical
+validity or a working operating simulation.

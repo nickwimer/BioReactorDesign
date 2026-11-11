@@ -25,8 +25,9 @@ A drag-blending cancellation was identified; its isolated correction
 collection and bundle inspection are complete. The subsequent
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed;
 its bundle is now inspected. The [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
-also failed at the same first-step outer iteration; its bundle is now verified. The next action is the
-[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md).
+also failed at the same first-step outer iteration; its bundle is now verified. The
+[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
+the pressure collapse and stopped before limiting; receive its existing bundle next.
 Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen

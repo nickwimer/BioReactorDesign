@@ -239,8 +239,9 @@ weight [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
 collection and bundle inspection are complete; the
 [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed.
 Its bundle is now inspected; the [coupled-drag comparison](SC1_REACTOR_COUPLED_DRAG_2026-11-11.md)
-also failed at the same first-step outer iteration. Its bundle is now verified. The next action is the
-[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md). Physical
+also failed at the same first-step outer iteration. Its bundle is now verified. The
+[short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md) has now reproduced
+the pressure collapse and stopped before limiting; receive its existing bundle next. Physical
 adequacy remains to be established.
 
 ## Next decision: continue validating the simpler candidate
