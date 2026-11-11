@@ -81,8 +81,9 @@ def scan(path):
                     # OF prints Co before incrementing Time. Do not label it as the next step.
                     if value>.2:event('courant_above_0_2',lines,text,maximum=value)
             match=re.fullmatch(r'(gas|liquid) fraction, min, max = (\S+) (\S+) (\S+)',text)
-            if match:
-                values=[number(x) for x in match.groups()[1:]]
+            vof_alpha=re.fullmatch(r'Phase-1 volume fraction = (\S+)\s+Min\(alpha\.liquid\) = (\S+)\s+Max\(alpha\.liquid\) = (\S+)',text)
+            if match or vof_alpha:
+                values=[number(x) for x in (match.groups()[1:] if match else vof_alpha.groups())]
                 if any(x is None or not math.isfinite(x) for x in values):
                     event('nonfinite_alpha',lines,text)
                 else:
@@ -126,7 +127,7 @@ def scan(path):
     if not times and not first:raise ValueError('No recognizable startup runtime evidence')
     complete_pairs=sorted(t for t,p in paired.items() if p=={'gas','liquid'})
     # This is record coverage only: bounded accepted fields can hide catastrophic subcycles.
-    return dict(lines=lines,endMarkerSeen=end,printedTimes=len(times),lastPrintedTime_s=time,
+    report=dict(lines=lines,endMarkerSeen=end,printedTimes=len(times),lastPrintedTime_s=time,
         pairedStepRecordCount=len(complete_pairs),lastPairedStepRecordTime_s=max(complete_pairs,default=None),
         duplicateStepRecords=duplicates,malformedStepRecords=malformed,lastStepRecords=last_step,
         dragNoneSelectionCount=marker_count,maxFiniteCourant=courant_max,
@@ -134,6 +135,13 @@ def scan(path):
         timeline=timeline,timelineTruncated=len(times)>len(timeline),
         meaning='Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.',
         timeContext='lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.')
+    from sc1_reactor_vof_failure import scan as scan_vof
+    vof=scan_vof(path)
+    if vof is not None:
+        report['vof']=vof
+        if vof['largestFiniteAlphaMagnitude'] is not None:
+            report['largestFiniteAlphaMagnitude']=max(largest_alpha,vof['largestFiniteAlphaMagnitude'])
+    return report
 
 
 def context(path, events, out):
@@ -204,7 +212,9 @@ def collect(root,out):
     out.mkdir(parents=True,exist_ok=False)
     (out/'report.json').write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
     (out/'evidence_sha256.json').write_text(json.dumps(hashes,indent=2)+'\n')
-    context(log,report['firstEvents'],out/'first_events.txt')
+    events=dict(report['firstEvents'])
+    events.update({'vof_'+k:v for k,v in report.get('vof',{}).get('firstLimitEvents',{}).items()})
+    context(log,events,out/'first_events.txt')
     bundle=out/'reactor_failure_evidence.tar.gz'
     with tarfile.open(bundle,'w:gz') as tar:
         for rel,p in selected.items():tar.add(p,arcname='case_evidence/'+rel,recursive=False)

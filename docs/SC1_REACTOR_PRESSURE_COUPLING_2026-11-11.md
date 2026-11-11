@@ -48,8 +48,9 @@ the bulk-liquid peak remains much smaller. The last two global peaks are not
 direct wall-face owners, while wall-adjacent peaks have almost equal speeds.
 Its full bundle is now verified and also shows predominantly horizontal gas
 peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
-**Next action: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)**
-on the same mesh and initial fill. The spatial diagnostic does not accept
+**The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
+built, then stopped at 8.4 ms; inspect its existing evidence bundle next.**
+It uses the same mesh and initial fill. The spatial diagnostic does not accept
 this failed parent startup or establish a two-fluid force correction.
 
 ## Evidence and decision

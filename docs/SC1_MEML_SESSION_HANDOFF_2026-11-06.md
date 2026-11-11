@@ -160,23 +160,29 @@ interface and 34.8828 mm/s in the bulk-gas layer above it at 0.15 ms. Neither
 peak owns a boundary face. Normal counterflow at the liquid maximum is only
 part of the disturbance. Whole-domain volume-mixture RMS is 1.482643 mm/s.
 
-**Next step: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).**
-Privately compile the inspected Foundation OF9 interFoam sources with read-only
-audit calls; keep its momentum/pressure/alpha equations unchanged. Prepare a
-fresh case with the same native mesh, 1000-L alpha, p_rgh, gravity, fluid
-properties and boundaries. Run at most 10 ms with independently reconciled
-phase budgets and unchanged pressure, liquid-speed, Co, alpha and redistribution
-limits. The reference removes phase slip and provides a simpler pressure/gravity
-and interface comparison. It does not replace aeration/PBM, oxygen transfer
-or biology, select three fields, or accept the failed BiRD parent startup.
-The first build at `9142d6a` stopped in the observer's logging call:
-`Info.precision(17)` is invalid for OF9's `messageStream`. Corrected to
-`Info().precision(17)`, matching the existing compiled audit headers. Native
-source compatibility passed, but compilation did not complete and no case
-preparation or CFD ran. Preserve `/scratch/nwimer/sc1_vof_build_20261111T190909Z`
-and its log; repeat the VOF command with its fresh timestamped roots after
-pulling the correction. Thirty-three focused tests pass after the correction;
-OpenFOAM compilation/CFD remain pending. Preserve every earlier control.
+**Latest result: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
+build passed; CFD stopped at printed time 0.0084 s.** The logging API error
+in the first build (`Info.precision(17)`) was corrected to `Info().precision(17)`.
+The fresh build at `a8349f1`, `/scratch/nwimer/sc1_vof_build_20261111T191346Z`,
+passed compilation/dependency verification. Preserve it and the earlier failed
+build `/scratch/nwimer/sc1_vof_build_20261111T190909Z`; do not rebuild.
+The reference case is `/scratch/nwimer/sc1_vof_reference_20261111T191346Z`.
+There are 168 printed time labels, no End, solver return 139 and wrapper status 1.
+The fatal banner appears at line 4962, outer 2; its explanation is absent from
+the console. All 49 initial inputs are reported unchanged. The maximum printed
+Co is 0.001778043328599279, which does not establish pressure or speed acceptance.
+The old collector's zero pair count/alpha magnitude cannot be interpreted for
+VOF. It did not parse VOF audit/fraction lines; the read-only parser now does.
+
+**Next action: receive and inspect the already-created evidence archive.**
+`/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/reactor_failure_evidence.tar.gz`
+has reported SHA256 `ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.
+The [console result](sc1_reactor_vof_result_2026-11-11.json) is saved; the archive
+has not yet been received or independently verified. Do not infer the cause,
+rerun, rebuild, restart or recollect. Inspect the fatal context and reconcile the
+VOF budgets from the existing full log first. Thirty-nine focused tests pass
+for the reporting update. No CFD equations, guards or build recipes changed.
+No rotation, aeration, PBM, oxygen-transfer or biology validation is implied.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

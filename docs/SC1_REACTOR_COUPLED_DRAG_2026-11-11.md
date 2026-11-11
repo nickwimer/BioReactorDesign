@@ -50,7 +50,7 @@ subsequently compiled but stopped at 0.2 ms with all v4 initial inputs retained.
 Its bundle now confirms the liquid-speed guard. The
 [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
 completed; its verified bundle also reveals horizontal gas motion near the
-interface. Next use the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).
+interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) built, then stopped at 8.4 ms; inspect its existing evidence bundle next.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

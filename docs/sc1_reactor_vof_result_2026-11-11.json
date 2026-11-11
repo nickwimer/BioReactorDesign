@@ -1,0 +1,70 @@
+{
+  "status": "VOF reference stopped; exact fatal explanation pending full-log inspection",
+  "provenance": "User-pasted Kestrel console. Evidence archive has not yet been received or independently verified.",
+  "sourceCommit": "a8349f13dc1a9dc1cd663dc1442cd4d5c4f3d588",
+  "variant": "sc1_meml_vof_reference_v1",
+  "build": {
+    "root": "/kfs3/scratch/nwimer/sc1_vof_build_20261111T191346Z",
+    "verification": "PASS (reported)",
+    "binary": "/kfs3/scratch/nwimer/sc1_vof_build_20261111T191346Z/bin/sc1InterFoamReference",
+    "sha256": "4614cd390d5586be793e260516e4dd1a0ae2facaeb59bae62a48a13a97ce3091"
+  },
+  "root": "/kfs3/scratch/nwimer/sc1_vof_reference_20261111T191346Z",
+  "monitor": {
+    "reason": "solver failure",
+    "line": 4962,
+    "lastPrintedTime": "0.0084",
+    "text": "[1] --> FOAM FATAL ERROR:",
+    "returncode": 139
+  },
+  "reportedScan": {
+    "lines": 5163,
+    "endMarkerSeen": false,
+    "printedTimes": 168,
+    "lastPrintedTime_s": 0.0084,
+    "pairedStepRecordCount": 0,
+    "lastPairedStepRecordTime_s": null,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 0,
+    "maxFiniteCourant": 0.001778043328599279,
+    "largestFiniteAlphaMagnitude": 0.0,
+    "firstEvents": {
+      "foam_fatal": {
+        "line": 4962,
+        "lastPrintedTime_s": 0.0084,
+        "outer": 2,
+        "text": "[1] --> FOAM FATAL ERROR:"
+      }
+    },
+    "eventCounts": {
+      "foam_fatal": 8
+    },
+    "timelineTruncated": false,
+    "inputIdentity": {
+      "checked": 49,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    }
+  },
+  "solverLogSha256": "2811c733dc1fe00499022c7d1b447d26ff6ec45facf145261f5f5dfae9190a9b",
+  "evidence": {
+    "report": "/kfs3/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/report.json",
+    "bundle": "/kfs3/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/reactor_failure_evidence.tar.gz",
+    "bundleSha256": "ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8",
+    "received": false,
+    "verified": false
+  },
+  "wrapperStatus": 1,
+  "interpretation": [
+    "Compilation and dependency checks passed according to the console; the 10-ms reference did not complete.",
+    "168 is the number of printed Time labels, not a count of accepted steps.",
+    "The old collector only recognizes BiRD step/alpha records. Its zero pair count and zero largest-alpha value do not describe VOF physics.",
+    "The low printed mixture Courant number does not establish pressure, speed, fraction, redistribution or conservation acceptance.",
+    "The return code and generic fatal banner alone do not identify the initiating failure.",
+    "No reconstruction was launched by this attempt. Time-directory names alone do not prove reconstructable fields."
+  ],
+  "nextAction": "Attach the already-created evidence archive. Inspect fatal context and VOF records without rebuilding, rerunning or recollecting.",
+  "meaning": "No startup, operating-checkpoint, aeration, oxygen-transfer or biology acceptance."
+}

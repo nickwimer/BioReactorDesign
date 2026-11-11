@@ -50,7 +50,101 @@ def fixture(root):
     return manifest
 
 
+def vof_step(**changes):
+    values=dict(t_s=.00005,dt_s=.00005,liquid_m3=1,gas_m3=.64,
+        liquidOut_m3_s=0,gasOut_m3_s=0,postPressureOut_m3_s=0,
+        liquidResidual_kg=0,gasResidual_kg=0,liquidL1_kg=0,gasL1_kg=0,
+        alphaMin=0,alphaMax=1,complement=0,liquidMax_m_s=.0001,gasMax_m_s=.1,
+        alphaChangeL1_m3=0,Co=.001,alphaCalls=2)
+    values.update(changes)
+    return 'SC1_VOF_STEP '+' '.join(f'{k}={v}' for k,v in values.items())+'\n'
+
+
+VOF_INITIAL='SC1_VOF_INITIAL liquid_m3=1 gas_m3=.64 version=1\n'
+VOF_PRESSURE='SC1_VOF_PRESSURE t_s=.00005 min_Pa=99983 max_Pa=111800 nonfinite=0\n'
+
+
 class FailureEvidence(unittest.TestCase):
+    def scan_text(self,text):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'log';path.write_text('Time = 5e-05\n'+text)
+            return failure.scan(path)
+
+    def test_vof_records_are_distinct_from_bird_pairs_and_not_accepted_steps(self):
+        r=self.scan_text(VOF_INITIAL+VOF_PRESSURE+vof_step()+vof_step(t_s=.0001,liquidMax_m_s=.00101))
+        v=r['vof']
+        self.assertEqual(r['pairedStepRecordCount'],0)
+        self.assertEqual(v['recordCounts'],dict(INITIAL=1,PRESSURE=1,STEP=2))
+        self.assertEqual(v['uniqueStepTimeCount'],2)
+        self.assertEqual(v['maximumGasSpeed_m_s'],.1)
+        self.assertEqual(v['minimumFinitePressure_Pa'],99983)
+        self.assertEqual(v['lastValidStep']['record']['liquidL1_kg'],0)
+        self.assertEqual(v['firstLimitEvents']['liquidMax_m_s']['t_s'],.0001)
+        self.assertEqual(set(v['firstLimitEvents']),{'liquidMax_m_s'})
+        self.assertEqual(r['largestFiniteAlphaMagnitude'],1)
+        self.assertFalse(r['endMarkerSeen'])
+        self.assertNotIn('startup_pass',v)
+        self.assertNotIn('vof',self.scan_text(LOG))
+
+    def test_vof_reports_each_existing_step_guard_and_initial_mass_limits(self):
+        cases=[('alphaMin',-2e-10),('alphaMax',1+2e-10),('complement',2e-10),
+               ('Co',.21),('liquidMax_m_s',.0011),('alphaChangeL1_m3',1.1e-5),
+               ('alphaCalls',1),('liquidL1_kg',1.1e-5),('gasL1_kg',7e-9)]
+        for key,value in cases:
+            with self.subTest(key=key):
+                v=self.scan_text(VOF_INITIAL+vof_step(**{key:value}))['vof']
+                self.assertEqual(set(v['firstLimitEvents']),{key})
+        at_limits=vof_step(alphaMin=-1e-10,alphaMax=1+1e-10,complement=1e-10,
+            Co=.2,liquidMax_m_s=.001,alphaChangeL1_m3=1e-5,
+            liquidL1_kg=1e-10+1e-8*1000,gasL1_kg=1e-10+1e-8*.64)
+        self.assertEqual(self.scan_text(VOF_INITIAL+at_limits)['vof']['firstLimitEvents'],{})
+
+    def test_vof_pressure_guard_does_not_require_a_completed_step(self):
+        text=VOF_INITIAL+VOF_PRESSURE.replace('min_Pa=99983','min_Pa=-20').replace('nonfinite=0','nonfinite=3')
+        r=self.scan_text(text+'[1] --> FOAM FATAL ERROR:\nInvalid VOF unclipped pressure\n')
+        v=r['vof']
+        self.assertEqual(v['validStepRecordCount'],0)
+        self.assertIsNone(v['lastValidStep'])
+        self.assertEqual(set(v['firstLimitEvents']),{'nonfinite_pressure','pressure_below_1000_Pa'})
+        self.assertIn('foam_fatal',r['firstEvents'])
+
+    def test_vof_malformed_nonfinite_and_duplicate_records_are_json_safe(self):
+        text=(VOF_INITIAL+vof_step()+vof_step(t_s=.0000500000000000001)
+              +vof_step(Co='nan')+vof_step().replace('alphaCalls=2','')
+              +vof_step().replace('Co=0.001','Co=0.001 Co=0.002')
+              +VOF_PRESSURE.replace('99983','inf')+vof_step(dt_s=0))
+        v=self.scan_text(text)['vof'];json.dumps(v,allow_nan=False)
+        self.assertEqual(v['duplicateStepRecords'],1)
+        self.assertEqual(v['uniqueStepTimeCount'],1)
+        self.assertEqual(v['validStepRecordCount'],2)
+        self.assertEqual(v['malformedRecordCount'],5)
+        self.assertEqual(v['firstMalformedRecord']['record']['Co'],'nan')
+        self.assertIsNone(v['minimumFinitePressure_Pa'])
+
+    def test_vof_ambiguous_or_missing_initial_record_does_not_invent_mass_limits(self):
+        for initial in ('',VOF_INITIAL*2,VOF_INITIAL.replace('version=1','version=2')):
+            v=self.scan_text(initial+vof_step(liquidL1_kg=1))['vof']
+            self.assertIsNone(v['initial'])
+            self.assertNotIn('liquidL1_kg',v['firstLimitEvents'])
+
+    def test_vof_stock_alpha_output_and_bundle_keep_guard_context(self):
+        stock='Phase-1 volume fraction = 0.61  Min(alpha.liquid) = -0.01  Max(alpha.liquid) = 1.02\n'
+        r=self.scan_text(stock)
+        self.assertEqual(r['largestFiniteAlphaMagnitude'],1.02)
+        self.assertEqual(r['timeline'][0]['alphaMin'],-.01)
+        self.assertIn('alpha_out_of_bounds',r['firstEvents'])
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/'case';m=fixture(root);m['variant']='sc1_meml_vof_reference_v1'
+            (root/'startup_manifest.json').write_text(json.dumps(m))
+            text='Time = 5e-05\n'+VOF_INITIAL+vof_step(liquidMax_m_s=.002)
+            (root/'quiescent/log.solver').write_text(text)
+            before={str(p):failure.sha(p) for p in root.rglob('*') if p.is_file()}
+            out=Path(tmp)/'report'
+            with redirect_stdout(io.StringIO()):r=failure.collect(root,out)
+            self.assertEqual(before,{str(p):failure.sha(p) for p in root.rglob('*') if p.is_file()})
+            self.assertIn('SC1_VOF_STEP',(out/'first_events.txt').read_text())
+            self.assertEqual(r['vof']['limitEventCounts'],{'liquidMax_m_s':1})
+
     def test_trapping_banner_is_not_an_exception_and_does_not_hide_later_crash(self):
         banner='sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).\n'
         with tempfile.TemporaryDirectory() as tmp:

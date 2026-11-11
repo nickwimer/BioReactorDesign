@@ -51,11 +51,11 @@ Neither cell owns a boundary face. These peaks are predominantly horizontal;
 the normal counterflow at the liquid maximum does not explain the full gas
 disturbance. The near-vent gas peak remains only 9.26e-7 m/s.
 
-**Next action: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).**
-Use the same mesh, fill, initial p_rgh, gravity and physical properties, but a
-shared velocity with the Foundation OF9 interFoam equations. Add read-only
-phase budgets and retain the existing startup guards in a separate private
-application. This establishes a simpler resolved-interface comparison before
+**The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
+built, then stopped at 8.4 ms; inspect its existing evidence bundle next.**
+It uses the same mesh, fill, initial p_rgh, gravity and physical properties, but
+a shared velocity with the Foundation OF9 interFoam equations, read-only phase
+budgets and the existing startup guards in a separate private application. This establishes a simpler resolved-interface comparison before
 attempting a new two-fluid force closure. It is not a dispersed-bubble, PBM,
 oxygen-transfer or biological replacement.
 
@@ -174,7 +174,7 @@ is not selected in advance.
 ## Historical Kestrel command — completed, do not repeat
 
 This command produced the diagnostic above. Its bundle is verified; use the
-separate VOF-reference command for the next calculation.
+VOF-reference result and attach its existing evidence bundle; do not repeat its launch.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit

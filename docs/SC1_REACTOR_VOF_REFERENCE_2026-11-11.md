@@ -1,5 +1,50 @@
 # SC1 single-velocity free-surface reference
 
+## Reported Kestrel result: build passed, reference stopped
+
+At `a8349f1`, the corrected application compiled and passed dependency checks
+in `/scratch/nwimer/sc1_vof_build_20261111T191346Z`. Its reported SHA256 is
+`4614cd390d5586be793e260516e4dd1a0ae2facaeb59bae62a48a13a97ce3091`.
+The fresh case `/scratch/nwimer/sc1_vof_reference_20261111T191346Z` stopped
+at printed time 0.0084 s, outer 2, with a generic `FOAM FATAL ERROR` banner.
+There are 168 printed time labels, no `End`, solver return 139 and wrapper
+status 1. These are not 168 accepted steps. The reported maximum printed
+mixture Co is 0.001778043328599279; this does not establish pressure or
+quiescent-speed acceptance. All 49 initial inputs are reported unchanged.
+
+The [saved console result](sc1_reactor_vof_result_2026-11-11.json) records the
+reported identities separately from independent verification. The full bundle
+has not yet been received. The console omits the fatal explanation and VOF
+step records, so the initiating failure is still unknown. Do not label this
+as a liquid-speed failure, pressure failure or independent segmentation fault
+from the generic banner/exit code alone. The 10-ms reference did not complete.
+
+The older failure collector recognizes `SC1_TWO_STEP` and BiRD fraction lines,
+not the VOF audit or stock `Phase-1 volume fraction` output. Its zero pair count
+and zero largest-alpha value are parser limitations, not physical findings.
+The read-only collector now adds VOF record coverage, last logged phase budgets,
+pressure extrema and logged guard violations. Malformed/nonfinite records and
+duplicates remain explicit; no incomplete log can gain startup acceptance.
+A VOF step is printed before its guard. Its presence alone is not acceptance.
+The new summary reports logged budgets; independent reconciliation remains
+required when inspecting the full log. No solver, guard, build recipe or case
+input changes in this reporting update.
+
+**Next action: attach the existing archive; no new Kestrel run is needed.**
+
+`/scratch/nwimer/sc1_vof_reference_20261111T191346Z_evidence/reactor_failure_evidence.tar.gz`
+
+Reported archive SHA256:
+`ab4e882c60e137ca99f4a646cf288c3324c2dfb6dd9348f3186f9fde3e785cb8`.
+Reported solver-log SHA256:
+`2811c733dc1fe00499022c7d1b447d26ff6ec45facf145261f5f5dfae9190a9b`.
+
+Verify that archive and its included hashes, inspect the fatal context, and
+reconcile the observed VOF budgets before changing a numerical or physical
+choice. Preserve both VOF builds and every case/control. No reconstruction ran;
+time-directory names alone do not establish usable native snapshots. Do not
+rebuild, rerun, restart or recollect this attempt merely to use the updated parser.
+
 ## First build result and correction
 
 The first Kestrel build at `9142d6a` stopped during compilation in
@@ -13,11 +58,9 @@ compiled SC1 audit headers and the
 
 This is a logging API correction only. No equation, case dictionary, guard,
 precision value or budget definition changes. Preparation and CFD were not
-reached. Preserve the failed build and `log.build.solver`; run the command
-below again to pull the correction and create fresh build/case roots. The
-failed build must not be reused because its recorded header recipe differs.
-All 33 focused tests pass after this correction; the full OpenFOAM rebuild
-and first reference run remain pending on Kestrel.
+reached. The subsequent fresh build at `a8349f1` passed, as recorded above.
+Preserve this failed build and `log.build.solver`; its recorded header recipe
+must not be rewritten. The 33 focused tests passed at the logging correction.
 
 ## Decision from the verified spatial evidence
 
@@ -32,7 +75,7 @@ versus 0.070844 mm/s in bulk liquid. A vertical-counterflow-only explanation
 is therefore incomplete. Pressure collapse remains absent during the observed
 three-step interval, but neither the gas nor the interface is stationary.
 
-The next calculation is a separate single-velocity resolved-interface reference
+The selected comparison is a separate single-velocity resolved-interface reference
 on the actual mesh. It uses the Foundation OF9
 [interFoam equations](https://cpp.openfoam.org/v9/interFoam_8C_source.html),
 with read-only observation and failure guards. The pressure and momentum
@@ -125,7 +168,7 @@ the next investigation is the shared mesh/initialization/discrete force balance
 within this simpler reference. Neither outcome alone selects an aeration/PBM
 closure, changes biological scheduling or authorizes a production restart.
 
-## Next Kestrel command
+## Historical Kestrel command — already executed; do not repeat
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -157,11 +200,13 @@ else
 fi
 ```
 
-Paste the output and attach the printed `BUNDLE`. Preserve every existing root.
+The command above produced the stopped attempt recorded at the top. Attach its
+existing bundle and preserve every root; no new allocation or calculation is needed.
 
 ## Local verification and remaining runtime work
 
-Thirty-three focused tests pass, including ten new reference tests. They check
+Thirty-nine focused tests pass, including ten reference tests and six additional
+incomplete-VOF evidence tests. They check
 unchanged upstream equation lines, exact source compatibility, private build
 destinations, preserved controls, runtime/source tampering, boundary recipes,
 known phase export/replacement budgets, rejected incomplete/nonfinite records,
@@ -170,6 +215,9 @@ completion. Prior velocity, failure-collection and pressure-coupling tests pass.
 The source fixture preserves upstream license notices. JSON, documentation
 links, shell syntax and diff checks are also validated before push.
 
-There is no local OpenFOAM installation. The new observer adapter still needs
-Kestrel compilation and the actual VOF reference still needs its first CFD run.
-No pass, gas equilibrium or working full-reactor simulation is claimed yet.
+There is no local OpenFOAM installation. Kestrel compilation passed, but the
+reference stopped before 10 ms. The new evidence tests cover individual existing
+guards, exact limits, missing/duplicate initial inventories, malformed/nonfinite
+and duplicate step records, stock fraction output and unchanged-case collection.
+The compiled adapter and its runtime inputs are unchanged by this update.
+No pass, gas equilibrium or working full-reactor simulation is claimed.

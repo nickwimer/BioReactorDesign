@@ -21,7 +21,7 @@ at the same first-step outer iteration. Its bundle is now verified. The
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. Next use the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) built, then stopped at 8.4 ms; inspect its existing evidence bundle next.
 These regressions establish the correction for their tested source contract;
 reactor wall/free-surface, aeration, oxygen and biology validation remain open.
 All 68 pre-existing focused local tests passed before the Kestrel run.
