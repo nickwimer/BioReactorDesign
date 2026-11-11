@@ -1,5 +1,5 @@
 {
-  "provenance": "User-pasted Kestrel console output; new v4 raw-log bundle has not yet been received or independently verified.",
+  "provenance": "Received reactor_failure_evidence.tar(2).gz; archive SHA256, all 19 bundled evidence hashes and 13 included initial dictionary hashes verified. Full 390-line log inspected.",
   "sourceCommit": "8b81ede6814310d7f9cdf02bbf52e8d3237ac179",
   "variant": "sc1_meml_quiescent_coupled_drag_v4",
   "root": "/kfs3/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z",
@@ -27,12 +27,14 @@
     "firstEvents": {
       "pressure_limit": {
         "line": 235,
-        "lastPrintedTime_s": 0.00005,
+        "lastPrintedTime_s": 5e-05,
         "outer": 2,
         "text": "limitPressure: p min -2499398.1871999367"
       }
     },
-    "eventCounts": { "pressure_limit": 1 },
+    "eventCounts": {
+      "pressure_limit": 1
+    },
     "timelineTruncated": false,
     "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
     "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
@@ -50,11 +52,285 @@
   "bundleSha256": "0ac651d664f0834d9ecde87cc05bc7c39989ccf1a27bec4837eb49bbb54669b3",
   "comparison": {
     "controlVariant": "sc1_meml_quiescent_face_momentum_v3",
-    "controlPressureMinimum_Pa": -2499398.2044661008,
+    "controlPressureMinimum_Pa": -2499398.204466101,
     "candidatePressureMinimum_Pa": -2499398.1871999367,
-    "sameFirstLimiterTime_s": 0.00005,
+    "sameFirstLimiterTime_s": 5e-05,
     "sameFirstLimiterOuter": 2,
-    "meaning": "No meaningful improvement in first pressure-limiter onset or minimum. The console does not report drag determinant coverage or individual pressure solves; this does not isolate the cause or rule out all momentum/pressure coupling issues."
+    "meaning": "Coupled drag is confirmed active. The first-step determinant changes from almost 1 in outer 1 to 0.013594498127553201 in outer 2. All pressure solves meet the requested tolerance. The pressure-limiter onset and minimum remain nearly unchanged from v3; the cause is not yet isolated."
   },
-  "decision": "Preserve the v4 root and all controls. Receive the already-created v4 bundle, verify hashes, inspect coupled-drag determinants and first-step pressure/alpha records against v3 before selecting another solver or case change. Do not repeat, extend, rebuild or relax the stop criteria on the basis of this console result."
+  "decision": "Run a fresh identical-input, application-only pressure probe using the verified rate libraries. Observe momentum/pressure coefficients, force/drag fluxes and phase speeds through the first two outer iterations. Stop synchronously before limiting any internal p below 1000 Pa, or after two completed steps. Do not modify physical settings or acceptance criteria.",
+  "verifiedBundle": {
+    "evidenceFiles": 19,
+    "includedInitialInputs": 13,
+    "pressureSolves": [
+      {
+        "line": 176,
+        "time_s": 5e-05,
+        "outer": 1,
+        "initial": 0.0013841964345522111,
+        "final": 9.142023104000988e-13,
+        "iterations": 244,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 178,
+        "time_s": 5e-05,
+        "outer": 1,
+        "initial": 6.824424223544068e-07,
+        "final": 9.806493653331022e-13,
+        "iterations": 185,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 233,
+        "time_s": 5e-05,
+        "outer": 2,
+        "initial": 0.004172250155538477,
+        "final": 9.639226210203968e-13,
+        "iterations": 345,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 237,
+        "time_s": 5e-05,
+        "outer": 2,
+        "initial": 2.6344945014317278e-05,
+        "final": 8.702254202946318e-13,
+        "iterations": 302,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 302,
+        "time_s": 0.0001,
+        "outer": 1,
+        "initial": 0.0009943320045127935,
+        "final": 8.861887520614984e-13,
+        "iterations": 261,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 304,
+        "time_s": 0.0001,
+        "outer": 1,
+        "initial": 2.6226159314478177e-05,
+        "final": 9.044611829929445e-13,
+        "iterations": 233,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 359,
+        "time_s": 0.0001,
+        "outer": 2,
+        "initial": 2.252485023512137e-05,
+        "final": 9.974606663134323e-13,
+        "iterations": 245,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 361,
+        "time_s": 0.0001,
+        "outer": 2,
+        "initial": 7.43227675832945e-06,
+        "final": 8.834576957525957e-13,
+        "iterations": 235,
+        "beforeFirstLimiter": false
+      }
+    ],
+    "dragDeterminants": [
+      {
+        "line": 177,
+        "time_s": 5e-05,
+        "outer": 1,
+        "minimum": 0.9999999999998727,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 179,
+        "time_s": 5e-05,
+        "outer": 1,
+        "minimum": 0.9999999999998727,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 234,
+        "time_s": 5e-05,
+        "outer": 2,
+        "minimum": 0.0135944981275532,
+        "beforeFirstLimiter": true
+      },
+      {
+        "line": 238,
+        "time_s": 5e-05,
+        "outer": 2,
+        "minimum": 0.0135944981275532,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 303,
+        "time_s": 0.0001,
+        "outer": 1,
+        "minimum": 0.18456964786817232,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 305,
+        "time_s": 0.0001,
+        "outer": 1,
+        "minimum": 0.18456964786817232,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 360,
+        "time_s": 0.0001,
+        "outer": 2,
+        "minimum": 0.5550272881785049,
+        "beforeFirstLimiter": false
+      },
+      {
+        "line": 362,
+        "time_s": 0.0001,
+        "outer": 2,
+        "minimum": 0.5550272881785049,
+        "beforeFirstLimiter": false
+      }
+    ],
+    "physicalRateRecords": 5,
+    "allPhysicalRatesZero": true,
+    "firstStepAlphaSolveRecords": [
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 1.0,
+        "solved": 0.0,
+        "mulesCalls": 0.0,
+        "deltaVolume_m3": 0.0,
+        "deltaFrozenRhoMass_kg": 0.0,
+        "changeL1Volume_m3": 0.0,
+        "unassignedVolume_m3": 0.0,
+        "unassignedFrozenRhoMass_kg": 0.0,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 1.0,
+        "solved": 1.0,
+        "mulesCalls": 6.0,
+        "deltaVolume_m3": -9.85336656179546e-22,
+        "deltaFrozenRhoMass_kg": -9.85336656179547e-19,
+        "changeL1Volume_m3": 2.73870850954795e-20,
+        "unassignedVolume_m3": 0.0,
+        "unassignedFrozenRhoMass_kg": 0.0,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 2.0,
+        "solved": 0.0,
+        "mulesCalls": 0.0,
+        "deltaVolume_m3": 8.73325094898454e-18,
+        "deltaFrozenRhoMass_kg": 8.73325094898454e-18,
+        "changeL1Volume_m3": 1.14518508022285e-11,
+        "unassignedVolume_m3": 2.22143230910237e-27,
+        "unassignedFrozenRhoMass_kg": 2.22143230910237e-27,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "call": 2.0,
+        "solved": 1.0,
+        "mulesCalls": 6.0,
+        "deltaVolume_m3": -8.75083817973407e-18,
+        "deltaFrozenRhoMass_kg": -8.75083817539137e-15,
+        "changeL1Volume_m3": 1.14518507833421e-11,
+        "unassignedVolume_m3": -2.42338070083895e-27,
+        "unassignedFrozenRhoMass_kg": -1.03397576569128e-25,
+        "mulesBoundaryVolume_m3": 0.0,
+        "divBoundaryDifference_m3": 2.82338632254103e-22
+      }
+    ],
+    "printedStepRecords": [
+      {
+        "phase": "gas",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.642002269140888,
+        "mass_kg": 0.642002269140888,
+        "deltaMass_kg": 8.73325094898454e-18,
+        "boundaryOut_kg": -4.60184209814744e-17,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": -3.72851700324899e-17,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 5e-05,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.999999999999985,
+        "mass_kg": 1000.00000000001,
+        "deltaMass_kg": -8.79722960867044e-15,
+        "boundaryOut_kg": 0.0,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": -8.79722960867044e-15,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      },
+      {
+        "phase": "gas",
+        "t_s": 0.0001,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.642002269140888,
+        "mass_kg": 0.642002269140888,
+        "deltaMass_kg": 1.20393262339617e-15,
+        "boundaryOut_kg": -1.67088049426549e-16,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": 1.03684457396962e-15,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      },
+      {
+        "phase": "liquid",
+        "t_s": 0.0001,
+        "dt_s": 5e-05,
+        "outers": 2.0,
+        "volume_m3": 0.999999999999984,
+        "mass_kg": 1000.0,
+        "deltaMass_kg": -1.20391397165457e-12,
+        "boundaryOut_kg": 0.0,
+        "optionSource_kg": 0.0,
+        "transferSource_kg": 0.0,
+        "physicalResidual_kg": -1.20391397165457e-12,
+        "alphaMin": 0.0,
+        "alphaMax": 1.0,
+        "phaseSumMaxError": 0.0
+      }
+    ],
+    "firstStepZeroObservedTerms": {
+      "rawDgdt": true,
+      "pressureDilatation": true,
+      "splitAtSourceAlpha": true,
+      "clamp": true,
+      "rescale": true
+    },
+    "limitation": "Native initial fields/mesh remain on Kestrel; only included files independently verified. Records after the pressure failure do not validate an accepted state."
+  }
 }

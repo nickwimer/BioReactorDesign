@@ -6,8 +6,8 @@ The v4 run at `8b81ede` in
 `/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z` returned wrapper status 1.
 At t=0.00005 s, outer 2, line 235, the monitor detected
 `limitPressure: p min -2499398.1871999367` Pa and stopped its child step
-(return code 137). See the [recorded console result](sc1_reactor_coupled_failure_result_2026-11-11.json).
-The new raw-log bundle has not yet been received; the older v3 bundle is separate.
+(return code 137). See the [verified bundle result](sc1_reactor_coupled_failure_result_2026-11-11.json).
+The new raw-log bundle is received and verified; the older v3 bundle is separate.
 
 | First pressure-limiter event | Face v3 | Coupled-face v4 |
 |---|---:|---:|
@@ -27,17 +27,23 @@ while the monitor stops the process; they do not make the invalid pressure
 state acceptable. The first scheduled snapshot at 0.00025 s was not reached.
 There is no valid restart or full mass/quiescence screen from this attempt.
 
-**Next action: attach the existing v4 bundle:**
+**The v4 bundle is now received and inspected:**
 
 `/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z_failure/reactor_failure_evidence.tar.gz`
 
 - Reported bundle SHA256: `0ac651d664f0834d9ecde87cc05bc7c39989ccf1a27bec4837eb49bbb54669b3`.
 - Reported solver-log SHA256: `d6f4e4b1345fdbe0029598c699e9be1f322479ce77152665ff3988c05052a9ea`.
 
-Verify those hashes, then compare the actual drag inversion/determinant records,
-individual pressure solves, alpha/source stages and stop chronology with v3.
-The console alone does not contain those records. No new collection, rerun,
-rebuild, timestep change or tolerance relaxation is needed for this next step.
+All 19 bundled hashes and all 13 included initial dictionaries match. The log
+confirms eight coupled drag inversions and eight converged pressure solves.
+The first-step determinant falls from almost 1 in outer 1 to 0.0135944981275532
+in outer 2. All five physical-rate records are zero; first-step alpha changes
+and equation residuals remain tiny. Later records are after the invalid pressure
+state and do not establish physical validity.
+**Next action:** the [two-step pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md)
+records coefficients, forces, phase speeds and the minimum-pressure cell before
+limiting. It builds one private executable against the same libraries, copies
+all v4 case inputs unchanged, and stops internally at the first invalid pressure.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)
@@ -46,8 +52,8 @@ correction. It does not directly replace that pressure equation's assembled
 `rAUf` or `phiHbyA`; it can affect subsequent corrections through the updated
 phase fluxes. This ordering agrees with the
 [Foundation OpenFOAM 9 source](https://cpp.openfoam.org/v9/multiphase_2multiphaseEulerFoam_2multiphaseEulerFoam_2pUf_2pEqn_8H_source.html).
-The bundle comparison comes before deciding whether additional pressure/force
-instrumentation is required. No further configuration change is selected yet.
+The bundle comparison supports collecting these pressure/force fields before
+selecting another physical or numerical configuration change.
 
 ## Earlier face-run evidence and rationale for the v4 test
 

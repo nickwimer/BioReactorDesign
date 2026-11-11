@@ -105,12 +105,16 @@ from v3 by only 0.0173 Pa. The monitor stopped the step (137; wrapper status 1).
 The collector reports all 59 inputs unchanged, two paired records through
 0.0001 s, no End, and max logged mixture Co 0.005975836748875787. No scheduled
 snapshot was reached; this is not a valid restart or a passed startup.
-**Next step: receive the already-created v4 bundle** at
-`/scratch/nwimer/sc1_reactor_coupled_20261111T165652Z_failure/reactor_failure_evidence.tar.gz`.
-The [console result and hashes](sc1_reactor_coupled_failure_result_2026-11-11.json)
-are saved. Inspect its drag determinant and first-step pressure/alpha records
-before choosing another change. All 107 local tests passed before launch;
-they do not establish CFD success. Do not rerun cases, rebuild or relax limits.
+**The v4 bundle is now received and verified:** all 19 hashes and 13 included
+initial dictionaries match. The [verified result](sc1_reactor_coupled_failure_result_2026-11-11.json)
+confirms active coupled drag, first-step minimum determinant falling from almost
+1 to 0.0135944981275532, eight converged pressure solves and five zero-rate records.
+**Next step:** the [short pressure probe](SC1_REACTOR_PRESSURE_PROBE_2026-11-11.md)
+builds one private executable against the existing rate libraries, copies all
+v4 inputs unchanged, and observes momentum/pressure coefficients, forces and
+phase speeds. It stops before limiting pressure below 1000 Pa, or after two
+completed steps. All 114 focused tests pass locally; the application build and
+probe execution on Kestrel are pending. Do not rerun old cases or relax limits.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only
