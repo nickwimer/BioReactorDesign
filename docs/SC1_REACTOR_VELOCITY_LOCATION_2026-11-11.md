@@ -29,21 +29,42 @@ At 0.15 ms, bulk-liquid peak speed is about 11.3 times smaller than the
 present-liquid peak. Liquid inventory remains 1000 L to printed rounding.
 However, the whole-domain volume-mixture RMS reaches 1.482643 mm/s; quieter
 bulk liquid does not establish a quiet gas region or an acceptable startup.
-The console omits the gas peak, gas bulk/interface statistics and full pressure
-ranges that are already saved in the new case's `result.json`.
+The full bundle has now been received. Its archive SHA256, all 19 bundled
+file hashes and all 13 included initial dictionaries match. The 33 prefix
+comparisons were independently repeated against the verified v5 log.
+Native fields/mesh and compiled binaries remain on Kestrel; the fifteen
+reconstructed field hashes are included in the verified result.
 
-**Next action: attach the existing bundle, without another run:**
+The complete gas summary materially extends the liquid-peak interpretation:
+
+| Time (ms) | Gas interface peak (mm/s) | Gas bulk peak (mm/s) |
+|---:|---:|---:|
+| 0.05 | 17.3839 | 11.5786 |
+| 0.10 | 30.0239 | 23.2463 |
+| 0.15 | 40.0167 | 34.8828 |
+
+At 0.15 ms the gas interface peak is at radius 0.270417 m and
+y=1.018661409 m, alphaLiquid=0.49494025, with velocity
+(0.0069859, 0.0004855, -0.0393992) m/s. The bulk-gas peak is in pure gas
+at y=1.031215754 m, about 12.6 mm above the interface midplane.
+Neither cell owns a boundary face. These peaks are predominantly horizontal;
+the normal counterflow at the liquid maximum does not explain the full gas
+disturbance. The near-vent gas peak remains only 9.26e-7 m/s.
+
+**Next action: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).**
+Use the same mesh, fill, initial p_rgh, gravity and physical properties, but a
+shared velocity with the Foundation OF9 interFoam equations. Add read-only
+phase budgets and retain the existing startup guards in a separate private
+application. This establishes a simpler resolved-interface comparison before
+attempting a new two-fluid force closure. It is not a dispersed-bubble, PBM,
+oxygen-transfer or biological replacement.
+
+Verified evidence source:
 
 `/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/reactor_failure_evidence.tar.gz`
 
-- Reported bundle SHA256: `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`.
-- Reported solver-log SHA256: `c0cd5cfde42651b23262ad2cc545cf8f5b66336cc64d4e95e3bc1e11a0f967e8`.
-
-Only the pasted console has been received for this run. Verify the bundle and
-inspect its complete gas/interface/patch statistics before selecting the next
-force-balance or interface-model change. Preserve all snapshots, builds and
-controls. No rebuild, recollection, CFD rerun or threshold change is needed
-to retrieve this existing evidence.
+- Bundle SHA256: `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`.
+- Solver-log SHA256: `c0cd5cfde42651b23262ad2cc545cf8f5b66336cc64d4e95e3bc1e11a0f967e8`.
 
 ## Force-balance interpretation to test
 
@@ -69,10 +90,12 @@ At the first liquid peak, the continuum liquid acceleration scale is
 -4.899575 m/s2. This is a scale comparison only: it omits the actual face
 pressure gradient, surface tension, boundary treatment, nonlinear drag and
 the two outer iterations. It is not a closed discrete force budget, and it
-does not predict the observed gas velocity. Removing buoyancy contrast,
+does not predict the observed gas velocity, especially the now-measured
+horizontal peaks. Removing buoyancy contrast,
 adding an unverified compensating force or increasing drag is not selected
-from this numerical resemblance. The full saved gas/interface summary is
-the next available evidence for choosing a physically consistent model test.
+from this numerical resemblance. The next model test is the separate
+single-velocity reference described above; the original source equations
+and all BiRD controls remain preserved.
 
 ## Original decision based on v5 evidence
 
@@ -150,8 +173,8 @@ is not selected in advance.
 
 ## Historical Kestrel command — completed, do not repeat
 
-This command produced the diagnostic above. Attach its existing evidence
-bundle next; no new allocation or computation is needed for that transfer.
+This command produced the diagnostic above. Its bundle is verified; use the
+separate VOF-reference command for the next calculation.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -179,8 +202,8 @@ else
 fi
 ```
 
-The console output is recorded above. Attach the existing `BUNDLE`; preserve
-the completed diagnostic and all earlier roots.
+The console and full bundle are recorded above. Preserve the completed
+diagnostic and all earlier roots.
 
 ## Local validation
 

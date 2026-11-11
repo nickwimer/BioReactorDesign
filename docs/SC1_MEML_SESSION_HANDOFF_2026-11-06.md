@@ -150,17 +150,27 @@ peaks are not direct boundary-face owners; wall-adjacent peaks in the same
 interface-height layer are almost equal. This points toward interface-normal
 counterflow, without establishing a discrete force budget or accepted remedy.
 
-**Next step: receive the existing spatial-diagnostic bundle** at
+The spatial-diagnostic bundle at
 `/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/reactor_failure_evidence.tar.gz`,
-reported SHA256 `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`.
-The [console result is saved](sc1_reactor_velocity_location_result_2026-11-11.json);
-the full new bundle has not yet been received or independently verified.
-Inspect its gas/interface/patch statistics and solver log. Whole-domain
-volume-mixture RMS reaches 1.482643 mm/s, so quieter bulk liquid is insufficient
-for acceptance. No new run, rebuild, recollection, physical parameter change
-or threshold relaxation is selected. All 129 local tests passed before launch;
-this result update is documentation only. Preserve every build, control and
-native snapshot. The parent 10-ms startup remains failed at 0.2 ms.
+with SHA256 `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`,
+is now verified: archive, all 19 bundled hashes, 13 initial dictionaries and
+33 prefix records match. The [full result is saved](sc1_reactor_velocity_location_result_2026-11-11.json).
+It reveals predominantly horizontal gas peaks of 40.0167 mm/s in the
+interface and 34.8828 mm/s in the bulk-gas layer above it at 0.15 ms. Neither
+peak owns a boundary face. Normal counterflow at the liquid maximum is only
+part of the disturbance. Whole-domain volume-mixture RMS is 1.482643 mm/s.
+
+**Next step: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md).**
+Privately compile the inspected Foundation OF9 interFoam sources with read-only
+audit calls; keep its momentum/pressure/alpha equations unchanged. Prepare a
+fresh case with the same native mesh, 1000-L alpha, p_rgh, gravity, fluid
+properties and boundaries. Run at most 10 ms with independently reconciled
+phase budgets and unchanged pressure, liquid-speed, Co, alpha and redistribution
+limits. The reference removes phase slip and provides a simpler pressure/gravity
+and interface comparison. It does not replace aeration/PBM, oxygen transfer
+or biology, select three fields, or accept the failed BiRD parent startup.
+Thirty-three focused local tests pass; OpenFOAM compilation/CFD remain pending
+on Kestrel. Preserve every build, control and native snapshot.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

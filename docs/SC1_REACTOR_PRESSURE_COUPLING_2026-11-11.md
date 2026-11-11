@@ -46,9 +46,11 @@ All 33 compared records match this v5 prefix. The liquid peaks lie in the
 approximately 50/50 interface layer with liquid moving downward and gas upward;
 the bulk-liquid peak remains much smaller. The last two global peaks are not
 direct wall-face owners, while wall-adjacent peaks have almost equal speeds.
-**Next action: receive the already-created velocity-probe bundle** for its full
-gas/interface statistics and independent verification. No new CFD or rebuild
-is needed. The spatial diagnostic does not accept this failed parent startup.
+Its full bundle is now verified and also shows predominantly horizontal gas
+peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
+**Next action: the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)**
+on the same mesh and initial fill. The spatial diagnostic does not accept
+this failed parent startup or establish a two-fluid force correction.
 
 ## Evidence and decision
 

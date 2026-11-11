@@ -22,7 +22,7 @@ at the same correction; its bundle is now verified. The
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed and located liquid/gas counterflow in the interface layer. Receive its existing bundle next; no new CFD is needed. Do not rerun cases.**
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. Next use the [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md). Do not rerun cases.**
 The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no library rebuild or numerical-suite rerun is needed.
