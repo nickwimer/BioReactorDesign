@@ -250,9 +250,16 @@ gas/liquid cumulative absolute residuals `5.769354784863862e-16` /
 `5.770176179219254e-13` kg, below limits `1.5e-12` / `5.01e-10` kg. The maximum
 time-key adjustment was `1.1102230246251565e-16` s. This establishes conservation
 only for the small closed constant-density fixture; rescaling was negligible.
-Next use the guarded `continue-closed` command to save the validated result and
-run only the unattempted gas-reference partner. All 39 harness tests pass.
-Preserve all attempts and reuse the verified build. It is not an
+The continuation at `56a84d7` then saved this result without rerunning CFD and
+completed the gas-reference partner, which also passes 100 steps. Its gas/liquid
+cumulative absolute residuals are `4.894737643911179e-16` /
+`4.895160184386637e-13` kg. Both settings are well within their limits;
+the closed fixture does not select one formulation or explain EMM's excess
+inventory. Both reports and log hashes are recorded in the two-field test
+document. Next launch the already prepared source pair in the same root with
+the existing 0.001 kg/s liquid feed and measured outlet export. No code changed
+for this result update; the prior 39 harness tests passed. Preserve all attempts
+and reuse the verified build. It is not an
 SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

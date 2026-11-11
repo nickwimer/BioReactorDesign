@@ -2,14 +2,17 @@
 
 ## Status and purpose
 
-**The closed no-reference case passes the complete 100-step numerical screen.**
+**Both closed cases pass the complete 100-step numerical screen.**
 Saved-log analysis at `e7825bd` confirmed that the earlier report rejection
 was caused by timestamp roundoff. The existing case root is
 `/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z` and the verified
 build is `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`.
-**Next: validate/save the completed result and run only the unattempted
-`closed_gas_reference` partner with `continue-closed`.** No rebuild or repeat
-of `closed_no_reference` is needed. The source pair remains gated and unlaunched.
+The continuation at `56a84d7` validated/saved the no-reference report without
+rerunning CFD, then completed the gas-reference partner. Both `result.json`
+files now exist with log hashes. **Next: run the two already prepared source
+cases in this same root.** No rebuild, case regeneration or closed-case rerun
+is needed. The source pair remains unlaunched; its closed-pair prerequisite
+is now satisfied and will be rechecked by the runner.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -329,11 +332,94 @@ was timestamp representation, not missing audit records.
 The no-reference formulation conserves mass in this closed, constant-density
 transport fixture, with negligible observed rescaling. This does not establish
 conservation with sources, explain the archived EMM inventory increase, or
-select the SC1 reactor phase formulation. The gas-reference partner and the
-source pair remain necessary. `analyze` printed the result without saving a
-`result.json`; the continuation below revalidates the evidence before saving it.
+select the SC1 reactor phase formulation. `analyze` initially printed the
+result without saving `result.json`; the completed continuation below saved it
+after revalidating the evidence.
 
-## Next Kestrel step: continue only the unattempted closed partner
+## Closed pair completed: both reference settings pass
+
+The user ran `continue-closed` at `56a84d7` in the existing
+`sc1_two_field_cases_20261110T233431Z` root. The transcript confirms
+`REUSED=.../closed_no_reference`, a passing saved first report, then the four
+mesh/check/initialization/solver commands for `closed_gas_reference` only.
+The partner also reports `complete: true`, `screen_pass: true`, `errors: []`,
+100 steps, and the runner ends with `PAIR=closed complete`.
+
+| Quantity | No reference | Gas reference |
+|---|---:|---:|
+| Gas final mass (kg), from 0.0005 | 0.000500000000000061 | 0.000500000000000093 |
+| Liquid final mass (kg), from 0.5 | 0.499999999999939 | 0.499999999999907 |
+| Gas cumulative absolute residual (kg); limit 1.5e-12 | 5.769354784863862e-16 | 4.894737643911179e-16 |
+| Liquid cumulative absolute residual (kg); limit 5.01e-10 | 5.770176179219254e-13 | 4.895160184386637e-13 |
+| Gas final-outer rescale sum (m3) | 7.752045533271372e-20 | 0 |
+| Liquid final-outer rescale sum (m3) | 1.2858637765678101e-19 | 0 |
+| Adjusted timestamp keys | 3360 | 2128 |
+
+Both reports have zero boundary mass export, option/transfer sources and
+final-outer source-split terms. Both maximum timestamp adjustments are
+`1.1102230246251565e-16` s. Gas-reference accepted-step changes are
+`9.277898424502305e-17` kg gas and `-9.277435852805425e-14` kg liquid.
+The differences between variants are far below the declared screening limits;
+this closed fixture gives no conservation-based reason to prefer one setting.
+It does not explain EMM's archived excess inventory or validate source coupling,
+interphase transfer, free surfaces, oxygen, or the reactor phase count.
+
+Recorded solver-log SHA-256 values from the supplied reports:
+
+- `closed_no_reference`: `9793a67274cf9260750c7b822f24bc0e9cf66a00d04f4b0cd707700042c212df`
+- `closed_gas_reference`: `1e563cb5179927771ffea8ccf691a89488f71cb871c500dd785117fd7e3e17ac`
+
+These are user-supplied runtime results; the raw logs and hash-bound
+`result.json` files remain on Kestrel. Preserve both cases and the earlier
+failed roots.
+
+## Next Kestrel step: run the prepared source pair
+
+The source cases were prepared with the corrected dictionaries at `d7b1b2e`
+and have not been attempted. They retain the same 256-cell mesh, 100 steps to
+0.1 s and numerical controls. The prescribed liquid feed is 0.001 kg/s, giving
+0.0001 kg (0.1 g) total supply. The pressure outlet can export both phases;
+acceptance compares inventory changes with measured boundary mass and the
+assembled source, rather than requiring all supplied liquid to remain inside.
+The source dictionary was checked against Foundation OF9's
+[massSource implementation](https://cpp.openfoam.org/v9/massSource_8C_source.html):
+it selects `phase liquid`, `rho thermo:rho.liquid`, all cells, and the existing
+velocity/temperature field values. No case or compiled source changes are
+needed for this next test. Interphase transfer and biology remain absent.
+
+The runner rechecks the private build, both closed log hashes and passing
+screens, and both source input manifests before launching either source case.
+It runs `source_no_reference` then `source_gas_reference`, serially. A complete
+numerical failure is still reported as `screen_pass: false`; preserve that
+result as a finding. If a command fails, preserve the partial root for review.
+Review the two budgets before choosing the next model or numerical change.
+
+```bash
+REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
+PY=/scratch/nwimer/.conda-envs/of-post/bin/python
+TWOFIELD_CASES=/scratch/nwimer/sc1_two_field_cases_20261110T233431Z
+
+if [[ -n "${SLURM_JOB_ID:-}" && -x "$PY" ]] \
+    && [[ "$(git -C "$REPO" branch --show-current)" = "codex/sc1-headspace-bubble-audit-20261029" ]] \
+    && git -C "$REPO" diff --quiet \
+    && git -C "$REPO" diff --cached --quiet \
+    && git -C "$REPO" pull --ff-only git@github.com:nickwimer/BioReactorDesign.git codex/sc1-headspace-bubble-audit-20261029 \
+    && source "$HOME/OpenFOAM9_RHEL9/OpenFOAM-9/etc/bashrc" \
+    && module load libfabric; then
+    PYTHONDONTWRITEBYTECODE=1 "$PY" "$REPO/scripts/diagnostics/sc1_two_field.py" \
+        run --root "$TWOFIELD_CASES" --pair source --run
+else
+    echo "Source-pair setup stopped. Preserve the existing cases and paste the output."
+fi
+```
+
+Paste both source reports and `PAIR=source complete`, or the entire error
+output. This command launches no closed-case reruns and no reactor simulation.
+
+## Closed-partner continuation reference (completed)
+
+The following continuation has completed successfully. Do not repeat it;
+the partner is now attempted, and the runner will refuse it.
 
 `continue-closed --root CASE_ROOT --run` verifies the private build and case
 manifest, the first case's attempt/build record, initialized input hashes,
@@ -350,7 +436,7 @@ All 39 harness tests pass. Synthetic recovery tests verify that only the
 partner's four commands run, the completed case changes only by addition of
 its missing report, source cases remain unchanged, and inconsistent/partial
 evidence or an attempted/modified partner blocks before mutation. These tests
-mock CFD; the Kestrel continuation is the next execution check.
+mock CFD; the later Kestrel transcript above confirms the continuation worked.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -371,9 +457,8 @@ else
 fi
 ```
 
-Paste the complete output, including `REUSED=`, the saved first report and
-the new gas-reference report or error. Review both closed results before the
-source pair; it is not automatically launched.
+The successful output is recorded above. The source pair was not automatically
+launched by this continuation.
 
 ## Saved-log analysis reference (completed)
 
@@ -398,12 +483,13 @@ fi
 ```
 
 This completed analysis command prints to the terminal without changing the
-case or creating `result.json`. Use `continue-closed` above for the next action.
+case or creating `result.json`. Both closed cases are now complete; the source
+pair above is the next action.
 
 ## Fresh closed-pair launch reference (not the current next action)
 
 The command below is retained as the original launch recipe. **Do not execute
-it for the current completed first case; use `continue-closed` above.**
+it for the current completed closed pair; use the source-pair command above.**
 
 Use the existing allocation and pull the corrected generator over SSH. Reuse
 the already verified build. The command creates four fresh case dictionaries but launches only `closed_no_reference` and
@@ -462,8 +548,10 @@ arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
 evidence. The first two CFD attempts exposed corrected dictionary errors.
-The third attempt's no-reference case now passes complete audit coverage and
-the numerical screen. The gas-reference and source cases remain unlaunched.
+Both closed cases now pass complete audit coverage and the numerical screen.
+The source cases remain unlaunched. This result-recording update changes only
+documentation; the 39-test harness result above is from the preceding runner
+change, not a new CFD or test-suite execution.
 
 A pass in these small cases would justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,
