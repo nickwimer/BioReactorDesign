@@ -139,16 +139,28 @@ flux checks agree to <5e-18 m3/s. No nonfinite values in 624 field reductions.
 The previous pressure collapse does not recur in this interval, but quiescence
 still fails. No 0.25-ms native field snapshot or valid restart was produced.
 
-**Next step: the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md).**
-Reuse the exact compiled v5 build; copy fresh t=0 inputs and change only
-controlDict endTime to 0.00015 and writeInterval to 1. Keep all guards and
-physical settings. Compare 33 log records with the received v5 prefix, then
-reconstruct the three normally completed snapshots and locate velocity peaks,
-phase fractions, counterflow, pressure changes and boundary adjacency. This
-addresses the missing spatial evidence; it is not a shortened startup pass.
-No new solver build, physical parameter change or threshold relaxation is
-selected. The 122 preceding local regressions and seven new spatial tests pass.
-Preserve every existing build/control, including this failed v5 run.
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
+completed at `fa0636a` in `/scratch/nwimer/sc1_velocity_probe_20261111T183832Z`,
+status 0. It reused the exact compiled v5 build, changing only endTime and
+writeInterval in fresh t=0 inputs. All 33 compared records match the saved
+v5 prefix. Liquid peaks occur at y=1.018662536 m, alphaLiquid approximately
+0.49485, with downward liquid and upward gas motion. At 0.15 ms, present-liquid
+peak is 0.800102 mm/s and bulk-liquid peak is 0.070844 mm/s. The last two global
+peaks are not direct boundary-face owners; wall-adjacent peaks in the same
+interface-height layer are almost equal. This points toward interface-normal
+counterflow, without establishing a discrete force budget or accepted remedy.
+
+**Next step: receive the existing spatial-diagnostic bundle** at
+`/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/reactor_failure_evidence.tar.gz`,
+reported SHA256 `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`.
+The [console result is saved](sc1_reactor_velocity_location_result_2026-11-11.json);
+the full new bundle has not yet been received or independently verified.
+Inspect its gas/interface/patch statistics and solver log. Whole-domain
+volume-mixture RMS reaches 1.482643 mm/s, so quieter bulk liquid is insufficient
+for acceptance. No new run, rebuild, recollection, physical parameter change
+or threshold relaxation is selected. All 129 local tests passed before launch;
+this result update is documentation only. Preserve every build, control and
+native snapshot. The parent 10-ms startup remains failed at 0.2 ms.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

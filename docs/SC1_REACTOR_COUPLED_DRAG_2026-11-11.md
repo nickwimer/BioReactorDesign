@@ -47,8 +47,10 @@ The probe bundle is now verified, including the pure-liquid pressure-minimum
 cell with a moving absent gas phase. The
 [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 subsequently compiled but stopped at 0.2 ms with all v4 initial inputs retained.
-Its bundle now confirms the liquid-speed guard. Next run the
-[three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) with the existing compiled candidate.
+Its bundle now confirms the liquid-speed guard. The
+[three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
+completed and located counterflow in the interface layer. Receive its existing
+bundle next; no new CFD is needed.
 Preserve all four vessel roots and the verified small-case regressions.
 
 Source tracing confirms that [the local face pressure path](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H)

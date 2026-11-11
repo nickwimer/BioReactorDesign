@@ -62,7 +62,9 @@ The outer-2 liquid explicit drag-flux range dominates its predictor range.
 
 **Subsequent result:** the [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 compiled and stopped at 0.2 ms on the liquid-speed guard; its bundle is now
-verified. Next run the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md).
+verified. The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
+completed and located counterflow in the interface layer. Receive its existing
+bundle next; no new CFD is needed.
 It eliminates the symmetric two-phase face drag before assembling both the
 pressure predictor and pressure coefficient. All v4 initial inputs and original
 acceptance limits remain fixed; its monitored run was capped at 10 ms.

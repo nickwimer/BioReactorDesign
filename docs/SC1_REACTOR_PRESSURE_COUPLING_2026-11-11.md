@@ -40,13 +40,15 @@ Four-step phase-mass residual L1 is 4.8130419768e-16 kg for gas and
 the planned 200-step startup: the fourth step fails quiescence, no `End` exists,
 and no 0.25-ms field write was reached.
 
-**Next action: run the [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md).**
-The current log locates pressure minima but not velocity maxima. Reuse this
-verified compiled application in a fresh t=0 case, write every step and end at
-0.15 ms. Compare the measured prefix with this log and reconstruct the three
-normally completed snapshots to identify interface, boundary or bulk motion.
-Only output frequency and diagnostic duration change; all physical settings
-and guards remain fixed. No rebuild, failed-state restart or tolerance change.
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md)
+has now completed at `fa0636a`, using the unchanged compiled application.
+All 33 compared records match this v5 prefix. The liquid peaks lie in the
+approximately 50/50 interface layer with liquid moving downward and gas upward;
+the bulk-liquid peak remains much smaller. The last two global peaks are not
+direct wall-face owners, while wall-adjacent peaks have almost equal speeds.
+**Next action: receive the already-created velocity-probe bundle** for its full
+gas/interface statistics and independent verification. No new CFD or rebuild
+is needed. The spatial diagnostic does not accept this failed parent startup.
 
 ## Evidence and decision
 

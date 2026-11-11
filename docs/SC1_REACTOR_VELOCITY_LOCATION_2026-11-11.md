@@ -1,6 +1,80 @@
 # SC1 early-velocity spatial diagnostic
 
-## Decision and current evidence
+## Completed Kestrel diagnostic
+
+The run at `fa0636a` completed normally, status 0, in
+`/scratch/nwimer/sc1_velocity_probe_20261111T183832Z`. The
+[received console result](sc1_reactor_velocity_location_result_2026-11-11.json)
+reports all 33 prefix records matching the saved v5 trajectory, three
+reconstructed snapshots and unchanged hashes for all 59 prepared inputs.
+The solver log has an `End` marker, three paired step records and no detected
+failure events. This completes the spatial diagnostic; the parent startup
+still failed at 0.2 ms.
+
+| Time (ms) | Present-liquid peak (mm/s) | Bulk-liquid peak, alpha >=0.99 (mm/s) | Gas vertical speed at liquid peak (mm/s) |
+|---:|---:|---:|---:|
+| 0.05 | 0.244979 downward | 0.006329 | +0.081492 |
+| 0.10 | 0.529355 downward | 0.042940 | +0.280204 |
+| 0.15 | 0.800102 downward | 0.070844 | +0.440398 |
+
+All three liquid peaks occur at y=1.018662536 m, only 0.064374 mm above
+the initial interface midplane, with alphaLiquid approximately 0.4948501.
+The last two global peaks are not owners of boundary faces. Their wall-adjacent
+counterparts have almost identical speeds in the same interface-height layer;
+the first global peak is wall-adjacent. Thus a direct wall-owner-only
+explanation does not cover the observations. The phase velocities are almost
+entirely vertical and oppositely directed at these liquid peaks.
+
+At 0.15 ms, bulk-liquid peak speed is about 11.3 times smaller than the
+present-liquid peak. Liquid inventory remains 1000 L to printed rounding.
+However, the whole-domain volume-mixture RMS reaches 1.482643 mm/s; quieter
+bulk liquid does not establish a quiet gas region or an acceptable startup.
+The console omits the gas peak, gas bulk/interface statistics and full pressure
+ranges that are already saved in the new case's `result.json`.
+
+**Next action: attach the existing bundle, without another run:**
+
+`/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/reactor_failure_evidence.tar.gz`
+
+- Reported bundle SHA256: `5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d`.
+- Reported solver-log SHA256: `c0cd5cfde42651b23262ad2cc545cf8f5b66336cc64d4e95e3bc1e11a0f967e8`.
+
+Only the pasted console has been received for this run. Verify the bundle and
+inspect its complete gas/interface/patch statistics before selecting the next
+force-balance or interface-model change. Preserve all snapshots, builds and
+controls. No rebuild, recollection, CFD rerun or threshold change is needed
+to retrieve this existing evidence.
+
+## Force-balance interpretation to test
+
+The v5 transform retains the original phase-specific buoyancy term in
+[`pUf/pEqn.H`](../OFsolvers/birdmultiphaseEulerFoam/multiphaseEulerFoam/pUf/pEqn.H):
+`interpolate(phase.rho() - rho)*(g & mesh.Sf())`. It changes the coupled
+momentum inverse, not the density contrast acting on each phase. The current
+[Foundation face corrector](https://cpp.openfoam.org/v13/facePressureCorrector_8C_source.html)
+also retains a phase/mixture density difference inside its force construction;
+this is not evidence that the remaining term is an implementation mistake.
+
+In an ideal planar continuum comparison, with mixture-hydrostatic pressure,
+zero slip and other forces neglected, phase acceleration is
+`a_i = (1 - rhoMixture/rho_i)*g`. The same hydrostatic pressure gradient cannot
+balance the separate gravitational accelerations of both unequal-density
+phases in a mixed cell without an additional interfacial force. A finite drag
+coefficient produces zero drag force at exactly zero slip. This supplies a
+candidate explanation for interface-normal counterflow in a resolved
+transition layer, rather than demonstrating a coefficient or source error.
+
+At the first liquid peak, the continuum liquid acceleration scale is
+-4.950565 m/s2; the measured first-step vertical velocity divided by dt is
+-4.899575 m/s2. This is a scale comparison only: it omits the actual face
+pressure gradient, surface tension, boundary treatment, nonlinear drag and
+the two outer iterations. It is not a closed discrete force budget, and it
+does not predict the observed gas velocity. Removing buoyancy contrast,
+adding an unverified compensating force or increasing drag is not selected
+from this numerical resemblance. The full saved gas/interface summary is
+the next available evidence for choosing a physically consistent model test.
+
+## Original decision based on v5 evidence
 
 The [pressure-coupled v5 bundle](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 is verified. Its explicit stop is `Quiescent liquid speed exceeded 1 mm/s`,
@@ -29,7 +103,7 @@ distinction is needed before changing body-force treatment, initialization or
 the resolved-interface model. No momentum closure, physical coefficient or
 acceptance threshold is changed by this next diagnostic.
 
-## What the next command does
+## What the completed command did
 
 Reuse `/scratch/nwimer/sc1_pressure_coupled_build_20261111T180325Z` and its
 verified executable `birdPressureCoupled`, SHA256
@@ -74,7 +148,10 @@ aerated, oxygen-transfer or biological behavior. The peak locations will select
 the next force-balance/model test; increasing drag or relaxing velocity limits
 is not selected in advance.
 
-## Next Kestrel command
+## Historical Kestrel command — completed, do not repeat
+
+This command produced the diagnostic above. Attach its existing evidence
+bundle next; no new allocation or computation is needed for that transfer.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -102,7 +179,8 @@ else
 fi
 ```
 
-Paste the output and attach the printed `BUNDLE`. Preserve all earlier roots.
+The console output is recorded above. Attach the existing `BUNDLE`; preserve
+the completed diagnostic and all earlier roots.
 
 ## Local validation
 
@@ -115,5 +193,7 @@ after solver failure, normal reconstruction of only three steps, actual
 face-owner adjacency, phase masks and native pressure/velocity peak statistics.
 The received v5 log yields the expected 33 prefix records.
 
-No OpenFOAM execution is available locally. Kestrel still needs to generate
-the three native snapshots; the existing compiled v5 build is preserved.
+No OpenFOAM execution is available locally. Kestrel has now generated the three
+native snapshots, reconstructed them and completed the spatial analysis. The
+update recording that console is documentation only; it does not repeat the
+129 local tests or alter the diagnostic or existing compiled v5 build.

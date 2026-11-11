@@ -1,0 +1,536 @@
+{
+  "provenance": "User-pasted Kestrel console output only. The new evidence bundle, complete result.json and solver log have not yet been received or independently verified.",
+  "consoleAttachment": "Pasted text(20261111-184453).txt",
+  "consoleSha256": "39cc7136c0f16d4c3158756f6fd12eecdf07af762d5e2e1d3b30da9ae9e8b93d",
+  "runCommit": "fa0636a84eb9d278f39e2d79e2bb031a5108fa2e",
+  "root": "/kfs3/scratch/nwimer/sc1_velocity_probe_20261111T183832Z",
+  "wrapperStatus": 0,
+  "diagnostic": {
+    "suite": "sc1_meml_velocity_location_probe_v1",
+    "diagnostic_complete": true,
+    "prefixAgreement": {
+      "records": 33,
+      "absoluteTolerance": 1e-12,
+      "relativeTolerance": 1e-09
+    },
+    "snapshots": [
+      {
+        "time_s": 5e-05,
+        "liquidVolume_L": 999.9999999999999,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 1.8124894010287137e-05,
+          "meanVertical_m_s": -1.350554018187025e-06,
+          "max_m_s": 0.0002449787472041491,
+          "peak": {
+            "cell": 272273,
+            "centre_m": [
+              -0.4981200826405038,
+              1.0186625360000001,
+              0.16908898351024704
+            ],
+            "alphaLiquid": 0.49485010337467056,
+            "velocity_m_s": [
+              -4.8041440654515294e-11,
+              -0.0002449787472041437,
+              1.9072941343293477e-11
+            ],
+            "radius_m": 0.5260367868070739,
+            "heightFromInitialMidplane_m": 6.437370787071295e-05,
+            "adjacentPatches": [
+              "walls"
+            ],
+            "alphaGas": 0.5051498966253294,
+            "p_Pa": 99990.07823422465,
+            "p_rgh_Pa": 104940.20265008879,
+            "pressureChangeFromInitial_Pa": -14.927670357530587,
+            "gasVelocity_m_s": [
+              -6.267464993531724e-08,
+              8.1492076004038e-05,
+              2.1075864158771316e-08
+            ],
+            "liquidVelocity_m_s": [
+              -4.8041440654515294e-11,
+              -0.0002449787472041437,
+              1.9072941343293477e-11
+            ],
+            "slipVelocity_m_s": [
+              -6.262660849466273e-08,
+              0.00032647082320818167,
+              2.105679121742802e-08
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -3.168386624772836e-08,
+              -8.00620446093445e-05,
+              1.0655908848088201e-08
+            ]
+          }
+        },
+        "liquidBulk": {
+          "cells": 170304,
+          "rms_m_s": 2.8375276160591914e-07,
+          "meanVertical_m_s": -3.626192502940717e-09,
+          "max_m_s": 6.329204950107883e-06,
+          "peak": {
+            "cell": 221642,
+            "centre_m": [
+              0.08516970502969476,
+              1.0061114743103687,
+              0.2700324823733517
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              6.131406828147705e-06,
+              -7.962187476222674e-07,
+              -1.3530415049615647e-06
+            ],
+            "radius_m": 0.28314558126794015,
+            "heightFromInitialMidplane_m": -0.012486687981760669,
+            "adjacentPatches": [],
+            "alphaGas": 0.0,
+            "p_Pa": 100082.56609778438,
+            "p_rgh_Pa": 109952.5196607691,
+            "pressureChangeFromInitial_Pa": -29.93586334460997,
+            "gasVelocity_m_s": [
+              6.016958010489913e-06,
+              4.809914096173125e-07,
+              -1.3301353548255021e-06
+            ],
+            "liquidVelocity_m_s": [
+              6.131406828147705e-06,
+              -7.962187476222674e-07,
+              -1.3530415049615647e-06
+            ],
+            "slipVelocity_m_s": [
+              -1.1444881765779188e-07,
+              1.27721015723958e-06,
+              2.2906150136062603e-08
+            ],
+            "volumeMixtureVelocity_m_s": [
+              6.131406828147705e-06,
+              -7.962187476222674e-07,
+              -1.3530415049615647e-06
+            ]
+          }
+        },
+        "liquidWallAdjacent": {
+          "cells": 10464,
+          "rms_m_s": 1.7205260836914227e-05,
+          "meanVertical_m_s": -1.2056681974586784e-06,
+          "max_m_s": 0.0002449787472041491,
+          "peak": {
+            "cell": 272273,
+            "centre_m": [
+              -0.4981200826405038,
+              1.0186625360000001,
+              0.16908898351024704
+            ],
+            "alphaLiquid": 0.49485010337467056,
+            "velocity_m_s": [
+              -4.8041440654515294e-11,
+              -0.0002449787472041437,
+              1.9072941343293477e-11
+            ],
+            "radius_m": 0.5260367868070739,
+            "heightFromInitialMidplane_m": 6.437370787071295e-05,
+            "adjacentPatches": [
+              "walls"
+            ],
+            "alphaGas": 0.5051498966253294,
+            "p_Pa": 99990.07823422465,
+            "p_rgh_Pa": 104940.20265008879,
+            "pressureChangeFromInitial_Pa": -14.927670357530587,
+            "gasVelocity_m_s": [
+              -6.267464993531724e-08,
+              8.1492076004038e-05,
+              2.1075864158771316e-08
+            ],
+            "liquidVelocity_m_s": [
+              -4.8041440654515294e-11,
+              -0.0002449787472041437,
+              1.9072941343293477e-11
+            ],
+            "slipVelocity_m_s": [
+              -6.262660849466273e-08,
+              0.00032647082320818167,
+              2.105679121742802e-08
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -3.168386624772836e-08,
+              -8.00620446093445e-05,
+              1.0655908848088201e-08
+            ]
+          }
+        },
+        "volumeMixtureRms_m_s": 0.0005302955385843689,
+        "derivedComparison": {
+          "presentToBulkPeakRatio": 38.70608538280521,
+          "wallPeakRelativeDifference": 0.0,
+          "mixtureDensityAtLiquidPeak_kg_m3": 495.35525327129585,
+          "idealMixtureHydrostaticLiquidAcceleration_y_m_s2": -4.950564965408587,
+          "derivationMeaning": "Ideal continuum force-scale comparison only; not a measured discrete force balance or a causal attribution."
+        }
+      },
+      {
+        "time_s": 0.0001,
+        "liquidVolume_L": 999.9999999999998,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 3.949245027910412e-05,
+          "meanVertical_m_s": -3.368048110114502e-06,
+          "max_m_s": 0.0005293551414778742,
+          "peak": {
+            "cell": 277580,
+            "centre_m": [
+              0.22713541966987072,
+              1.018662536,
+              0.46058506807216826
+            ],
+            "alphaLiquid": 0.49485010355622233,
+            "velocity_m_s": [
+              -5.4830665730317397e-11,
+              -0.000529355141477857,
+              -1.2335767190580137e-10
+            ],
+            "radius_m": 0.5135456199790357,
+            "heightFromInitialMidplane_m": 6.43737078704909e-05,
+            "adjacentPatches": [],
+            "alphaGas": 0.5051498964437777,
+            "p_Pa": 99990.10691696701,
+            "p_rgh_Pa": 104940.23133464358,
+            "pressureChangeFromInitial_Pa": -14.898987615175429,
+            "gasVelocity_m_s": [
+              -4.631662612502362e-08,
+              0.00028020400450838096,
+              -9.317781288678842e-08
+            ],
+            "liquidVelocity_m_s": [
+              -5.4830665730317397e-11,
+              -0.000529355141477857,
+              -1.2335767190580137e-10
+            ],
+            "slipVelocity_m_s": [
+              -4.6261795459293304e-08,
+              0.0008095591459862379,
+              -9.305445521488261e-08
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -2.3423971851295557e-08,
+              -0.00012040642271779581,
+              -4.712980608733591e-08
+            ]
+          }
+        },
+        "liquidBulk": {
+          "cells": 170304,
+          "rms_m_s": 4.314926871933326e-06,
+          "meanVertical_m_s": -4.52648746099599e-07,
+          "max_m_s": 4.293961278089571e-05,
+          "peak": {
+            "cell": 212248,
+            "centre_m": [
+              -0.15215716692439873,
+              1.0061114743132669,
+              -0.23878780692742332
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              -1.1765563227078806e-05,
+              -4.083869740118395e-05,
+              6.130469989927704e-06
+            ],
+            "radius_m": 0.2831455812540039,
+            "heightFromInitialMidplane_m": -0.012486687978862543,
+            "adjacentPatches": [],
+            "alphaGas": 0.0,
+            "p_Pa": 100067.28387129513,
+            "p_rgh_Pa": 109937.23743430828,
+            "pressureChangeFromInitial_Pa": -45.21808980542119,
+            "gasVelocity_m_s": [
+              1.2405289030749494e-06,
+              0.00011794072467038177,
+              -3.025748143409466e-07
+            ],
+            "liquidVelocity_m_s": [
+              -1.1765563227078806e-05,
+              -4.083869740118395e-05,
+              6.130469989927704e-06
+            ],
+            "slipVelocity_m_s": [
+              1.3006092130153757e-05,
+              0.00015877942207156572,
+              -6.4330448042686504e-06
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -1.1765563227078806e-05,
+              -4.083869740118395e-05,
+              6.130469989927704e-06
+            ]
+          }
+        },
+        "liquidWallAdjacent": {
+          "cells": 10464,
+          "rms_m_s": 3.739455940398622e-05,
+          "meanVertical_m_s": -3.0063002385895258e-06,
+          "max_m_s": 0.0005293551348857933,
+          "peak": {
+            "cell": 277519,
+            "centre_m": [
+              0.16507382948225757,
+              1.0186625360000001,
+              0.4862918204325893
+            ],
+            "alphaLiquid": 0.49485010355618203,
+            "velocity_m_s": [
+              -3.797420696428669e-11,
+              -0.0005293551348857764,
+              -1.2819433488760598e-10
+            ],
+            "radius_m": 0.5135456199789645,
+            "heightFromInitialMidplane_m": 6.437370787071295e-05,
+            "adjacentPatches": [
+              "walls"
+            ],
+            "alphaGas": 0.5051498964438179,
+            "p_Pa": 99990.10691613481,
+            "p_rgh_Pa": 104940.231333811,
+            "pressureChangeFromInitial_Pa": -14.898988447370357,
+            "gasVelocity_m_s": [
+              -3.390840625966481e-08,
+              0.00028020414965926696,
+              -9.845434897502445e-08
+            ],
+            "liquidVelocity_m_s": [
+              -3.797420696428669e-11,
+              -0.0005293551348857764,
+              -1.2819433488760598e-10
+            ],
+            "slipVelocity_m_s": [
+              -3.387043205270053e-08,
+              0.0008095592845450434,
+              -9.832615464013684e-08
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -1.714761945089333e-08,
+              -0.00012040634613271639,
+              -4.9797641169071556e-08
+            ]
+          }
+        },
+        "volumeMixtureRms_m_s": 0.0010161955634762883,
+        "derivedComparison": {
+          "presentToBulkPeakRatio": 12.327897416750575,
+          "wallPeakRelativeDifference": 1.2453040355614184e-08,
+          "mixtureDensityAtLiquidPeak_kg_m3": 495.3552534526661,
+          "idealMixtureHydrostaticLiquidAcceleration_y_m_s2": -4.950564963629346,
+          "derivationMeaning": "Ideal continuum force-scale comparison only; not a measured discrete force balance or a causal attribution."
+        }
+      },
+      {
+        "time_s": 0.00015,
+        "liquidVolume_L": 999.9999999999998,
+        "liquidPresent": {
+          "cells": 172224,
+          "rms_m_s": 5.980852336741918e-05,
+          "meanVertical_m_s": -5.1658110283508685e-06,
+          "max_m_s": 0.0008001017078042206,
+          "peak": {
+            "cell": 267332,
+            "centre_m": [
+              -0.22713541966987072,
+              1.018662536,
+              -0.46058506807216826
+            ],
+            "alphaLiquid": 0.4948501037664582,
+            "velocity_m_s": [
+              2.3528119805533696e-10,
+              -0.0008001017078040342,
+              4.928230644728549e-10
+            ],
+            "radius_m": 0.5135456199790357,
+            "heightFromInitialMidplane_m": 6.43737078704909e-05,
+            "adjacentPatches": [],
+            "alphaGas": 0.5051498962335418,
+            "p_Pa": 99990.19062899664,
+            "p_rgh_Pa": 104940.31504877203,
+            "pressureChangeFromInitial_Pa": -14.815275585540803,
+            "gasVelocity_m_s": [
+              2.212308452780219e-07,
+              0.00044039797389754863,
+              4.474248543949162e-07
+            ],
+            "liquidVelocity_m_s": [
+              2.3528119805533696e-10,
+              -0.0008001017078040342,
+              4.928230644728549e-10
+            ],
+            "slipVelocity_m_s": [
+              2.2099556407996656e-07,
+              0.001240499681701583,
+              4.4693203133044333e-07
+            ],
+            "volumeMixtureVelocity_m_s": [
+              1.1187116746112349e-07,
+              -0.00017346342231473803,
+              2.2626049231449235e-07
+            ]
+          }
+        },
+        "liquidBulk": {
+          "cells": 170304,
+          "rms_m_s": 7.199777152557779e-06,
+          "meanVertical_m_s": -7.566348247191591e-07,
+          "max_m_s": 7.08436411768133e-05,
+          "peak": {
+            "cell": 212248,
+            "centre_m": [
+              -0.15215716692439873,
+              1.0061114743132669,
+              -0.23878780692742332
+            ],
+            "alphaLiquid": 1.0,
+            "velocity_m_s": [
+              -1.748325278204424e-05,
+              -6.804174522285427e-05,
+              9.136644590680232e-06
+            ],
+            "radius_m": 0.2831455812540039,
+            "heightFromInitialMidplane_m": -0.012486687978862543,
+            "adjacentPatches": [],
+            "alphaGas": 0.0,
+            "p_Pa": 100072.23008630799,
+            "p_rgh_Pa": 109942.18364932113,
+            "pressureChangeFromInitial_Pa": -40.27187479256827,
+            "gasVelocity_m_s": [
+              4.273253713986182e-06,
+              0.00019756418872788375,
+              -1.624510040190819e-06
+            ],
+            "liquidVelocity_m_s": [
+              -1.748325278204424e-05,
+              -6.804174522285427e-05,
+              9.136644590680232e-06
+            ],
+            "slipVelocity_m_s": [
+              2.1756506496030423e-05,
+              0.000265605933950738,
+              -1.0761154630871051e-05
+            ],
+            "volumeMixtureVelocity_m_s": [
+              -1.748325278204424e-05,
+              -6.804174522285427e-05,
+              9.136644590680232e-06
+            ]
+          }
+        },
+        "liquidWallAdjacent": {
+          "cells": 10464,
+          "rms_m_s": 5.6593760539539405e-05,
+          "meanVertical_m_s": -4.610625425812817e-06,
+          "max_m_s": 0.0008001016897866417,
+          "peak": {
+            "cell": 267271,
+            "centre_m": [
+              -0.16507382948225757,
+              1.0186625360000001,
+              -0.4862918204325893
+            ],
+            "alphaLiquid": 0.4948501037663826,
+            "velocity_m_s": [
+              1.6863136306009566e-10,
+              -0.0008001016897864564,
+              5.176421075799448e-10
+            ],
+            "radius_m": 0.5135456199789645,
+            "heightFromInitialMidplane_m": 6.437370787071295e-05,
+            "adjacentPatches": [
+              "walls"
+            ],
+            "alphaGas": 0.5051498962336174,
+            "p_Pa": 99990.19062800557,
+            "p_rgh_Pa": 104940.3150477802,
+            "pressureChangeFromInitial_Pa": -14.815276576613542,
+            "gasVelocity_m_s": [
+              1.6119545698246755e-07,
+              0.0004403982201777107,
+              4.724918765149305e-07
+            ],
+            "liquidVelocity_m_s": [
+              1.6863136306009566e-10,
+              -0.0008001016897864564,
+              5.176421075799448e-10
+            ],
+            "slipVelocity_m_s": [
+              1.6102682561940746e-07,
+              0.0012404999099641671,
+              4.7197423440735055e-07
+            ],
+            "volumeMixtureVelocity_m_s": [
+              8.151131561553258e-08,
+              -0.00017346328899024566,
+              2.3893537764339406e-07
+            ]
+          }
+        },
+        "volumeMixtureRms_m_s": 0.0014826429083450836,
+        "derivedComparison": {
+          "presentToBulkPeakRatio": 11.29391000396644,
+          "wallPeakRelativeDifference": 2.2519110744941158e-08,
+          "mixtureDensityAtLiquidPeak_kg_m3": 495.3552536626918,
+          "idealMixtureHydrostaticLiquidAcceleration_y_m_s2": -4.950564961568994,
+          "derivationMeaning": "Ideal continuum force-scale comparison only; not a measured discrete force balance or a causal attribution."
+        }
+      }
+    ],
+    "meaning": "Three-step spatial diagnostic only. The parent 10-ms startup failed at 0.2 ms. No startup, restart, reactor or biology acceptance."
+  },
+  "collection": {
+    "lines": 1078,
+    "endMarkerSeen": true,
+    "printedTimes": 3,
+    "lastPrintedTime_s": 0.00015,
+    "pairedStepRecordCount": 3,
+    "lastPairedStepRecordTime_s": 0.00015,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 6.05908319088217e-05,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {},
+    "eventCounts": {},
+    "timelineTruncated": false,
+    "meaning": "Diagnostic evidence only. End/paired records do not establish completion, conservation or startup acceptance.",
+    "timeContext": "lastPrintedTime_s is the preceding Time line; Courant output occurs before the next Time increment.",
+    "root": "/kfs3/scratch/nwimer/sc1_velocity_probe_20261111T183832Z",
+    "variant": "sc1_meml_velocity_location_probe_v1",
+    "sourceCommit": "fa0636a84eb9d278f39e2d79e2bb031a5108fa2e",
+    "solverLogSha256": "c0cd5cfde42651b23262ad2cc545cf8f5b66336cc64d4e95e3bc1e11a0f967e8",
+    "inputIdentity": {
+      "checked": 59,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "fieldAvailabilityMeaning": "Directory names only; no assertion of complete written/reconstructable fields.",
+    "provenance": "Local manifest/input/log inspection; build binaries and external regression/archive roots are not revalidated."
+  },
+  "report": "/kfs3/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/report.json",
+  "bundle": "/kfs3/scratch/nwimer/sc1_velocity_probe_20261111T183832Z_evidence/reactor_failure_evidence.tar.gz",
+  "reportedBundleSha256": "5ba88937370743795665315d0f266522071bd592d813072a773875ada326191d",
+  "interpretation": {
+    "observed": [
+      "Three steps completed normally, with 33 prefix records reported matching the saved v5 trajectory.",
+      "All three liquid peaks lie in the same interface-height layer, at alphaLiquid approximately 0.49485, with downward liquid and upward gas velocity.",
+      "The last two global liquid peaks are not direct boundary-face owners; nearly equal wall-adjacent peaks remain in the same interface-height layer.",
+      "Liquid bulk peak is approximately 0.07084 mm/s at 0.15 ms, versus 0.80010 mm/s for present-liquid peak.",
+      "Whole-domain volume-mixture RMS reaches approximately 1.48264 mm/s, so the quieter bulk liquid alone does not establish quiescence."
+    ],
+    "inference": "The evidence points toward interface-normal phase counterflow. The retained phase-density/mixture-density buoyancy difference provides a plausible force scale, but no discrete term budget or closure remedy is established.",
+    "missing": [
+      "Complete gas/present/bulk/interface/patch statistics, already saved in result.json.",
+      "Independent verification of the newly reported bundle and prefix comparison.",
+      "Longer-time behavior and full-startup acceptance."
+    ]
+  },
+  "decision": "Receive the existing velocity-probe evidence bundle and inspect the full gas/interface fields summary and log. Preserve all roots and reuse the completed three-step diagnostic; no new CFD, rebuild, force change or acceptance-threshold change is selected from the compact console alone."
+}
