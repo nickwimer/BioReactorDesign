@@ -1,0 +1,42 @@
+{
+  "provenance": "User-pasted Kestrel console output; new raw-log bundle not yet received or independently verified.",
+  "sourceCommit": "760452111832ad56128ec90582df63e5ce40bed5",
+  "variant": "sc1_meml_quiescent_face_momentum_v3",
+  "root": "/kfs3/scratch/nwimer/sc1_reactor_face_20261111T163440Z",
+  "wrapperStatus": 1,
+  "guard": {
+    "reason": "pressure limiter activated in quiescent vessel",
+    "line": 232,
+    "lastPrintedTime": "5e-05",
+    "text": "limitPressure: p min -2499398.2044661008",
+    "returncode": 137,
+    "meaning": "Stopped failed/incomplete diagnostic; no valid restart implied."
+  },
+  "collection": {
+    "lines": 254,
+    "endMarkerSeen": false,
+    "printedTimes": 2,
+    "lastPrintedTime_s": 0.0001,
+    "pairedStepRecordCount": 1,
+    "lastPairedStepRecordTime_s": 0.00005,
+    "duplicateStepRecords": 0,
+    "malformedStepRecords": 0,
+    "dragNoneSelectionCount": 1,
+    "maxFiniteCourant": 0.005974812253287854,
+    "largestFiniteAlphaMagnitude": 1.0,
+    "firstEvents": {
+      "pressure_limit": {
+        "line": 232,
+        "lastPrintedTime_s": 0.00005,
+        "outer": 2,
+        "text": "limitPressure: p min -2499398.2044661008"
+      }
+    },
+    "eventCounts": {"pressure_limit": 1},
+    "inputIdentity": {"checked": 59, "changed": [], "missing": [], "extra": []},
+    "solverLogSha256": "083bbd2d39499fff0c19210e2280f3c13d9b0ec55508752953a8d3fe8151654c"
+  },
+  "bundle": "/kfs3/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz",
+  "bundleSha256": "8eac9f4f97692121eea0c7ff35efdc8a94e0fd0d8890134dbb6ad35a6abd7bfb",
+  "decision": "Preserve the attempted root. Receive and inspect the already-created bundle before selecting another numerical change; no rerun or recollection."
+}

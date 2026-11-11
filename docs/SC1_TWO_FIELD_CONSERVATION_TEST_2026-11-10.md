@@ -22,8 +22,9 @@ mass thresholds. The [MEML-mesh quiescent startup](SC1_REACTOR_STARTUP_2026-11-1
 has also completed: its budgets pass but velocities fail the quiescent screen.
 A drag-blending cancellation was identified; its isolated correction
 [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md). Saved-log
-collection and bundle inspection are complete; the next action is the
-[face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).
+collection and bundle inspection are complete. The subsequent
+[face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) also failed;
+its automatically created bundle is the next input needed.
 Interface and reactor validation remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen

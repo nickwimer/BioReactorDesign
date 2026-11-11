@@ -13,8 +13,9 @@ at `0876843` **diverged by t=0.0009 s**, with alpha extrema around 1e142,
 then an FPE/time-limit cancellation (wrapper status 1). Its root is
 `/scratch/nwimer/sc1_reactor_drag_20261111T144728Z`. Preserve it and the v1
 control; do not rerun the historical commands below. **The failure bundle is
-received and verified. The next action is the monitored
-[face-momentum startup comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).**
+received and verified. The monitored
+[face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md) then failed
+on its first timestep. Attach its already-created bundle next; do not rerun.**
 The [private rate-split solver and eight
 numerical regressions](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) remain valid
 under their tested contract; no rebuild or numerical-suite rerun is needed.

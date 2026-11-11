@@ -13,7 +13,8 @@ completed with valid mass budgets but excessive velocities. Its dictionary
 nearly canceled segregated drag through blending. Restoring only that weight
 [diverged by 0.0009 s](SC1_REACTOR_DRAG_FAILURE_2026-11-11.md), reusing this
 verified binary and its guards. The failure bundle is received and inspected;
-the next action is the [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).
+the subsequent [face-momentum startup](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md)
+also failed. Its automatically created bundle is the next input needed.
 These regressions establish the correction for their tested source contract;
 reactor wall/free-surface, aeration, oxygen and biology validation remain open.
 All 68 pre-existing focused local tests passed before the Kestrel run.

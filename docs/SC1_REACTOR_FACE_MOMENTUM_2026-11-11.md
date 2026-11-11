@@ -1,5 +1,49 @@
 # SC1 face-momentum startup comparison
 
+## Kestrel result: stopped on the first timestep
+
+The comparison at `7604521` ran in
+`/kfs3/scratch/nwimer/sc1_reactor_face_20261111T163440Z` and returned wrapper
+status 1. The monitor detected `limitPressure: p min -2499398.2044661008` Pa
+at line 232, t=0.00005 s, outer 2, and stopped its child step (return code 137).
+This is a failed startup. Face momentum alone has not supplied the remedy.
+The [console result](sc1_reactor_face_failure_result_2026-11-11.json) is recorded;
+the new raw-log bundle has not yet been received.
+
+The collector reports all 59 input hashes unchanged, a unique restored-drag
+selection, alpha magnitude at most 1, and maximum logged mixture Co
+0.005974812253287854. Pressure limiting therefore occurred without a logged
+mixture-Co or alpha-bound trigger. Low mixture Co does not establish phase-flux
+stability. Pressure limiter onset is earlier than in the matched cell-momentum
+v2 run (0.00005 s versus 0.0003 s); the cause is not yet isolated.
+
+The monitor detected the first-step failure. The solver printed a second
+`Time` line (0.0001 s) before termination, consistent with the documented
+polling delay. Only one paired step record exists, there is no `End`, and the
+first scheduled snapshot at 0.00025 s was not reached. A paired record or
+return code 137 here is not evidence of a valid checkpoint or an OOM diagnosis.
+There is no reported FPE or allocation timeout in this collection summary.
+
+**Next step: attach the automatically generated existing bundle. No new pull,
+collection, build or CFD command is needed.**
+
+`/scratch/nwimer/sc1_reactor_face_20261111T163440Z_failure/reactor_failure_evidence.tar.gz`
+
+- Reported bundle SHA256: `8eac9f4f97692121eea0c7ff35efdc8a94e0fd0d8890134dbb6ad35a6abd7bfb`.
+- Reported solver-log SHA256: `083bbd2d39499fff0c19210e2280f3c13d9b0ec55508752953a8d3fe8151654c`.
+
+On receipt, verify the new hashes and examine both outer iterations' pressure
+solves, source/alpha-stage records and actual face-path selection. The older
+v2 bundle already received has a different hash and does not substitute for it.
+Preserve all three vessel roots and do not repeat or extend the failed run.
+
+Source review confirms that `AFfs()` places face drag on each phase's diagonal
+and `phiKdPhifs()` supplies the other phase's flux explicitly. The available
+`partialEliminationf()` instead constructs and inverts a coupled drag matrix
+and then restores mixture flux. That option remains disabled in this run.
+This is a coupling hypothesis to evaluate against the full first-step record,
+not a selected fix. No new solver configuration is introduced by this update.
+
 ## Evidence and decision
 
 The failed drag bundle has been received and verified: SHA256
@@ -25,8 +69,8 @@ unique cause: phase Courant numbers, force imbalance and velocity locations
 were not logged, and the failure precedes the first scheduled field write.
 No change to tolerances or physical coefficients is justified by this log.
 
-**The next comparison enables only `PIMPLE/faceMomentum true` in the numerical
-equations.** It also writes snapshots more frequently and monitors failures.
+**The attempted comparison enabled only `PIMPLE/faceMomentum true` in the numerical
+equations.** It also scheduled more frequent snapshots and monitored failures.
 The old startup inherited cell momentum from the small uniform test fixture.
 The repository's [nonreacting reactor setup](../scripts/putida_stir/nonreact/system/fvSolution)
 already selects face momentum. This supplies a concrete alternative to test,
@@ -108,10 +152,10 @@ bundle in a fresh sibling `<startup-root>_failure` directory, including
 as a successful run. The bundle omits large fields, which remain on Kestrel.
 If collection itself fails, the original solver failure and log remain reported.
 
-## Next Kestrel command
+## Historical Kestrel command (attempted and failed; do not repeat)
 
-Use the existing allocation. This prepares a new t=0 case and runs the single
-10-ms comparison; the earlier roots remain unchanged.
+This command prepared a new t=0 case and attempted the single 10-ms comparison;
+the earlier roots remain unchanged. It is retained for provenance.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -155,5 +199,5 @@ success/failure, timeout and no overwrite. A stopped run bundles evidence and
 does not enter reconstruction/reporting. Replaying the received failed log through
 the monitor selects line 832 at 0.0003 s, before the large alpha excursions.
 Legacy report/recipe tests remain green.
-OpenFOAM and MPI CFD execution are not available locally; the new case has not
-yet run on Kestrel.
+OpenFOAM and MPI CFD execution are not available locally. The Kestrel attempt
+failed on its first timestep as recorded above.

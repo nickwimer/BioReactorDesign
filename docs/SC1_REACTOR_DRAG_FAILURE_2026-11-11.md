@@ -7,7 +7,8 @@ hashes match. The corrected parser places the actual FPE at line 2273,
 t=0.0009 s, outer 2. All 23 pressure solves through the first limiter event
 reach residuals below 1e-12; all 36 physical-rate records are zero. See the
 [parsed result](sc1_reactor_drag_failure_result_2026-11-11.json) and the
-[next face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md).
+[subsequent face-momentum comparison](SC1_REACTOR_FACE_MOMENTUM_2026-11-11.md),
+which failed on its first timestep; that new bundle awaits receipt.
 No recollection or repetition of the failed run is needed.
 
 The collector at `264d209` completed with status 0 in
