@@ -50,7 +50,7 @@ Its full bundle is now verified and also shows predominantly horizontal gas
 peaks of 40.0 mm/s near the interface and 34.9 mm/s in the bulk-gas layer above.
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
 stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
-The scalar-gradient comparison also failed; next use the [nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).
+Converged nonorthogonal pressure corrections also failed to restore rest; next use the [two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).
 It uses the same mesh and initial fill. The spatial diagnostic does not accept
 this failed parent startup or establish a two-fluid force correction.
 

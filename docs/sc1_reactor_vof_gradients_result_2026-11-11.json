@@ -90,5 +90,5 @@
     }
   },
   "interpretation": "The scalar-gradient comparison did not resolve the rest failure: same stop time and <0.022 percent change in the reported phase speed peaks. Good logged mass residuals do not establish equilibrium. Return code 139 is a shutdown status, not a demonstrated independent root cause.",
-  "nextAction": "Fresh t=0 nonorthogonal pressure-iteration comparison, existing binary, same physics and limits; SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md."
+  "nextAction": "Nonorthogonal pressure convergence did not fix the rest failure. Use the passive two-step force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md."
 }

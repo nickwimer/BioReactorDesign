@@ -71,7 +71,7 @@
     "No snapshot reconstruction ran. Processor directory names exist through 0.00825 s but complete native fields remain to be checked.",
     "The stock OF9 momentum/pressure path contains surface-tension and gravity terms. The log alone does not separate their discrete imbalance or identify a correction."
   ],
-  "nextAction": "The scalar-gradient comparison failed with almost unchanged speeds. Use the fresh nonorthogonal pressure comparison in SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md; existing binary, no rebuild.",
+  "nextAction": "Nonorthogonal pressure convergence did not fix the rest failure. Use the passive two-step force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md.",
   "meaning": "No startup, operating-checkpoint, aeration, oxygen-transfer or biology acceptance.",
   "verifiedLog": {
     "diagnostics": {

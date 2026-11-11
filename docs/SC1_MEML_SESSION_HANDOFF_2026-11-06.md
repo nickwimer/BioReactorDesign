@@ -209,21 +209,30 @@ and 672 pressure records and no End marker. Initial-input hashes are unchanged.
 See the [console result](sc1_reactor_vof_gradients_result_2026-11-11.json).
 The gradient failure archive remains on Kestrel and is not locally verified.
 
-**Next action: [fresh nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).**
-`sc1_reactor_vof_nonorth.py` revalidates the failed gradient control, its exact
-reported log hash and budget prefix, then copies t=0. Only `system/fvSolution`
-changes: nNonOrthogonalCorrectors 0 -> 9 (ten passes per pressure correction).
-The same VOF binary, gradient schemes, mesh/fill, physical coefficients,
-boundaries, 5e-5-s timestep, eight ranks and 10-ms duration are retained.
-The fixed ten-pass choice is a convergence comparison, not an implementation
-of the published adaptive residual-based algorithm and not a guaranteed fix.
-All 8000 pressure observations are checked. The final pass in each of the 800
-pressure groups must enter with residual <=1e-12 and require zero iterations.
-Original limits and gas peak <=1 mm/s are also required. Failed-prefix pressure
-iteration statistics are printed and bundled without claiming startup acceptance.
-All 45 focused tests pass; actual CFD remains pending. No rebuild is needed.
-No working operating simulation, aeration, oxygen-transfer or biology acceptance
-is implied; the four-hour biological update schedule remains unchanged.
+**The nonorthogonal pressure comparison also failed:** at `ef01ab8`,
+`/scratch/nwimer/sc1_vof_nonorth_20261111T203602Z` again stopped at 8.4 ms.
+All 672 observed correction groups converged (maximum final initial residual
+9.98761133388736e-13), yet gas speed changes only -2.60328e-8 m/s versus the
+gradient control. Liquid speed is 0.001003115908 m/s; gas 0.972526435841 m/s.
+`pressure_iteration_pass: false` means incomplete run, not unconverged observed
+corrections. The [console result](sc1_reactor_vof_nonorth_result_2026-11-11.json)
+is recorded; its archive remains unreceived locally. Increasing the pressure
+iteration count again is not supported by this evidence.
+
+**Next action: [passive two-step face-force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).**
+`sc1_reactor_vof_force.py` privately builds `sc1InterFoamForces` from the verified
+VOF reference sources, adding only force observations and a two-step bound.
+It starts fresh from the nonorthogonal control, retaining all physical inputs
+and ten pressure passes. Only application name/end time change in controlDict.
+At each of eight final pressure corrections, log gravity, capillary, matrix-
+pressure and net velocity contributions at the global gas/liquid peak cells,
+plus face geometry/terms. Independently reconstruct these from the face data,
+check the native velocity update and compare all 83 audit records with the
+control's two-step prefix. No reconstruction or new physical remedy is applied.
+All 51 focused Python tests pass; OpenFOAM compilation/runtime remain pending.
+The exact equations, existing binary, previous roots and four-hour biological
+update schedule remain preserved. A complete probe is diagnostic evidence only,
+not startup or operating-reactor acceptance.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

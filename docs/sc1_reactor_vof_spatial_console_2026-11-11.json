@@ -365,6 +365,6 @@
     "The compact console omits the other region statistics, field hashes and peak-neighbour stencils present in the full report.",
     "Conservation remains good, but the source startup remains failed; no working operating simulation is accepted."
   ],
-  "nextAction": "The scalar-gradient comparison failed with almost unchanged speeds. Use the fresh nonorthogonal pressure comparison in SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md; existing binary, no rebuild.",
+  "nextAction": "Nonorthogonal pressure convergence did not fix the rest failure. Use the passive two-step force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md.",
   "verifiedResult": "sc1_reactor_vof_spatial_result_2026-11-11.json"
 }

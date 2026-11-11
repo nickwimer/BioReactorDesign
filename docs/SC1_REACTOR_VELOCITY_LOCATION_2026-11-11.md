@@ -53,7 +53,7 @@ disturbance. The near-vent gas peak remains only 9.26e-7 m/s.
 
 **The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md)
 stopped on the liquid-speed guard at 8.4 ms; its bundle is verified.**
-The scalar-gradient comparison also failed; next use the [nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).
+Converged nonorthogonal pressure corrections also failed to restore rest; next use the [two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).
 It uses the same mesh, fill, initial p_rgh, gravity and physical properties, but
 a shared velocity with the Foundation OF9 interFoam equations, read-only phase
 budgets and the existing startup guards in a separate private application. This establishes a simpler resolved-interface comparison before

@@ -1,0 +1,112 @@
+{
+  "suite": "sc1_vof_nonorthogonal_console_result",
+  "provenance": "User-pasted Kestrel console only. The candidate failure bundle has not been received locally; no independent local candidate budget or field verification is claimed.",
+  "root": "/kfs3/scratch/nwimer/sc1_vof_nonorth_20261111T203602Z",
+  "sourceCommit": "ef01ab844aff0b8c88cd5da7c033ff0794060928",
+  "variant": "sc1_meml_vof_nonorthogonal_v3",
+  "status": 1,
+  "complete": false,
+  "accepted": false,
+  "reportedLogSha256": "d2630e82e732eb6d0ff333ca69a2ef47e90e267897e478a6da23efc5eb9dd8d1",
+  "reportedBundle": "/kfs3/scratch/nwimer/sc1_vof_nonorth_20261111T203602Z_evidence/reactor_failure_evidence.tar.gz",
+  "reportedBundleSha256": "48140b1affcc22136a8ba1555af1e4beafd75089080f20e484e6a49779b2d080",
+  "bundleReceived": false,
+  "pressureIterations": {
+    "complete": false,
+    "observedStepRecords": 168,
+    "unfinishedTime_s": null,
+    "pressureRecords": 6720,
+    "passesPerCorrection": 10,
+    "corrections": 672,
+    "convergedCorrections": 672,
+    "maxFinalPassInitialResidual": 9.98761133388736e-13,
+    "finalPassTolerance": 1e-12,
+    "pressure_iteration_pass": false,
+    "firstUnconvergedCorrection": null,
+    "minimumPressureAllPasses_Pa": 99982.98689720605
+  },
+  "reported": {
+    "lines": 17249,
+    "endMarkerSeen": false,
+    "recordCounts": {
+      "INITIAL": 1,
+      "PRESSURE": 6720,
+      "STEP": 168
+    },
+    "lastValidStep": {
+      "t_s": 0.008399999999999977,
+      "dt_s": 5e-05,
+      "liquid_m3": 0.9999999999999816,
+      "gas_m3": 0.6420022691408895,
+      "liquidOut_m3_s": 3.424e-321,
+      "gasOut_m3_s": -2.930551012972284e-12,
+      "postPressureOut_m3_s": -9.054880123157173e-14,
+      "liquidResidual_kg": 1.1102230246251565e-13,
+      "gasResidual_kg": -1.465275506486142e-16,
+      "liquidL1_kg": 9.425793479067579e-11,
+      "gasL1_kg": 1.4304591702626332e-13,
+      "alphaMin": -2.206190785614126e-11,
+      "alphaMax": 1.000000000022062,
+      "complement": 0.0,
+      "liquidMax_m_s": 0.0010031159083451675,
+      "gasMax_m_s": 0.9725264358408682,
+      "alphaChangeL1_m3": 3.813921600763327e-08,
+      "Co": 0.001787916086331908,
+      "alphaCalls": 2.0
+    },
+    "initial": {
+      "liquid_m3": 0.9999999999999843,
+      "gas_m3": 0.6420022691408869,
+      "version": 1.0
+    },
+    "malformedRecordCount": 0,
+    "duplicateStepRecords": 0,
+    "minimumFinitePressure_Pa": 99982.98689720605,
+    "maximumFinitePressure_Pa": 111878.15082917426,
+    "firstLimitEvents": {
+      "liquidMax_m_s": {
+        "line": 17064,
+        "t_s": 0.008399999999999977,
+        "value": 0.0010031159083451675,
+        "limit": 0.001
+      }
+    },
+    "inputIdentity": {
+      "checked": 49,
+      "changed": [],
+      "missing": [],
+      "extra": []
+    },
+    "stop": {
+      "reason": "solver failure",
+      "line": 17067,
+      "lastPrintedTime": "0.0084",
+      "returncode": 137
+    }
+  },
+  "comparisonWithGradientAtSameTime": {
+    "time_s": 0.0084,
+    "gradient": {
+      "liquidMax_m_s": 0.0010031159176616922,
+      "gasMax_m_s": 0.9725264618737075,
+      "Co": 0.0017879160830581477
+    },
+    "nonorth": {
+      "liquidMax_m_s": 0.0010031159083451675,
+      "gasMax_m_s": 0.9725264358408682,
+      "Co": 0.001787916086331908
+    },
+    "difference": {
+      "liquidMax_m_s": -9.316524765198841e-12,
+      "gasMax_m_s": -2.6032839328671287e-08,
+      "Co": 3.273760386043878e-12
+    },
+    "relativeChangePercent": {
+      "liquidMax_m_s": -9.287585367445672e-07,
+      "gasMax_m_s": -2.6768258054588046e-06,
+      "Co": 1.831048201950125e-07
+    }
+  },
+  "interpretation": "All 672 observed final pressure passes converged, but the same rest failure persists. pressure_iteration_pass is false because the run is incomplete, not because an observed correction failed convergence. Explicit pressure-correction lag is strongly disfavored as the dominant cause in this comparison; no facewise force balance or physical startup is established.",
+  "nextAction": "Passive two-step face-force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md, with a private observer build and unchanged equations/physical inputs."
+}

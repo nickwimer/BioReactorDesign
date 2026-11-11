@@ -1,8 +1,8 @@
 # SC1 VOF saved-field inspection
 
-**Current next action:** the scalar-gradient comparison failed at the same
-8.4-ms limit with almost unchanged speeds. Use the
-[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md);
+**Current next action:** the nonorthogonal comparison also failed despite
+converged pressure corrections. Use the
+[two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md);
 older commands and candidate descriptions below are historical.
 
 ## Completed Kestrel inspection; archive verified

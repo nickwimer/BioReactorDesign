@@ -15,10 +15,11 @@ The failure bundle is preserved on Kestrel but has not been received locally.
 
 This rejects scalar-gradient selection alone as a remedy in this comparison.
 It does not exclude all discretization errors or identify gravity versus
-surface tension as the cause. **Next use the
-[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).**
-It retains these gradient settings and changes only the number of pressure
-nonorthogonal corrections. Do not rerun the historical command below.
+surface tension as the cause. The subsequent
+[nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md) also failed; **next use the [two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).**
+That pressure comparison retained these gradients and changed the correction
+count. The force probe now observes the unchanged equations for two steps.
+Do not rerun the historical command below.
 
 ## Evidence and candidate
 

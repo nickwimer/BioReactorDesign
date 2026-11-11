@@ -5627,6 +5627,6 @@
       "leastSquares": "https://cpp.openfoam.org/v9/leastSquaresGrad_8C_source.html"
     },
     "inference": "The pure-phase circumferential peaks, shifted neighbour columns and much slower interface/wall motion justify testing scalar gradient reconstruction. Cell-centre stencils are not a face-force budget and do not prove which term is responsible.",
-    "nextAction": "The scalar-gradient comparison failed with almost unchanged speeds. Use the fresh nonorthogonal pressure comparison in SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md; existing binary, no rebuild."
+    "nextAction": "Nonorthogonal pressure convergence did not fix the rest failure. Use the passive two-step force decomposition in SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md."
   }
 }

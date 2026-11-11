@@ -28,7 +28,7 @@ also failed at the same first-step outer iteration; its bundle is now verified. 
 the pressure collapse and stopped before limiting; its bundle is now verified.
 The [private pressure-coupled candidate](SC1_REACTOR_PRESSURE_COUPLING_2026-11-11.md)
 stopped at 0.2 ms on the liquid-speed guard; its bundle is verified.
-The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. The scalar-gradient comparison also failed; next use the [nonorthogonal pressure comparison](SC1_REACTOR_VOF_NONORTHOGONAL_2026-11-11.md).
+The [three-step spatial diagnostic](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) completed; its verified bundle also reveals horizontal gas motion near the interface. The [single-velocity VOF reference](SC1_REACTOR_VOF_REFERENCE_2026-11-11.md) stopped on the liquid-speed guard at 8.4 ms; its bundle is verified. Converged nonorthogonal pressure corrections also failed to restore rest; next use the [two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split

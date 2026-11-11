@@ -1,5 +1,22 @@
 # SC1 VOF nonorthogonal pressure comparison
 
+## Kestrel result: converged pressure corrections, failed rest state
+
+At `ef01ab8`, `/scratch/nwimer/sc1_vof_nonorth_20261111T203602Z` stopped
+at 0.0084 s. All 672 observed correction groups converged on their final pass;
+the largest final-pass initial residual is 9.98761133388736e-13. The summary's
+`pressure_iteration_pass: false` reflects an incomplete 200-step run, not a
+failed observed correction. Gas peak remains 0.972526435841 m/s, changing only
+-2.60328e-8 m/s from the gradient control. Liquid peak remains 0.001003115908 m/s
+and again exceeds 1 mm/s. There are 168 step and 6720 pressure records, no End,
+and unchanged initial-input hashes. See the [received console](sc1_reactor_vof_nonorth_result_2026-11-11.json).
+The new failure archive remains on Kestrel and has not been locally verified.
+
+This weighs strongly against explicit pressure-correction lag as the dominant
+cause in this comparison. It does not establish facewise force balance.
+**Next: the [passive two-step force probe](SC1_REACTOR_VOF_FORCE_PROBE_2026-11-11.md).**
+Do not repeat this failed startup or increase the pressure iteration count again.
+
 ## Result motivating this test
 
 The [gradient candidate console](sc1_reactor_vof_gradients_result_2026-11-11.json)
@@ -76,7 +93,7 @@ On failure, print and bundle any valid observed pressure-iteration prefix as
 The normal snapshot comparison uses the original VOF spatial report, whose
 fields are available; it is not a new spatial comparison with the gradient case.
 
-## Next Kestrel command
+## Historical Kestrel command (already failed)
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
