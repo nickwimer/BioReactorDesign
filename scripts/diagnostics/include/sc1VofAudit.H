@@ -44,7 +44,7 @@ public:
       previousL_(volume(liquid)), previousG_(volume(gas)),
       initialL_(previousL_), initialG_(previousG_)
     {
-        Info.precision(17);
+        Info().precision(17);
         Info<< "SC1_VOF_INITIAL liquid_m3=" << initialL_
             << " gas_m3=" << initialG_ << " version=1" << endl;
     }

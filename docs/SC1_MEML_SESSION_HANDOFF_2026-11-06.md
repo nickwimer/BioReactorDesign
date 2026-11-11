@@ -169,8 +169,14 @@ phase budgets and unchanged pressure, liquid-speed, Co, alpha and redistribution
 limits. The reference removes phase slip and provides a simpler pressure/gravity
 and interface comparison. It does not replace aeration/PBM, oxygen transfer
 or biology, select three fields, or accept the failed BiRD parent startup.
-Thirty-three focused local tests pass; OpenFOAM compilation/CFD remain pending
-on Kestrel. Preserve every build, control and native snapshot.
+The first build at `9142d6a` stopped in the observer's logging call:
+`Info.precision(17)` is invalid for OF9's `messageStream`. Corrected to
+`Info().precision(17)`, matching the existing compiled audit headers. Native
+source compatibility passed, but compilation did not complete and no case
+preparation or CFD ran. Preserve `/scratch/nwimer/sc1_vof_build_20261111T190909Z`
+and its log; repeat the VOF command with its fresh timestamped roots after
+pulling the correction. Thirty-three focused tests pass after the correction;
+OpenFOAM compilation/CFD remain pending. Preserve every earlier control.
 
 The startup dictionary's symmetric 0.3/0.7 blend made the unordered segregated
 drag weight `1-f1-f2` nearly zero. The attempted fresh t=0 copy added only

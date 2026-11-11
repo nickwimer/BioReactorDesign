@@ -1,5 +1,24 @@
 # SC1 single-velocity free-surface reference
 
+## First build result and correction
+
+The first Kestrel build at `9142d6a` stopped during compilation in
+`/scratch/nwimer/sc1_vof_build_20261111T190909Z`. The inspected native-source
+checks passed and `wmake` started, but the observer called
+`Info.precision(17)`. OF9's `Info` is a `messageStream`; its explicit
+`operator()()` returns the output stream that provides `precision()`.
+The correction is `Info().precision(17)`, consistent with the previously
+compiled SC1 audit headers and the
+[OF9 messageStream API](https://cpp.openfoam.org/v9/classFoam_1_1messageStream.html).
+
+This is a logging API correction only. No equation, case dictionary, guard,
+precision value or budget definition changes. Preparation and CFD were not
+reached. Preserve the failed build and `log.build.solver`; run the command
+below again to pull the correction and create fresh build/case roots. The
+failed build must not be reused because its recorded header recipe differs.
+All 33 focused tests pass after this correction; the full OpenFOAM rebuild
+and first reference run remain pending on Kestrel.
+
 ## Decision from the verified spatial evidence
 
 The [velocity bundle](SC1_REACTOR_VELOCITY_LOCATION_2026-11-11.md) is now verified:
