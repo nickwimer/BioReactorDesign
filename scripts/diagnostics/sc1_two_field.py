@@ -6,6 +6,7 @@ Runs require a separate explicit --run and reject any previously attempted case.
 continue-closed can validate/save the first result and launch only its fresh partner.
 """
 import argparse
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -34,6 +35,22 @@ COMPONENTS = (
 )
 COPY_DIRS = ('include','interfacialCompositionModels','interfacialModels','phaseSystems',
              'multiphaseCompressibleMomentumTransportModels','multiphaseReactions','multiphaseEulerFoam')
+
+
+@dataclass(frozen=True)
+class BuildRecipe:
+    """Explicit private variant; default callers retain the original build contract."""
+    tag: str
+    app: str
+    marker: str
+    phase_transform: object
+    solver_transform: object
+    pressure_transform: object
+    headers: tuple = ()
+
+
+def build_recipe(recipe):
+    return recipe or BuildRecipe('',APP,MARKER,phase_source,solver_source,pressure_source)
 
 
 def sha(path):
@@ -65,7 +82,8 @@ def selected_hashes(root):
     return {d:source_hashes(root/d) for d in COPY_DIRS}
 
 
-def prepare_build(out, source=SOURCE, installed=None):
+def prepare_build(out, source=SOURCE, installed=None, *, recipe=None):
+    recipe=build_recipe(recipe)
     source=source.resolve(strict=True)
     if installed is None:
         installed=Path(os.environ['FOAM_USER_LIBBIN']).resolve(strict=True)
@@ -75,9 +93,9 @@ def prepare_build(out, source=SOURCE, installed=None):
     original_binaries={str(installed/name):sha(installed/name) for _,name in COMPONENTS if (installed/name).is_file()}
     # Validate source anchors and all Make destinations before creating anything.
     changes={
-        'phaseSystems/phaseSystem/phaseSystemSolve.C':phase_source((source/'phaseSystems/phaseSystem/phaseSystemSolve.C').read_text()),
-        'multiphaseEulerFoam/multiphaseEulerFoam.C':solver_source((source/'multiphaseEulerFoam/multiphaseEulerFoam.C').read_text()),
-        'multiphaseEulerFoam/pEqnComps.H':pressure_source((source/'multiphaseEulerFoam/pEqnComps.H').read_text()),
+        'phaseSystems/phaseSystem/phaseSystemSolve.C':recipe.phase_transform((source/'phaseSystems/phaseSystem/phaseSystemSolve.C').read_text()),
+        'multiphaseEulerFoam/multiphaseEulerFoam.C':recipe.solver_transform((source/'multiphaseEulerFoam/multiphaseEulerFoam.C').read_text()),
+        'multiphaseEulerFoam/pEqnComps.H':recipe.pressure_transform((source/'multiphaseEulerFoam/pEqnComps.H').read_text()),
     }
     for directory, name in COMPONENTS:
         path=directory+'/Make/files'
@@ -89,7 +107,7 @@ def prepare_build(out, source=SOURCE, installed=None):
         changes[path]=text
     path='multiphaseEulerFoam/Make/files'
     text=(source/path).read_text()
-    text,count=re.subn(r'(?m)^EXE\s*=.*$',lambda _:'EXE = '+safe_make_path(out/'bin'/APP),text)
+    text,count=re.subn(r'(?m)^EXE\s*=.*$',lambda _:'EXE = '+safe_make_path(out/'bin'/recipe.app),text)
     if count!=1: raise ValueError('Unexpected Make executable destination')
     changes[path]=text
     out.mkdir(parents=True,exist_ok=False)
@@ -105,10 +123,12 @@ def prepare_build(out, source=SOURCE, installed=None):
         'phaseSystems/phaseSystem/sc1PhaseFractionAudit.H':HERE/'include/sc1PhaseFractionAudit.H',
         'multiphaseEulerFoam/sc1TwoFieldStages.H':HERE/'include/sc1TwoFieldStages.H',
     }
+    headers.update(dict(recipe.headers))
     for path, original in headers.items(): shutil.copyfile(original,out/'src'/path)
     manifest=dict(version=1,root=str(out),source=str(source),original_sources=before,
         private_sources=selected_hashes(out/'src'),installed_binaries=original_binaries,
         source_commit=subprocess.check_output(['git','-C',str(REPO),'rev-parse','HEAD'],text=True).strip())
+    if recipe.tag: manifest['variant']=recipe.tag
     write_json(out/'build_manifest.json',manifest)
     return out
 
@@ -121,10 +141,12 @@ def environment(root):
     return env
 
 
-def verify_build(root, require_record=True):
+def verify_build(root, require_record=True, *, recipe=None):
+    recipe=build_recipe(recipe)
     root=root.resolve(strict=True)
     m=json.loads((root/'build_manifest.json').read_text())
     if m['version']!=1 or m['root']!=str(root): raise ValueError('Wrong build manifest')
+    if m.get('variant','')!=recipe.tag: raise ValueError('Wrong private build variant')
     if selected_hashes(Path(m['source']))!=m['original_sources']:
         raise ValueError('Original source tree changed since preparation')
     if selected_hashes(root/'src')!=m['private_sources']:
@@ -132,7 +154,7 @@ def verify_build(root, require_record=True):
     for path, expected in m['installed_binaries'].items():
         if sha(path)!=expected: raise ValueError('Installed binary changed: '+path)
     env=environment(root)
-    binaries=[root/'bin'/APP]+[root/'lib'/name for _,name in COMPONENTS]
+    binaries=[root/'bin'/recipe.app]+[root/'lib'/name for _,name in COMPONENTS]
     assets={}
     for binary in binaries:
         if binary.is_symlink() or not binary.is_file(): raise ValueError('Missing/redirected private binary: '+str(binary))
@@ -144,13 +166,13 @@ def verify_build(root, require_record=True):
         for name,path in mappings.items():
             if name.startswith(('libbird','libbirdeulerian')) and Path(path).resolve()!=root/'lib'/name:
                 raise ValueError('Project library escaped private build: '+name+' => '+path)
-        if binary.name in (APP,'libbirdmultiphaseSystems.so') and mappings.get('libbirdphaseSystem.so')!=str(root/'lib/libbirdphaseSystem.so'):
+        if binary.name in (recipe.app,'libbirdmultiphaseSystems.so') and mappings.get('libbirdphaseSystem.so')!=str(root/'lib/libbirdphaseSystem.so'):
             raise ValueError('Private phase-system dependency missing: '+str(binary))
-    for binary, kind in ((root/'bin'/APP,'U'),(root/'lib/libbirdphaseSystem.so','T')):
+    for binary, kind in ((root/'bin'/recipe.app,'U'),(root/'lib/libbirdphaseSystem.so','T')):
         result=subprocess.run(['nm','-D',str(binary)],text=True,capture_output=True,check=True,timeout=30)
-        matches=re.findall(r'^\s*(?:[0-9a-fA-F]+\s+)?([A-Za-z])\s+'+MARKER+r'\s*$',result.stdout,re.M)
+        matches=re.findall(r'^\s*(?:[0-9a-fA-F]+\s+)?([A-Za-z])\s+'+recipe.marker+r'\s*$',result.stdout,re.M)
         if matches!=[kind]: raise ValueError('Mandatory observer symbol missing/wrong: '+str(binary))
-    if not os.access(root/'bin'/APP,os.X_OK): raise ValueError('Solver is not executable')
+    if not os.access(root/'bin'/recipe.app,os.X_OK): raise ValueError('Solver is not executable')
     if require_record and json.loads((root/'build_verified.json').read_text())['assets']!=assets:
         raise ValueError('Verified binaries changed')
     return dict(version=1,assets=assets,installed_unchanged=True,private_dependencies=True)
@@ -169,16 +191,16 @@ def execute(command, cwd, log, env):
         raise ValueError(f'Command failed ({result.returncode}); preserve {log}')
 
 
-def build(out):
+def build(out, *, recipe=None):
     if os.environ.get('WM_PROJECT_VERSION')!='9': raise ValueError('Source the OpenFOAM 9 environment first')
     if not shutil.which('wmake'): raise ValueError('wmake unavailable')
-    root=prepare_build(out)
+    root=prepare_build(out,recipe=recipe)
     print('TWOFIELD_BUILD='+str(root),flush=True)
     env=environment(root)
     for directory, _ in COMPONENTS:
         execute(['wmake','libso'],root/'src'/directory,root/('log.build.'+directory.replace('/','_')),env)
     execute(['wmake'],root/'src/multiphaseEulerFoam',root/'log.build.solver',env)
-    checked=verify_build(root,require_record=False)
+    checked=verify_build(root,require_record=False,recipe=recipe)
     write_json(root/'build_verified.json',checked)
     print('SC1 two-field private build and runtime verification: PASS (no CFD launched)',flush=True)
     for path,digest in checked['assets'].items(): print(f'{path} sha256={digest}')
@@ -274,7 +296,7 @@ def completed_report(root, name, manifest, *, summarize_log=summarize, require_p
     return report
 
 
-def run_fresh_cases(root, manifest, names, *, summarize_log=summarize):
+def run_fresh_cases(root, manifest, names, *, summarize_log=summarize, app=APP):
     m=manifest
     env=environment(Path(m['build']))
     for name in names:
@@ -288,7 +310,7 @@ def run_fresh_cases(root, manifest, names, *, summarize_log=summarize):
         execute(['setFields'],case,case/'log.setFields',env)
         initialized=case_input_hashes(case)
         write_json(case/'initialized.json',initialized)
-        execute([Path(m['build'])/'bin'/APP],case,case/'log.solver',env)
+        execute([Path(m['build'])/'bin'/app],case,case/'log.solver',env)
         after=case_input_hashes(case)
         if after!=initialized: raise ValueError('Initial fields or dictionaries changed during solve')
         try:

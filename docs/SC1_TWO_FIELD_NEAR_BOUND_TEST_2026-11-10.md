@@ -13,10 +13,11 @@ setting. Preserve all four cases and the verified build; do not rerun them.
 
 All 53 focused baseline/near-bound tests passed before this runtime result,
 including mocked runner execution and unchanged canonical baseline reports.
-This update records the supplied results and source-algebra review. No
-tolerance, recipe, solver source or binary has changed. The next implementation
-is an isolated, guarded source-split candidate described below, not another
-timestep/reference sweep or a reactor launch.
+The results below retain the original tolerances, recipes and verified build.
+The [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+is now implemented and passes 68 focused local checks. The next Kestrel action
+is its separate build and guarded eight-case regression. No candidate CFD
+result is available yet; these completed controls must remain unchanged.
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split
@@ -318,8 +319,8 @@ fractions, and multiple timesteps. It is not a proof for the full flux-limited,
 pressure-coupled solver. Su/Sp still combines with the original divergence
 source and transport fluxes, and the pressure rates are lagged.
 
-The next implementation should therefore be a **separate private experimental
-variant**, initially restricted to this two-field constant-density,
+The [implemented candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md) is a
+**separate private experimental variant**, restricted to this two-field constant-density,
 nonnegative-rate, no-interphase-transfer contract. Require complementary
 fractions and finite compatible rates, and reject unsupported signed-rate
 states rather than silently applying this algebra. Preserve the existing
@@ -328,9 +329,10 @@ all diagnostics. Demonstrate the guard and algebra before building, then
 regress closed transport, mid-fraction feed and the near-bound pairs at both
 timesteps against the unchanged budgets and thresholds. A new variant needs
 its own verified build and fresh cases; the current baseline build cannot be
-relabeled as corrected. No new build/run command is supplied in this results
-update. No production source change, floor reduction, post-solve addback,
-additional timestep sweep or reactor launch follows from these results.
+relabeled as corrected. The linked document contains the guarded build and
+regression command. Local C++ algebra/guard and mocked runner checks pass;
+actual candidate OpenFOAM compilation and CFD remain pending. No production
+source change, floor reduction, post-solve addback or reactor launch is included.
 
 ## Coarse-pair launch reference (completed; do not repeat)
 

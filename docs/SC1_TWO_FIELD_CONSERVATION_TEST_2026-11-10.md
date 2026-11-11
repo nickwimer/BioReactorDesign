@@ -11,13 +11,15 @@ The continuation at `56a84d7` saved the no-reference result without rerunning
 CFD, then completed the gas-reference partner. The source pair subsequently
 completed at `ef74cf6`, also with both screens passing. All four `result.json`
 files now exist with log hashes. **This suite is complete; preserve it and do
-not rerun any case or rebuild.** The separate [near-bound source and
+not rerun any control case or overwrite its build.** The separate [near-bound source and
 half-timestep harness](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md) is now
 complete: coarse at `78ebbb8`, fine and comparison at `75dc652`. Diagnostics
 pass, but both phase mass screens fail with either reference setting at both
 timesteps. The approximately 0.900-microgram liquid deficit barely changes
-with half-dt. A guarded private source-split candidate is the next implementation
-target; interface checks remain later work.
+with half-dt. The [guarded private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+is now implemented with 68 passing local tests. Its separate build and eight
+fresh regression cases are the next Kestrel step; candidate CFD and interface
+checks remain pending.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.

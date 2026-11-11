@@ -275,9 +275,11 @@ all four cases: the half-timestep pair and comparison completed at `75dc652`.
 Both fine diagnostics pass, but the cumulative liquid deficit remains about
 0.900 micrograms and both phase screens still fail. Half-dt and gas reference
 have not remedied it. The inspected source-floor algebra predicts this scale
-for the nominal fixture; a restricted private source-split candidate is the
-next implementation target. Thresholds, source code and the verified build
-remain unchanged. This numerical fixture does not quantify the old EMM excess
+for the nominal fixture. The [restricted private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+is now implemented with 68 passing local tests; its separate build and eight
+fresh regressions are ready for Kestrel. Thresholds, original solver sources
+and the original verified build remain unchanged. No candidate runtime result
+is available yet. This numerical fixture does not quantify the old EMM excess
 or resolve wall climbing.
 The preceding three-field diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

@@ -5,7 +5,7 @@ from sc1_two_field_report import parse, summarize_contract
 from sc1_two_field_bounds_cases import ALPHA, FLOOR, VERSION, contract
 
 
-def summarize(text, case):
+def summarize(text, case, *, require_split_effect=True):
     spec=contract(case)
     report=summarize_contract(text,case,spec,closed=False,
                               reference=case.endswith('gas_reference'))
@@ -49,7 +49,8 @@ def summarize(text, case):
             finalOuterImplicitSourceFrozenMass_kg=math.fsum(r['frozenRhoMass_kg'] for r in selected('implicitSourceChange')),
             finalOuterRescaleFrozenMass_kg=math.fsum(r['frozenRhoMass_kg'] for r in selected('rescale')))
     floor_activity=report['phases']['liquid']['finalOuterSplitL1Volume_m3']>1e-18
-    require(floor_activity,'Liquid source-split effect was not measurably exercised')
+    if require_split_effect:
+        require(floor_activity,'Liquid source-split effect was not measurably exercised')
     errors.sort()
     mass_failures={p+': phase mass budget exceeds screening tolerance' for p in ('gas','liquid')}
     report.update(suite='sc1_two_field_bounds',contractVersion=VERSION,dt_s=spec.dt,

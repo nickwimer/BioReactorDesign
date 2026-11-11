@@ -56,6 +56,16 @@ near-bound suite is also complete: coarse at `78ebbb8`, fine and comparison
 at `75dc652`. All four diagnostics pass but all phase mass screens fail;
 halving dt leaves the approximately 0.900-microgram liquid deficit unchanged
 to within 0.016%.** See the [completed comparison and source-algebra review](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md).
+
+**Latest implementation:** the [private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+is ready for its separate Kestrel build and guarded eight-case regression.
+All 68 focused local tests pass, including compilation of the actual source
+kernel and guard header against a minimal API double, preservation checks and
+mocked eight-case execution. Candidate OpenFOAM compilation/CFD remain pending.
+Use the linked single build/prepare/run command; it retains the completed
+controls and the original mass thresholds. These numerical checks do not
+validate reactor hydrodynamics; that is the next stage after a pass.
+
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
@@ -224,16 +234,21 @@ The suppressed component predicts approximately 9e-10 kg liquid deficit in
 this uniform-feed fixture. This is not a 90% loss of total feed and does not
 quantify the old reactor anomaly.
 
-The [next implementation](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md#source-algebra-and-next-implementation)
+The [implemented candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
 is a guarded private two-field source-split variant: for complementary
 fractions and nonnegative rates qi,qj, use increments Su=qi and
 Sp=-(qi+qj), preserving `(1-a)*qi-a*qj` without a small-fraction denominator.
-Source-only algebra/bounds have been checked; full pressure/flux-coupled
-conservation has not. Restrict and test that contract, preserve the original
-divergence source and all diagnostics, then use a separately verified build
-and fresh regression cases. No solver code or threshold was changed in this
-result update, and no new build/run command is ready yet. Do not blindly
-reduce the floor or add the measured deficit back after solving.
+Source-only algebra/bounds and guard behavior have been checked; full
+pressure/flux-coupled conservation has not. The implementation preserves the
+original divergence source and all diagnostics, uses the distinct executable
+`birdTwoFieldRates` and library marker, and rejects unsupported states. Only
+the private copied split changes. The linked command builds a fresh private
+variant, verifies its runtime libraries, prepares eight fresh cases and runs
+the regression stages with gates. Closed/mid-fraction screens must pass;
+near-bound diagnostics must pass before finer comparison. Final acceptance
+requires all eight screens with unchanged thresholds. No production sources,
+original build or completed cases are overwritten. Do not reduce the floor
+or add the measured deficit back after solving.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 

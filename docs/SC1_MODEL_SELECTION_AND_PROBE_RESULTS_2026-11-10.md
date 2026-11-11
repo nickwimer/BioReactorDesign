@@ -227,10 +227,12 @@ liquid L1 ratios are 0.9998454336 / 1.0000548393; the cumulative deficit is
 essentially unchanged. All four near-bound cases are complete and must be
 preserved. Source algebra predicts about 9e-10 kg lost from the coupled
 dilatation component at these nominal fractions, matching the measured
-deficit. The next implementation is a guarded private two-field rate-based
-source split, with explicit bounds/source tests and fresh regressions; its
-source-only algebra is not validation of the pressure-coupled CFD system.
-No solver correction or resolved-interface validation has been completed.
+deficit. The [guarded private rate-split candidate](SC1_TWO_FIELD_RATE_SPLIT_TEST_2026-11-10.md)
+is now implemented, with 68 passing local bounds/source, runtime-guard and
+mocked regression checks. The next Kestrel step is its separate build and
+eight fresh regressions against the unchanged thresholds. Its source-only
+algebra is not validation of pressure-coupled CFD; no candidate runtime result
+or resolved-interface validation is available yet.
 
 ## Next decision: continue validating the simpler candidate
 
