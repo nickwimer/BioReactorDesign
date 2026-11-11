@@ -2,17 +2,18 @@
 
 ## Status and purpose
 
-**Both closed cases pass the complete 100-step numerical screen.**
+**All four cases pass the complete 100-step numerical screen.**
 Saved-log analysis at `e7825bd` confirmed that the earlier report rejection
 was caused by timestamp roundoff. The existing case root is
 `/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z` and the verified
 build is `/kfs3/scratch/nwimer/sc1_two_field_build_20261110T224950Z`.
-The continuation at `56a84d7` validated/saved the no-reference report without
-rerunning CFD, then completed the gas-reference partner. Both `result.json`
-files now exist with log hashes. **Next: run the two already prepared source
-cases in this same root.** No rebuild, case regeneration or closed-case rerun
-is needed. The source pair remains unlaunched; its closed-pair prerequisite
-is now satisfied and will be rechecked by the runner.
+The continuation at `56a84d7` saved the no-reference result without rerunning
+CFD, then completed the gas-reference partner. The source pair subsequently
+completed at `ef74cf6`, also with both screens passing. All four `result.json`
+files now exist with log hashes. **This suite is complete; preserve it and do
+not rerun any case or rebuild.** Next implementation is a separate paired
+source test near phase-fraction bounds, followed by controlled timestep and
+interface checks. No new stress-test or SC1 reactor launch is included here.
 This is a numerical test harness, not a corrected SC1 reactor
 case or a demonstrated solution to wall climbing, excess inventory or oxygen
 clipping. The phase count remains open pending physical validation.
@@ -373,10 +374,104 @@ These are user-supplied runtime results; the raw logs and hash-bound
 `result.json` files remain on Kestrel. Preserve both cases and the earlier
 failed roots.
 
-## Next Kestrel step: run the prepared source pair
+## Source pair completed: all four baseline screens pass
+
+The user ran the source pair at `ef74cf6` in the existing case root and
+supplied both complete JSON reports and `PAIR=source complete`. Each source
+case reports `complete: true`, `screen_pass: true`, `errors: []`, 100 steps.
+There was no rebuild, regeneration or repeat of the closed cases.
+
+| Liquid budget (kg) | No reference | Gas reference |
+|---|---:|---:|
+| Initial mass | 0.5 | 0.5 |
+| Final mass | 0.500090419143175 | 0.500090419112172 |
+| Sum of accepted-step mass changes | 9.041914317521618e-05 | 9.041911217155564e-05 |
+| Boundary mass exported | 9.580924787716157e-06 | 9.580924769262218e-06 |
+| Assembled option source | 9.999999999999999e-05 | 9.999999999999999e-05 |
+| Signed physical residual | 6.796293226441216e-11 | 3.694081779173838e-11 |
+| Cumulative absolute residual | 6.991205047567109e-11 | 3.8064394580038755e-11 |
+| Screening limit | 1.0009999999999999e-07 | 1.0009999999999999e-07 |
+
+The liquid balance is 0.100 g supplied, approximately 0.090419 g retained and
+0.009581 g exported. Independently summing the supplied report values reproduces
+each signed residual. The cumulative absolute residuals are 0.0000699121% and
+0.0000380644% of the supplied liquid mass. They sum absolute timestep defects,
+so cancellation is not responsible for the pass.
+
+| Gas budget (kg) | No reference | Gas reference |
+|---|---:|---:|
+| Initial mass | 0.0005 | 0.0005 |
+| Final mass | 0.000499909580856825 | 0.000499909580887829 |
+| Sum of accepted-step mass changes | -9.041914317518895e-08 | -9.041911217155635e-08 |
+| Boundary mass exported | 9.04191374331792e-08 | 9.041907543275881e-08 |
+| Signed physical residual | -5.742009747825391e-15 | -3.6738797539834215e-14 |
+| Cumulative absolute residual | 6.122027062821979e-15 | 3.79419149386864e-14 |
+| Screening limit | 1.904191374331792e-10 | 1.9041907543275884e-10 |
+
+Gas option sources and both phases' interphase transfer sources are zero.
+The no-reference final-outer rescale sums are `3.0999895359040594e-14` m3
+gas and `3.100526953236917e-14` m3 liquid; the gas-reference values are zero.
+Liquid final-outer source-split sums are `5.759824041329228e-26` and
+`-2.117582368135748e-26` m3, respectively, effectively zero. These are
+iteration diagnostics, not additional physical source terms to add to the
+accepted-step budgets. The difference between the variants' cumulative liquid
+mass changes is only `3.100366054e-11` kg. The reference variant has a smaller
+liquid residual and a larger gas residual; both are comfortably below their
+limits. This is not a basis for declaring either setting generally superior.
+
+Timestamp normalization remains 3360 / 2128 adjusted records, with maximum
+adjustment `1.1102230246251565e-16` s in both source cases. Recorded log hashes:
+
+- `source_no_reference`: `b3124354624ce8ea8ff56e5e7663e89d3e36c385f01e0396e723314576fa6d96`
+- `source_gas_reference`: `487bec0cc44e837d2de8ae23c075511a0433344afd27736b6d8e14a3ecff7b7d`
+
+The reports are user-supplied runtime evidence. Raw logs, initialized inputs,
+manifests and hash-bound reports remain on Kestrel. All four baseline screens
+are now complete. Preserve the successful root and verified build, together
+with earlier failed attempts.
+
+## Next implementation: test source splitting near phase bounds
+
+The baseline establishes closed transport and a known external liquid-feed
+balance for constant-density, isothermal two-field fixtures. It supports
+continuing to evaluate the simpler representation. It does not show that
+three fields are required, select a reference phase, resolve the archived EMM
+excess inventory, or validate wall/free-surface behavior.
+
+The source fixtures began at alphaL=alphaG=0.5 and produced essentially zero
+source-split diagnostics. They therefore do not test the behavior that the
+earlier three-field probe localized near alphaL=1. The inspected
+`phaseSystemSolve.C` divides positive dilatation by `max(1-alpha,1e-4)` and
+negative dilatation by `max(alpha,1e-4)`. This mechanism remains present in
+the two-field solver; a mid-fraction pass cannot dismiss its effect near a
+bound.
+
+The next separate fixture should compare the same reference settings with
+a near-pure-liquid initial state, a known physically feasible source and a
+pressure-compatible outlet. Its specification must declare measured initial
+phase inventories, expected integrated source, phase-specific tolerances
+appropriate to the small gas inventory, and output proving the intended
+bound regime was exercised. Retain all source-splitting, rescaling and
+accepted-step ledgers. Then halve the timestep at the same physical duration
+and hold other inputs fixed to distinguish temporal effects; vary outer
+iterations separately if needed. Do not change floors or add source back
+based only on this baseline.
+
+The current generator and analyzer intentionally encode the baseline's
+initial inventory and 100-step contract. **No near-bound launch command is
+ready in this update.** Implement and validate a separate case/report contract
+before giving a new CFD command; do not hand-edit completed cases or merely
+change alpha in the old fixture. Interphase-transfer and resolved-interface
+checks still precede a matched SC1 nonreacting reactor candidate. Existing
+compiled observers can be reused if their capabilities remain sufficient.
+
+## Source-pair launch reference (completed)
+
+The command below has completed successfully. Do not repeat it: both source
+cases are now attempted and the runner will refuse them.
 
 The source cases were prepared with the corrected dictionaries at `d7b1b2e`
-and have not been attempted. They retain the same 256-cell mesh, 100 steps to
+and retain the same 256-cell mesh, 100 steps to
 0.1 s and numerical controls. The prescribed liquid feed is 0.001 kg/s, giving
 0.0001 kg (0.1 g) total supply. The pressure outlet can export both phases;
 acceptance compares inventory changes with measured boundary mass and the
@@ -385,7 +480,7 @@ The source dictionary was checked against Foundation OF9's
 [massSource implementation](https://cpp.openfoam.org/v9/massSource_8C_source.html):
 it selects `phase liquid`, `rho thermo:rho.liquid`, all cells, and the existing
 velocity/temperature field values. No case or compiled source changes are
-needed for this next test. Interphase transfer and biology remain absent.
+were needed for this completed test. Interphase transfer and biology are absent.
 
 The runner rechecks the private build, both closed log hashes and passing
 screens, and both source input manifests before launching either source case.
@@ -413,8 +508,8 @@ else
 fi
 ```
 
-Paste both source reports and `PAIR=source complete`, or the entire error
-output. This command launches no closed-case reruns and no reactor simulation.
+Both source reports and `PAIR=source complete` are recorded above. This
+historical command launched no closed-case reruns and no reactor simulation.
 
 ## Closed-partner continuation reference (completed)
 
@@ -483,13 +578,12 @@ fi
 ```
 
 This completed analysis command prints to the terminal without changing the
-case or creating `result.json`. Both closed cases are now complete; the source
-pair above is the next action.
+case or creating `result.json`. All four cases are now complete.
 
 ## Fresh closed-pair launch reference (not the current next action)
 
 The command below is retained as the original launch recipe. **Do not execute
-it for the current completed closed pair; use the source-pair command above.**
+it for the completed baseline suite.**
 
 Use the existing allocation and pull the corrected generator over SSH. Reuse
 the already verified build. The command creates four fresh case dictionaries but launches only `closed_no_reference` and
@@ -548,12 +642,12 @@ arithmetic tests run as part of that suite. Python syntax and shell syntax
 checks pass. Local tests alone did not prove OpenFOAM compatibility; the
 subsequent successful Kestrel build above now supplies that compilation
 evidence. The first two CFD attempts exposed corrected dictionary errors.
-Both closed cases now pass complete audit coverage and the numerical screen.
-The source cases remain unlaunched. This result-recording update changes only
+All four cases now pass complete audit coverage and the numerical screen.
+This result-recording update changes only
 documentation; the 39-test harness result above is from the preceding runner
 change, not a new CFD or test-suite execution.
 
-A pass in these small cases would justify further controlled tests, not a
+The passes in these small cases justify further controlled tests, not a
 full reactor release. Follow with source/transfer tests near phase bounds,
 timestep/outer-iteration sensitivity and explicit-interface benchmarks, then
 a matched SC1 nonreacting case on a common mesh. Gas mass, liquid mass,

@@ -256,10 +256,17 @@ cumulative absolute residuals are `4.894737643911179e-16` /
 `4.895160184386637e-13` kg. Both settings are well within their limits;
 the closed fixture does not select one formulation or explain EMM's excess
 inventory. Both reports and log hashes are recorded in the two-field test
-document. Next launch the already prepared source pair in the same root with
-the existing 0.001 kg/s liquid feed and measured outlet export. No code changed
-for this result update; the prior 39 harness tests passed. Preserve all attempts
-and reuse the verified build. It is not an
+document. The source pair then completed at `ef74cf6`, with both 100-step
+screens passing. Each supplied 0.100 g liquid, retained about 0.090419 g and
+exported 0.009581 g. Liquid cumulative absolute residuals are
+`6.991205047567109e-11` / `3.8064394580038755e-11` kg, below `1.001e-07` kg.
+Gas export likewise accounts for its inventory loss. All four baseline cases
+are complete, supporting further evaluation of two fields without selecting
+one reference setting. The 50/50 source fixture has effectively zero source
+splitting and does not test the prior near-bound defect. Next implement a
+separate near-bound source fixture and timestep check; do not rerun this suite.
+No code changed for this result update; the prior 39 harness tests passed.
+Preserve all attempts and reuse the verified build where applicable. It is not an
 SC1 reactor case.
 The current diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison

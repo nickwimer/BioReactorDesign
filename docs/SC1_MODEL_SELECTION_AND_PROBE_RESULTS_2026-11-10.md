@@ -189,7 +189,34 @@ counterfactual. The large first-outer pressure-target excess also shows why
 lagged `divU` cannot simply replace the source. No addback or floor change is
 accepted, and the probe provides no evidence that three fields are necessary.
 
-## Next decision: test the simpler candidate first
+## Four two-field baseline tests completed
+
+The [isolated two-field test record](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md)
+now contains four completed 100-step passing screens: closed transport and a
+known liquid-feed/outlet case, each without a reference phase and with gas as
+reference. The closed pair completed at `56a84d7`; the source pair completed
+at `ef74cf6`, in `/kfs3/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`.
+The user supplied full reports and solver-log hashes. Preserve these cases;
+no repeat of the baseline suite or new build is needed.
+
+For the source pair, each 0.100 g feed is balanced by approximately 0.090419 g
+retained and 0.009581 g exported liquid. Cumulative absolute liquid residuals
+are `6.991205047567109e-11` and `3.8064394580038755e-11` kg, far below the
+`1.001e-07` kg screen. Both phases pass, and neither reference setting is
+selected by these tests. This supports continuing with the simpler candidate;
+it does not prove a third field is necessary or establish full-reactor validity.
+
+The known-source fixture starts at equal phase fractions, has constant
+densities, and shows essentially zero source-split contribution. It does not
+reproduce the earlier probe's near-pure-liquid regime. Next implement a
+separate matched near-bound source test, with explicit inventory/tolerance
+and report contracts, before adding timestep sensitivity and resolved-interface
+physics. Retain a physically feasible source/outlet balance, measure both
+phase budgets and the intended alpha regime, and preserve the original solver
+floors while diagnosing them. No new launch command for that fixture exists
+in this documentation-only result update.
+
+## Next decision: continue validating the simpler candidate
 
 The [external benchmark review](SC1_EXTERNAL_BENCHMARKS_2026-11-10.md) identifies
 two-field BiRD stirred-tank implementations with oxygen transfer and PBM.
@@ -230,8 +257,9 @@ Archived cases, read only:
 - MEML: `/projects/microenviro/final_runs/reacting_Julia_08282026/meml/putida_sc1_final`
 
 These paths are not mounted in the assistant workspace. The archived t=0
-inventory/budgets and complete current configurations have not been retrieved
-in this review. No corrected two-field case or new solver build is ready to
-launch yet. Preserve all existing runs/builds; pause further three-field closure
+inventory/budgets remain missing; later configuration evidence was reviewed
+in the wall-bundle findings. The private small-case solver is built and its
+four baseline screens pass, but no matched SC1 reactor case is ready to launch.
+Preserve all existing runs/builds; pause further three-field closure
 development while selecting the simpler benchmark. No coefficient tuning,
 production change or biological schedule change is part of this decision.

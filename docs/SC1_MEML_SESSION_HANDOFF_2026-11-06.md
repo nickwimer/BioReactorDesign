@@ -49,10 +49,10 @@ budgets; VTK integration error is outside the selection bounds. Prescribed
 overfilling does not explain EMM under these assumptions. The rescaling,
 boundary/source and pressure/density contributions still need measurement.
 **The isolated two-field test harness builds and passes runtime-library
-verification on Kestrel. Both closed reference settings now pass all 100 steps
-of the numerical screen. The no-reference result was saved without rerunning it,
-and the gas-reference partner completed at `56a84d7`. Next run the two already
-prepared source cases in the same root.**
+verification on Kestrel. All four baseline cases now pass all 100 steps of
+the numerical screen: the closed pair at `56a84d7` and the source pair at
+`ef74cf6`. Preserve the completed suite; do not rerun it. Next implementation
+is a separate source test near phase-fraction bounds, then timestep sensitivity.**
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
@@ -139,13 +139,33 @@ The saved solver-log hashes are:
 - no-reference: `9793a67274cf9260750c7b822f24bc0e9cf66a00d04f4b0cd707700042c212df`
 - gas-reference: `1e563cb5179927771ffea8ccf691a89488f71cb871c500dd785117fd7e3e17ac`
 
-The source-pair prerequisite is now satisfied. Follow the [prepared source-pair
-launch command](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-kestrel-step-run-the-prepared-source-pair)
-in `/scratch/nwimer/sc1_two_field_cases_20261110T233431Z`. It rechecks both
-closed logs/results and the private build, then launches only the fresh source
-cases, serially, with the existing 0.001 kg/s liquid feed for 0.1 s. Account
-for both the 0.0001 kg supply and measured outlet export. Preserve all attempted
-roots. Source conservation remains untested; no reactor launch is implied.
+**Source pair completed at `ef74cf6`:** both variants report complete, passing
+100-step screens with no errors, followed by `PAIR=source complete`. They ran
+in `/scratch/nwimer/sc1_two_field_cases_20261110T233431Z` with the same build.
+Each received 0.0001 kg liquid over 0.1 s, retained about 9.04191e-05 kg and
+exported 9.58092e-06 kg liquid. Liquid cumulative absolute residuals are
+`6.991205047567109e-11` kg (no reference) and `3.8064394580038755e-11` kg
+(gas reference), below the `1.001e-07` kg limit. Gas residuals are
+`6.122027062821979e-15` / `3.79419149386864e-14` kg, below approximately
+`1.90419e-10` kg. Gas inventory loss is accounted for by outlet export.
+No interphase transfer was enabled. Source-split diagnostics are effectively
+zero; no-reference final-outer rescaling is only about 3.1e-14 m3 per phase.
+
+Source log hashes:
+
+- no-reference: `b3124354624ce8ea8ff56e5e7663e89d3e36c385f01e0396e723314576fa6d96`
+- gas-reference: `487bec0cc44e837d2de8ae23c075511a0433344afd27736b6d8e14a3ecff7b7d`
+
+All four `result.json` files now exist with their log hashes. The user supplied
+the runtime reports; raw evidence remains on Kestrel. Both two-field reference
+settings remain viable candidates. The uniform 50/50 source fixture does not
+exercise the near-bound source-splitting mechanism diagnosed in the earlier
+three-field probe or explain archived EMM excess liquid. See the [completed
+source budgets and next implementation](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md#next-implementation-test-source-splitting-near-phase-bounds).
+Preserve all completed and failed roots. **No rebuild, repeat of these four
+cases, or reactor launch is the next action.** Implement a separate near-bound
+fixture and matching initial-inventory/report contract before a new CFD
+command; the baseline parser must not be reused after ad hoc alpha edits.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
@@ -169,8 +189,8 @@ feasibility remains unproved. No source addback or physical correction is approv
 Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELECTION_AND_PROBE_RESULTS_2026-11-10.md)
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
-runtime-verified; both closed reference settings pass. The already prepared
-source pair is next, using the existing verified build and case root.
+runtime-verified; all four closed/source baseline cases pass. Near-bound
+source and timestep checks are next, using separate fresh fixtures.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory
