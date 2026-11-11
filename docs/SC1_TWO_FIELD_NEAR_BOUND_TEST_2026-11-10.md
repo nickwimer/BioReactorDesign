@@ -2,18 +2,21 @@
 
 ## Status
 
-**The coarse pair completed at `78ebbb8`: both 100-step reports have
-`complete: true`, `diagnostic_pass: true` and `screen_pass: false`.** Their only
-errors are the gas and liquid mass-budget thresholds. The near-bound regime
-and measurable source-split effect were exercised in both variants. The next
-action is the already prepared half-timestep pair in
-`/kfs3/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`, followed by the
-read-only comparison. Preserve both completed coarse cases; do not rerun them.
+**All four near-bound cases and the read-only comparison are complete.** The
+coarse pair ran at `78ebbb8`; the fine pair and comparison ran at `75dc652` in
+`/kfs3/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`. All four reports
+have `complete: true`, `diagnostic_pass: true` and `screen_pass: false`; their
+only errors are the gas and liquid mass thresholds. Both timestep levels
+exercise the target regime and source-split effect. Halving dt leaves the
+cumulative liquid deficit at about 0.900 micrograms in either reference
+setting. Preserve all four cases and the verified build; do not rerun them.
 
 All 53 focused baseline/near-bound tests passed before this runtime result,
 including mocked runner execution and unchanged canonical baseline reports.
-This result update changes documentation only. No fine-pair result is available
-yet, and no tolerance, recipe, solver source or binary has changed.
+This update records the supplied results and source-algebra review. No
+tolerance, recipe, solver source or binary has changed. The next implementation
+is an isolated, guarded source-split candidate described below, not another
+timestep/reference sweep or a reactor launch.
 
 All four [baseline cases](SC1_TWO_FIELD_CONSERVATION_TEST_2026-11-10.md) passed
 on Kestrel. Their uniform 50/50 source case had essentially zero source-split
@@ -191,15 +194,149 @@ Solver-log SHA-256:
 - `bound_coarse_no_reference`: `fd9347de2238a61671094fdc1c73fdef1c3379f08bb94cdcebd8da72b07619e0`
 - `bound_coarse_gas_reference`: `cbcc168865f05f6b4eb36f3681909d80be8f285a5efdb972538d4fd0093c4e82`
 
-The planned fine comparison is allowed because both diagnostics pass. Keep
-all thresholds and physics unchanged. Halving dt is a sensitivity test, not
-an assumed correction; the earlier three-field test worsened with smaller dt.
+Both coarse diagnostics passed, allowing the planned fine comparison with
+unchanged thresholds and physics. That comparison is now complete below.
+
+## Completed fine pair and timestep comparison at `75dc652`
+
+The uploaded `Pasted text(20261111-011306).txt` contains both full 200-step
+reports, `NEAR_BOUND_LEVEL=fine complete` and the successful read-only
+comparison. Its parsed JSON and provenance are preserved in
+[the fine-result evidence](sc1_two_field_bounds_fine_results_2026-11-10.json).
+This is a transcript-derived record, not a replacement for the raw solver
+logs, initialized inputs or saved reports on Kestrel.
+
+Both fine runs reached 0.1 s with dt=0.0005 s, valid diagnostics, zero gas
+source/interphase transfer and 1e-4 kg assembled liquid feed. Their only errors
+are the same phase mass-budget thresholds. Signed residual magnitudes equal
+the reported L1 residuals, so cancellation is not hiding the cumulative error.
+
+| Phase / reference | Coarse L1 residual (kg) | Fine L1 residual (kg) | Fine/coarse | Change |
+|---|---:|---:|---:|---:|
+| Gas / none | 8.996994139032305e-13 | 8.997591237177871e-13 | 1.0000663664 | +0.006637% |
+| Gas / gas | 8.99699284789516e-13 | 8.997483498542197e-13 | 1.0000545350 | +0.005453% |
+| Liquid / none | 9.001408870364855e-10 | 9.000017554931859e-10 | 0.9998454336 | -0.015457% |
+| Liquid / gas | 8.996987667297552e-10 | 8.997481055502226e-10 | 1.0000548393 | +0.005484% |
+
+Fine liquid deficits are 0.900001755 / 0.899748106 micrograms, about 8.91
+times the unchanged 1.01e-10 kg threshold. Gas residuals are about 180.81 /
+180.80 times their fine-case allowances (4.976220520411336e-15 /
+4.976462509774087e-15 kg). The gas allowance decreased because measured export
+decreased; its absolute residual stayed essentially constant. Gas residuals
+are now about 22.63% of export and 0.0090% of initial gas mass.
+
+| Fine quantity | No reference | Gas reference |
+|---|---:|---:|
+| Liquid final mass (kg) | 0.999990003076462 | 0.999990003076714 |
+| Liquid inventory increase (kg) | 3.0764614060707575e-09 | 3.076714197192131e-09 |
+| Liquid export (kg) | 9.99960235368385e-05 | 9.999602353769733e-05 |
+| Liquid signed residual (kg) | -9.000017554931859e-10 | -8.997481055502226e-10 |
+| Liquid split frozen-density mass (kg) | -8.997591103659746e-10 | -8.997590906558331e-10 |
+| Liquid rescale frozen-density mass (kg) | -2.4191759706582156e-13 | 0 |
+| Liquid implicit-source frozen-density mass (kg) | -1.5772932778359835e-17 | -1.5773566377824442e-17 |
+| Gas signed residual (kg) | +8.997591237177871e-13 | +8.997483498542197e-13 |
+| Gas accepted-step alpha range | 9.9956281053072e-06 to 9.99751497400528e-06 | 9.99562420733735e-06 to 9.99751495789347e-06 |
+| Liquid accepted-step alpha range | 0.999990002485026 to 0.999990004371895 | 0.999990002485042 to 0.999990004375793 |
+| Near-bound steps, each phase | 200 | 200 |
+
+The liquid deficit still closely matches source splitting. Residual minus
+split and rescale is approximately -7.28e-16 kg without reference, and
++1.10e-14 kg with gas reference. These differences are small against the
+approximately 9e-10 kg deficit but are not asserted to be identically zero.
+Final-outer diagnostics remain separate from the accepted physical budget.
+
+The maximum per-step liquid residual approximately halves (9.4592e-12 to
+4.7574e-12 kg without reference; 9.0003e-12 to 4.4996e-12 kg with gas
+reference), while the number of steps doubles. The cumulative deficit does
+not improve materially. Final liquid mass also changes by approximately
+-7.63e-10 kg between levels, offset by increased export of similar magnitude;
+the near-equal residual does not mean the full solution is timestep-converged.
+Two levels do not establish a convergence order or a timestep-independent
+limit, but neither half-dt nor gas reference remedies this measured failure.
+
+Fine log SHA-256:
+
+- `bound_fine_no_reference`: `7533ca91f3bf7bcf57d34311be3f7ed002c15794bdc9f86d2c67c56695f87046`
+- `bound_fine_gas_reference`: `2d4685f0a427d380427b0a9a727d7f7ca6dfe8a121aad34eccc0820165b8fe29`
+
+The comparison revalidated all four saved reports and reproduced their
+previously recorded hashes. Fine time-key normalization has 6,720 / 4,256
+adjusted records and the same maximum 1.1102230246251565e-16 s adjustment.
+No new report-coverage or timestamp error occurred.
+
+## Source algebra and next implementation
+
+The inspected source is
+`OFsolvers/birdmultiphaseEulerFoam/phaseSystems/phaseSystem/phaseSystemSolve.C`.
+Let `a` be the phase fraction at source assembly, `d` its raw coupled
+dilatation, and `epsilon=1e-4`. Excluding the separately recorded original
+divergence source, the current Su/Sp pair evaluates at that same `a` to:
+
+```text
+d > 0:  Su + Sp*a = d*(1-a)/max(1-a, epsilon)
+d < 0:  Su + Sp*a = d*a/max(a, epsilon)
+```
+
+For positive liquid dilatation at a=0.99999, or negative gas dilatation at
+a=0.00001, this retains approximately 10% of `d`. It suppresses approximately
+90% of the **coupled dilatation component**, not 90% of the imposed feed.
+This attenuation is algebraic and contains no timestep factor; refining time
+alone does not remove it at fixed source-assembly fractions. Implicit evolution
+can add another contribution and remains measured separately.
+
+For this constant-density, pure-phase, fixed-mesh, no-transfer fixture,
+`multiphaseEulerFoam/pEqnComps.H` supplies the phase dilatation from the
+mass-source/rho term. The uniform liquid feed gives the rate estimate
+`qL = (0.001 kg/s)/(1000 kg/m3 * 0.001 m3) = 0.001 s^-1`, with qG=0.
+With complementary phases, `dL = aG*qL` is initially 1e-8 s^-1. Holding that
+initial fraction fixed estimates the suppressed liquid mass over 0.1 s as:
+
+```text
+(1 - 1e-5/1e-4) * 1e-5 * 0.001 * 0.001 * 0.1 * 1000 = 9e-10 kg
+```
+
+This 0.900-microgram algebraic estimate agrees closely with the measured
+deficit. It is a source-code calculation using nominal uniform inputs, not
+a reconstruction of every stored pressure/source-assembly value.
+
+A narrow candidate can factor the two-phase rates before dividing by a
+small fraction. For two complementary phases and nonnegative frozen rates
+`qi`, `qj`, the raw dilatation is `(1-a)*qi - a*qj`. The candidate is:
+
+```text
+Su_increment = qi
+Sp_increment = -(qi + qj)
+Su_increment + Sp_increment*a = (1-a)*qi - a*qj
+```
+
+There is no small-fraction denominator. For the source-only backward-Euler
+cell update, `aNew=(aOld+dt*qi)/(1+dt*(qi+qj))`, so 0<=aNew<=1 for
+0<=aOld<=1, qi,qj>=0 and dt>=0; the complementary update sums to one. This
+identity and the endpoint/interior bounds were checked with exact rational
+arithmetic for zero/positive rates, both pure states, near-bound and interior
+fractions, and multiple timesteps. It is not a proof for the full flux-limited,
+pressure-coupled solver. Su/Sp still combines with the original divergence
+source and transport fluxes, and the pressure rates are lagged.
+
+The next implementation should therefore be a **separate private experimental
+variant**, initially restricted to this two-field constant-density,
+nonnegative-rate, no-interphase-transfer contract. Require complementary
+fractions and finite compatible rates, and reject unsupported signed-rate
+states rather than silently applying this algebra. Preserve the existing
+original-divergence source, pressure/source evaluation, flux limiting and
+all diagnostics. Demonstrate the guard and algebra before building, then
+regress closed transport, mid-fraction feed and the near-bound pairs at both
+timesteps against the unchanged budgets and thresholds. A new variant needs
+its own verified build and fresh cases; the current baseline build cannot be
+relabeled as corrected. No new build/run command is supplied in this results
+update. No production source change, floor reduction, post-solve addback,
+additional timestep sweep or reactor launch follows from these results.
 
 ## Coarse-pair launch reference (completed; do not repeat)
 
 The following command completed successfully and created the recorded root.
-It is retained for provenance, not as the next action. Both coarse cases are
-complete; the fine cases are prepared and remain unattempted.
+It is retained for provenance, not as the next action. All four cases are now
+complete and must be preserved.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -226,14 +363,11 @@ fi
 The resulting reports and exact root are recorded above. No rebuild, manual
 dictionary edit, baseline rerun or reactor run is needed.
 
-## Next Kestrel command: fine pair and read-only comparison
+## Fine-pair launch reference (completed; do not repeat)
 
-The coarse review is complete. Both cases pass the diagnostic prerequisite,
-so run the already prepared fine pair at dt=0.0005 s, 200 steps to the same
-0.1 s endpoint. This command reuses the exact root and build, verifies the
-coarse evidence, runs only the two untouched fine cases, and prints a read-only
-comparison if both complete. A completed failed mass screen is included in
-that comparison. Invalid coarse diagnostics or attempted fine cases stop it.
+The following command completed at `75dc652`, running both fine cases at
+dt=0.0005 s to 0.1 s and printing the read-only comparison recorded above.
+It is historical; the cases are now attempted and a repeated launch is refused.
 
 ```bash
 REPO=/scratch/nwimer/BioReactorDesign_bubble_audit
@@ -259,8 +393,7 @@ else
 fi
 ```
 
-Return both fine reports and the comparison, including any failure output.
-Do not rerun an attempted case or prepare a replacement root after a failure.
+Both fine reports and the comparison have been received and reviewed.
 
 The local validation command is:
 
@@ -273,7 +406,7 @@ All 53 tests passed before the coarse run, covering baseline report preservation
 contracts, missing/duplicate/off-grid records, small-inventory thresholds,
 source/regime failures, build reuse, read-only evidence checks, fresh-case
 guards and coarse-to-fine gating. OpenFOAM execution is mocked locally; the
-existing compiled observer capability has not changed. The coarse Kestrel
-results above now supply runtime evidence; fine-pair behavior remains to be
-measured. This documentation-only update checks its shell syntax, links and
-reported arithmetic without repeating unchanged solver or harness tests.
+existing compiled observer capability has not changed. Both timestep levels
+now supply runtime evidence. This result update checks the extracted JSON,
+comparison ratios, budget arithmetic, source-only algebra, shell syntax and
+links without repeating unchanged CFD or harness tests.

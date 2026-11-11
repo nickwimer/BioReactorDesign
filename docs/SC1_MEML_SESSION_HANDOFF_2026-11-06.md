@@ -52,9 +52,10 @@ boundary/source and pressure/density contributions still need measurement.
 verification on Kestrel. All four baseline cases now pass all 100 steps of
 the numerical screen: the closed pair at `56a84d7` and the source pair at
 `ef74cf6`. Preserve the completed suite; do not rerun it. The separate
-near-bound coarse pair completed at `78ebbb8`: both diagnostics pass but both
-phase mass screens fail. Run the already prepared half-timestep pair next.**
-See the [coarse results and exact fine-pair launch](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md).
+near-bound suite is also complete: coarse at `78ebbb8`, fine and comparison
+at `75dc652`. All four diagnostics pass but all phase mass screens fail;
+halving dt leaves the approximately 0.900-microgram liquid deficit unchanged
+to within 0.016%.** See the [completed comparison and source-algebra review](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md).
 It compares no-reference and gas-reference settings
 on a small closed periodic transport case, then on a known liquid-source case
 with pressure-compatible outflow. Each pair differs only in the reference
@@ -173,8 +174,7 @@ and 0.0005 s, each to 0.1 s. It derives the existing verified build from the
 completed baseline and revalidates every saved baseline result before launch.
 All 53 focused tests passed locally, including unchanged baseline report output
 and mocked preservation checks. No compiled source or baseline recipe changed.
-The coarse pair has now completed; the next command runs only the prepared
-fine pair and prints a read-only comparison. `diagnostic_pass` requires valid setup,
+Both pairs and the comparison have now completed. `diagnostic_pass` requires valid setup,
 regime and accounting; `screen_pass` also requires the phase mass thresholds.
 A complete mass-screen failure can proceed to timestep sensitivity only if
 its diagnostics pass. No tolerances are automatically loosened. The existing
@@ -202,9 +202,38 @@ contribution here, not a quantitative attribution of the reactor anomaly.
 Gas-reference reconstruction does not ensure a closed gas mass budget.
 The raw logs and results remain on Kestrel; the user supplied the reports.
 Their hashes are recorded in the linked test document. Preserve both coarse
-cases. The fine pair is still unattempted and meets the diagnostic prerequisite.
-Run it at dt=0.0005 s to the same 0.1 s endpoint, with no tolerance, physics,
-source or binary changes. No fine result or numerical remedy is established.
+cases. Both fine cases subsequently ran to the same endpoint as recorded below.
+
+**Near-bound fine pair and comparison completed at `75dc652`.** The user
+uploaded `Pasted text(20261111-011306).txt`; both 200-step reports have valid
+diagnostics and the same two mass-screen errors. Fine liquid signed residuals
+are -9.000017554931859e-10 / -8.997481055502226e-10 kg (no reference / gas
+reference); fine/coarse L1 ratios are 0.9998454335923372 /
+1.0000548392665323. Gas ratios are 1.00006636640375 /
+1.0000545349602175. Source splitting still closely matches the liquid deficit.
+The read-only comparison succeeded and reproduced all four log hashes.
+The full parsed reports, comparison and transcript provenance are saved in
+[the evidence JSON](sc1_two_field_bounds_fine_results_2026-11-10.json).
+Raw solver logs and initialized inputs remain on Kestrel.
+
+All eight baseline/near-bound cases are now complete; preserve them and the
+verified build. No further timestep/reference sweep or reactor launch is the
+next action. The source review shows that the 1e-4 denominator retains only
+about 10% of the coupled dilatation at the tested 1e-5 distance from a bound.
+The suppressed component predicts approximately 9e-10 kg liquid deficit in
+this uniform-feed fixture. This is not a 90% loss of total feed and does not
+quantify the old reactor anomaly.
+
+The [next implementation](SC1_TWO_FIELD_NEAR_BOUND_TEST_2026-11-10.md#source-algebra-and-next-implementation)
+is a guarded private two-field source-split variant: for complementary
+fractions and nonnegative rates qi,qj, use increments Su=qi and
+Sp=-(qi+qj), preserving `(1-a)*qi-a*qj` without a small-fraction denominator.
+Source-only algebra/bounds have been checked; full pressure/flux-coupled
+conservation has not. Restrict and test that contract, preserve the original
+divergence source and all diagnostics, then use a separately verified build
+and fresh regression cases. No solver code or threshold was changed in this
+result update, and no new build/run command is ready yet. Do not blindly
+reduce the floor or add the measured deficit back after solving.
 The existing three-field executable is not used for these cases.
 See the [completed fill result and test requirements](SC1_WALL_BUNDLE_FINDINGS_2026-11-10.md#5-prescribed-fill-check-completed-the-emm-prescription-is-near-1000-l).
 
@@ -229,8 +258,9 @@ Read [the completed probe and reopened model-selection decision](SC1_MODEL_SELEC
 first. Next review the archived two-field initialization, liquid budgets,
 boundaries and MRF setup. The small numerical harness above is compiled and
 runtime-verified; all four closed/source baseline cases pass. Near-bound
-source checks now expose a mass-budget failure in both reference settings;
-run the prepared half-timestep pair next via the linked instructions.
+source checks now expose a mass-budget failure in both reference settings
+at both tested timesteps. The source split is the next isolated implementation
+target; the completed tests must not be repeated without a concrete change.
 A matched SC1 reactor candidate is not ready
 to run yet.
 Do not repeat the completed probe. The historical two-field excess inventory

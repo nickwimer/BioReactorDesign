@@ -271,12 +271,22 @@ but both phase mass screens fail: about 0.900 micrograms liquid shortfall in
 each variant, closely matching the measured source-split contribution. Gas
 reference eliminates rescaling here without fixing either phase budget.
 The root is `/scratch/nwimer/sc1_two_field_bounds_20261111T004959Z`; preserve
-both completed coarse cases and run only its prepared half-timestep pair
-next. Keep thresholds and the verified build unchanged. This numerical
-fixture does not quantify the old EMM excess or resolve wall climbing.
-The current diagnostic library is explicitly restricted to three named
+all four cases: the half-timestep pair and comparison completed at `75dc652`.
+Both fine diagnostics pass, but the cumulative liquid deficit remains about
+0.900 micrograms and both phase screens still fail. Half-dt and gas reference
+have not remedied it. The inspected source-floor algebra predicts this scale
+for the nominal fixture; a restricted private source-split candidate is the
+next implementation target. Thresholds, source code and the verified build
+remain unchanged. This numerical fixture does not quantify the old EMM excess
+or resolve wall climbing.
+The preceding three-field diagnostic library is explicitly restricted to three named
 phases with headspaceGas as reference. It cannot be reused for this comparison
-by renaming fields or disabling its guard.
+by renaming fields or disabling its guard. The separate two-field observer
+above now supplies the small-fixture evidence.
+
+The following original implementation requirements are retained as design
+context; the small closed/source tests are complete and should not be repeated
+without a concrete implementation change.
 
 Use a common verified mesh, measured liquid fill and physically justified
 vent/MRF/shaft treatment. Start a controlled two-field numerical baseline

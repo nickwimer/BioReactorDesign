@@ -221,9 +221,16 @@ but both phase mass screens fail. Liquid shortfalls are about 0.900 micrograms
 in either variant (8.91 times the threshold), closely matching the measured
 source-split contribution. Gas-reference rescaling is zero, yet its separate
 gas and liquid budgets still fail. No reference setting is selected as a
-remedy. Preserve the results and run only the already prepared half-timestep
-pair next, with the same build and thresholds. No fine-pair or resolved-interface
-validation result is available yet.
+remedy. The half-timestep pair and read-only comparison completed at `75dc652`,
+with both diagnostics valid and both phase screens still failing. Fine/coarse
+liquid L1 ratios are 0.9998454336 / 1.0000548393; the cumulative deficit is
+essentially unchanged. All four near-bound cases are complete and must be
+preserved. Source algebra predicts about 9e-10 kg lost from the coupled
+dilatation component at these nominal fractions, matching the measured
+deficit. The next implementation is a guarded private two-field rate-based
+source split, with explicit bounds/source tests and fresh regressions; its
+source-only algebra is not validation of the pressure-coupled CFD system.
+No solver correction or resolved-interface validation has been completed.
 
 ## Next decision: continue validating the simpler candidate
 
