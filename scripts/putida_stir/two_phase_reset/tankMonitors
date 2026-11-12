@@ -1,0 +1,70 @@
+// Monitors for the two-phase stirred-tank runs (OpenFOAM 9 syntax).
+// apply_fixes.py --monitors copies this file to system/ and includes it in
+// the functions block of controlDict. Results are written to
+// postProcessing/<name>/<startTime>/.
+//
+// Not yet run: confirm the entries and the transfer-field name on the first
+// short run. A field that is not registered only produces a warning.
+
+// Liquid and gas volume in the whole tank [m3].
+phaseVolumes
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    writeControl    timeStep;
+    writeInterval   20;
+    writeFields     false;
+    log             false;
+    regionType      all;
+    operation       volIntegrate;
+    fields          (alpha.liquid alpha.gas);
+}
+
+// Liquid-volume-weighted mean dissolved oxygen, as a mass fraction.
+// Dissolved oxygen [mg/L] = value * liquid density [kg/m3] * 1000.
+dissolvedOxygen
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    writeControl    timeStep;
+    writeInterval   20;
+    writeFields     false;
+    log             false;
+    regionType      all;
+    operation       weightedVolAverage;
+    weightField     alpha.liquid;
+    fields          (O2.liquid);
+}
+
+// Net gas-liquid interfacial mass transfer rate over the tank [kg/s].
+// With only oxygen (and CO2) in the Henry model this is the oxygen transfer
+// rate; with the water saturation model active it also contains evaporation.
+// Check the sign once against the change in dissolved oxygen.
+interfacialTransfer
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    writeControl    timeStep;
+    writeInterval   20;
+    writeFields     false;
+    log             false;
+    regionType      all;
+    operation       volIntegrate;
+    fields          (interfaceCompositionPhaseChange:dmdtf.gasAndLiquid);
+}
+
+// Mass flow of each phase through the top of the tank [kg/s], positive out.
+// The liquid value must stay at zero with the liquid-tight top.
+topMassFlow
+{
+    type            surfaceFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+    writeControl    timeStep;
+    writeInterval   20;
+    writeFields     false;
+    log             false;
+    regionType      patch;
+    name            outlet;
+    operation       sum;
+    fields          (alphaRhoPhi.liquid alphaRhoPhi.gas);
+}
