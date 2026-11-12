@@ -1,7 +1,6 @@
 
 {
     const vectorField& C = mesh.C();
-    const scalarField& Vcell = mesh.V();
     std::vector<double> solnvec(microbemodel::nvars+1);
     std::vector<double> mwt(microbemodel::nvars);
     std::vector<int> species_id(microbemodel::nvars+1);
@@ -43,9 +42,6 @@
 
     double total_moles_added;
     double total_new_concentration;
-    double cellVol;
-    double NH3_moles;
-    double new_moles;
     double new_concentration;
     
     mwt[0] = 663.43; // g/mol putida
@@ -109,6 +105,13 @@
     
     forAll(C,i)
       {
+        // Do not advance chemistry in cells where the liquid phase is absent.
+        // This also prevents zero-liquid-volume divisions in the base update.
+        if (alpha2[i] <= phase.residualAlpha().value())
+        {
+            continue;
+        }
+
         // liquid density * species massFrac * kg -> g * / g/mol weight
         solnvec[microbemodel::X] = rho[i]*Y[species_id[microbemodel::X]][i]; // kg/m3
         solnvec[microbemodel::G] = rho[i]*Y[species_id[microbemodel::G]][i]*1000/mwt[microbemodel::G]; //mol/m3
@@ -130,14 +133,10 @@
         NH3_conc = rho[i]*Y[NH3id][i]/17.031; // mol/L
         // NH4_conc = rho[i]*Y[NH4id][i]/18.04;  // mol/L
 
-        cellVol = Vcell[i] * alpha2[i] * 1000; // L of liquid in Cell
-        // get current moles of NH3 present in mixture:
-        //NH3_moles = NH3_conc * cellVol; // moles in this specific cell
-
-        //new_moles = total_new_concentration * cellVol; // moles added to this specific cell
-        //new_concentration = (new_moles + NH3_moles) / cellVol; // mol/L
-
-	new_concentration = NH3_conc + total_new_concentration;
+        // The mixing-window base addition is a concentration increment.
+        // Avoid forming and dividing by the local liquid volume, which is
+        // singular when alpha.liquid approaches zero.
+        new_concentration = NH3_conc + total_new_concentration; // mol/L
 	
         //delNH3 = NH3_conc - NH3_hold[i];
         //delNH4 = NH4_conc - NH4_hold[i];
