@@ -1,17 +1,41 @@
 # Two-phase reset for the stirred pilot tank
 
-The stirred-tank runs go back to two phases (gas and liquid). The original
-two-phase setup gained about 15% liquid in ten seconds; the three-phase setup
-held the liquid inventory but lost most of the oxygen transfer. The changes
-here are the ones that held the inventory, without the bubble/headspace gas
-split.
+The stirred-tank runs go back to two phases (gas and liquid). The old
+two-phase run did not conserve liquid; the three-phase setup held the liquid
+inventory but lost most of the oxygen transfer. The changes here are the ones
+that held the inventory, without the bubble/headspace gas split.
 
-**Status.** Nothing in this directory has been run in OpenFOAM yet. The
+**Status.** No case with these changes has been run in OpenFOAM yet. The
 scripts are tested on the two-phase cases that are in this repository
 (`scripts/putida_stir/nonreact`, `tutorial_cases/stirred_tank`); the tests
-check the dictionary text only. The current pilot-tank case (sparger zones,
-biology inputs, `HcellProperties`) is not in git, so the first step on the
-cluster is to apply these changes to a copy of it.
+check the dictionary text only. `check_run.py` and the `report` command have
+been run on the production cases (below).
+
+## What the old two-phase run shows (2026-11-17)
+
+Read from the solver logs of `emm/putida_sc1` with `check_run.py`. The logs
+start at 9.9 s; the run that produced the 9.9 s state is not in that
+directory, so the first 9.9 s are not covered.
+
+| Time (s) | Liquid (L) | Time step (s) |
+|---:|---:|---:|
+| 9.90 | 1151.1 | 6.2e-5 |
+| 29.5 | 1137.5 | 2.2e-5 |
+| 40.5 | 1133.5 | 1.6e-5 |
+| 50.0 | 1131.4 | 1.3e-5 |
+
+- The fill prescription (0.99 below y = 1.016 m) is about 1000 L, so the
+  9.9 s state already holds about 150 L too much. How it got there is not
+  recorded.
+- From 9.9 s on the run loses liquid, 19.6 L in 40 s.
+- The phase sum before rescaling ranges from 0.0008 to 1.96 in the worst
+  cells, so the rescaling is active throughout and locally large.
+- The time step falls by a factor of five while the maximum Courant number
+  stays at its limit of 0.5 and the mean stays near 0.006: a few cells with
+  very high velocity set the step.
+- That mesh ends at y = 1.397 m, 0.34 m lower than the three-phase mesh
+  (1.741 m). The liquid at the wall had reached about 1.29 m, close to a top
+  boundary that lets liquid through.
 
 ## Changes
 
@@ -48,8 +72,8 @@ Not automated, to be done by hand on the real case:
 
 All nonreacting. `check_run.py` reads the liquid inventory from the solver log.
 
-1. Old two-phase log, no run needed: `check_run.py LOG --volume 1.642`. A phase
-   sum away from one confirms the rescaling.
+1. Done: the old two-phase logs (above). The rescaling is confirmed active;
+   whether it or the open top causes the loss needs the next step.
 2. Old two-phase case plus `--reference-phase gas` only, 0.5 s. Then the same
    with `--liquid-tight-top` only. This shows which change stops the gain.
 3. `--recommended`, stirring without gas, a few seconds: liquid inventory
