@@ -68,8 +68,7 @@ and the liquid is the remainder. Compare the two in the first runs.
 Not automated, to be done by hand on the real case:
 
 - **Sparger.** Keep the gas source spread over the real holes and ramped, on
-  phase `gas`. A full-rate point source in a few cells is a candidate cause of
-  the liquid gain.
+  phase `gas`, as in the three-phase template.
 - **Water saturation model.** The three-phase case dropped it. It moves a
   fraction of a gram of water per second into the gas; keep or drop it
   deliberately.
