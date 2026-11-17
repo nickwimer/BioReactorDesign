@@ -1,8 +1,8 @@
 # Two-phase reset for the stirred pilot tank
 
-The stirred-tank runs go back to two phases (gas and liquid). The old
-two-phase run did not conserve liquid; the three-phase setup held the liquid
-inventory but lost most of the oxygen transfer. The changes here are the ones
+The stirred-tank runs go back to two phases (gas and liquid). The early
+two-phase runs lost liquid; the three-phase setup held the liquid inventory
+but transfers little oxygen. The changes here are the ones
 that held the inventory, without the bubble/headspace gas split.
 
 **Status.** No case with these changes has been run in OpenFOAM yet. The
@@ -11,31 +11,39 @@ scripts are tested on the two-phase cases that are in this repository
 check the dictionary text only. `check_run.py` and the `report` command have
 been run on the production cases (below).
 
-## What the old two-phase run shows (2026-11-17)
+## What the earlier two-phase runs show (2026-11-17)
 
-Read from the solver logs of `emm/putida_sc1` with `check_run.py`. The logs
-start at 9.9 s; the run that produced the 9.9 s state is not in that
-directory, so the first 9.9 s are not covered.
+Read from the solver logs under `/projects/microenviro/final_runs` with
+`check_run.py`. All are gas/liquid runs with no reference phase unless noted.
 
-| Time (s) | Liquid (L) | Time step (s) |
-|---:|---:|---:|
-| 9.90 | 1151.1 | 6.2e-5 |
-| 29.5 | 1137.5 | 2.2e-5 |
-| 40.5 | 1133.5 | 1.6e-5 |
-| 50.0 | 1131.4 | 1.3e-5 |
+| Run | Tank top | Fill | Liquid inventory | Phase sum before rescaling |
+|---|---:|---|---|---|
+| `nonreact/166rpm_0.41vvm_0.23O2_outlet` (Apr) | 1.741 m | y < 1.016 m | -22% in 14 s, nearly all before 6.3 s | 0.0004 to 1.99 |
+| `nonreact/..._outlet_lowlvl` (Apr) | 1.741 m | | -4.1% from 0.2 to 1.7 s, then the time step collapses | 0.0002 to 1.90 |
+| `nonreacting_Julia_08282026/putida_sc1_pilot` (Aug) | 1.397 m | y < 1.19 m, 1152 L | -0.09% in 9.9 s (1152.1 to 1151.1 L) | 0.27 to 1.50 |
+| `reacting_Julia_08282026/emm/putida_sc1` (Sep), continuing it | 1.397 m | | -1.7% from 9.9 to 50 s (1151.1 to 1131.4 L) | 0.0008 to 1.96 |
+| `nonreact/..._legacyStock_2phase_V3` (Sep) | 1.741 m | y < 1.016 m, 1000 L | -1.6e-6 in 0.3 s | exactly 1 |
+| `nonreact/..._legacyStock_2phaseRefGas_V3` (Sep), reference phase gas | 1.741 m | y < 1.016 m, 1000 L | -1.6e-6 in 0.3 s | not applicable |
 
-- The fill prescription (0.99 below y = 1.016 m) is about 1000 L, so the
-  9.9 s state already holds about 150 L too much. How it got there is not
-  recorded.
-- From 9.9 s on the run loses liquid, 19.6 L in 40 s.
-- The phase sum before rescaling ranges from 0.0008 to 1.96 in the worst
-  cells, so the rescaling is active throughout and locally large.
-- The time step falls by a factor of five while the maximum Courant number
-  stays at its limit of 0.5 and the mean stays near 0.006: a few cells with
-  very high velocity set the step.
-- That mesh ends at y = 1.397 m, 0.34 m lower than the three-phase mesh
-  (1.741 m). The liquid at the wall had reached about 1.29 m, close to a top
-  boundary that lets liquid through.
+- **The original failure was liquid loss.** On the full-height tank the April
+  run lost 22% of its liquid in 14 s. The loss stops at 6.3 s, when the phase
+  sum returns to between 0.9 and 1.
+- **The production two-phase runs used a different tank and fill.** The mm,
+  emm and two-phase meml cases run in a tank shortened to 55 in and filled to
+  1.19 m, about 1152 L. They did not gain liquid: the "151 L excess" reported
+  earlier is the difference between that fill and the 1.016 m prescription
+  left in the reacting directories.
+- **So the two-phase and three-phase production runs are not like for like.**
+  They differ by 0.17 m in liquid level and 0.34 m in tank height, which
+  affects every comparison of surface shape, impeller wetting and oxygen
+  transfer between them.
+- **The fixes already hold for 0.3 s.** The two September tests on the
+  full-height mesh at 1000 L use the bounded flux reference, a liquid-tight
+  top, an impeller ramp and a capped time step, and conserve liquid. No
+  two-phase run at that fill has yet gone further without losing liquid.
+- In the production two-phase run the time step falls from 6.2e-5 to 1.3e-5 s
+  between 9.9 and 50 s while the maximum Courant number stays at its 0.5 limit
+  and the mean stays near 0.006: a few very fast cells set the step.
 
 ## Changes
 
@@ -72,10 +80,12 @@ Not automated, to be done by hand on the real case:
 
 All nonreacting. `check_run.py` reads the liquid inventory from the solver log.
 
-1. Done: the old two-phase logs (above). The rescaling is confirmed active;
-   whether it or the open top causes the loss needs the next step.
-2. Old two-phase case plus `--reference-phase gas` only, 0.5 s. Then the same
-   with `--liquid-tight-top` only. This shows which change stops the gain.
+1. Done: the earlier logs (above). The rescaling is active and large in every
+   run that loses liquid.
+2. Extend the September two-phase test on the full-height mesh at 1000 L from
+   0.3 s to several seconds, with reference phase gas and with reference
+   phase liquid. This is the first two-phase run at the real fill with the
+   fixes in place.
 3. `--recommended`, stirring without gas, a few seconds: liquid inventory
    within 0.1%, impeller power number plausible.
 4. Add sparging and run to a steady state: gas holdup, bubble size, dissolved
