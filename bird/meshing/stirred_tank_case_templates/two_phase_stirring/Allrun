@@ -25,6 +25,7 @@ if ! compgen -G "processor*" > /dev/null; then
         || die "decomposePar failed, see log.decomposePar"
 fi
 
+# Stop every task as soon as one fails; otherwise the rest wait forever.
 # shellcheck disable=SC2086
-srun -n "$NPROCS" ${SRUN_ARGS:-} "$SOLVER" -parallel -fileHandler collated \
-    >> log.solver 2>&1
+srun -n "$NPROCS" --kill-on-bad-exit=1 ${SRUN_ARGS:-} \
+    "$SOLVER" -parallel -fileHandler collated >> log.solver 2>&1
