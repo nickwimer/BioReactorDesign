@@ -9,7 +9,9 @@
 #       broad blockMesh rotor envelope
 #
 #   mrf.vertical_buffer_cells
-#       active rotating zone selected inside that envelope
+#       active rotating zone selected inside that envelope, counted in
+#       mesh layers beyond the blade edges (mrf_zone_from_yaml.py reads
+#       the layer planes from the mesh, so the zone ends on cell faces)
 
 geometry:
     units: "in"
