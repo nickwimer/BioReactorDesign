@@ -1,0 +1,15 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      fvConstraints;
+}
+
+// A pressure floor only. No velocity limiters at this stage: if the run
+// needs them to stay stable, that is a result to report, not to hide.
+
+limitp
+{
+    type            limitPressure;
+    min             1e4;
+}

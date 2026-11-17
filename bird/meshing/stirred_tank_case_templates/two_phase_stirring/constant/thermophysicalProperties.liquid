@@ -1,0 +1,41 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      thermophysicalProperties.liquid;
+}
+
+#include "$FOAM_CASE/constant/globalVars"
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState rhoConst;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        molWeight   18.0153;
+    }
+    equationOfState
+    {
+        rho         $rhoLiq;
+    }
+    thermodynamics
+    {
+        Cp          $CpLiq;
+        Hf          0;
+    }
+    transport
+    {
+        mu          $muLiq;
+        Pr          $PrLiq;
+    }
+}

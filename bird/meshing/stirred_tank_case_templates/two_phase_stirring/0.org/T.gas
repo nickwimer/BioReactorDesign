@@ -1,0 +1,34 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      T.gas;
+}
+
+// Isothermal phase models: the temperature is read but never solved.
+#include "${FOAM_CASE}/constant/globalVars"
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform $T0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            inletOutlet;
+        phi             phi.gas;
+        inletValue      $internalField;
+        value           $internalField;
+    }
+    walls
+    {
+        type            zeroGradient;
+    }
+    propeller
+    {
+        type            zeroGradient;
+    }
+}

@@ -1,0 +1,33 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      alphat.liquid;
+}
+
+dimensions      [1 -1 -1 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            calculated;
+        value           $internalField;
+    }
+    walls
+    {
+        type            compressible::alphatWallFunction;
+        Prt             0.85;
+        value           $internalField;
+    }
+    propeller
+    {
+        type            compressible::alphatWallFunction;
+        Prt             0.85;
+        value           $internalField;
+    }
+}

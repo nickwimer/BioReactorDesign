@@ -1,0 +1,37 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      thermophysicalProperties.gas;
+}
+
+#include "$FOAM_CASE/constant/globalVars"
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          hConst;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        molWeight   $WGas;
+    }
+    thermodynamics
+    {
+        Cp          $CpGas;
+        Hf          0;
+    }
+    transport
+    {
+        mu          $muGas;
+        Pr          $PrGas;
+    }
+}

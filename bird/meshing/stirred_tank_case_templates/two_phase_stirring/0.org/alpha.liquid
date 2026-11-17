@@ -1,0 +1,31 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      alpha.liquid;
+}
+
+// Filled by Allrun.pre (setFields) to the requested liquid volume.
+// The gas fraction is not read: gas is the reference phase.
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+    walls
+    {
+        type            zeroGradient;
+    }
+    propeller
+    {
+        type            zeroGradient;
+    }
+}

@@ -1,0 +1,174 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     birdmultiphaseEulerFoam;
+
+startFrom       latestTime;
+startTime       0;
+stopAt          endTime;
+endTime         10;
+
+deltaT          1e-5;
+adjustTimeStep  yes;
+maxCo           0.3;
+maxDeltaT       5e-4;
+
+writeControl    adjustableRunTime;
+writeInterval   0.5;
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  8;
+writeCompression off;
+timeFormat      general;
+timePrecision   8;
+runTimeModifiable yes;
+
+// Monitors are written to postProcessing/ every monitorInterval steps and
+// kept out of the solver log.
+monitorInterval 20;
+
+functions
+{
+    // Volumes in m^3. Liquid plus gas gives the volume of the region.
+    tankVolumes
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      all;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+
+    // Liquid above the initial fill (rise of the surface anywhere).
+    aboveFill
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            aboveFill;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+    above5cm
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            above5cm;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+    above10cm
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            above10cm;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+    above20cm
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            above20cm;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+
+    // The same heights, outer 6 cm of the tank only (climb at the wall).
+    wallAbove5cm
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            wallAbove5cm;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+    wallAbove10cm
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            wallAbove10cm;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+
+    // Gas drawn down below the initial surface (vortex, entrainment).
+    bulkBelowSurface
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      cellZone;
+        name            bulkBelowSurface;
+        operation       volIntegrate;
+        fields          (alpha.liquid alpha.gas);
+    }
+
+    // Mass flow through the top, kg/s, positive out. Liquid must stay zero.
+    topMassFlow
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      patch;
+        name            outlet;
+        operation       sum;
+        fields          (alphaRhoPhi.liquid alphaRhoPhi.gas);
+    }
+
+    maxSpeed
+    {
+        type            volFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   $monitorInterval;
+        log             false;
+        writeFields     false;
+        regionType      all;
+        operation       maxMag;
+        fields          (U.liquid U.gas);
+    }
+}

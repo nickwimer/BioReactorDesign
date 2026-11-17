@@ -1,0 +1,33 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      p;
+}
+
+#include "${FOAM_CASE}/constant/globalVars"
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform $P0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            calculated;
+        value           $internalField;
+    }
+    walls
+    {
+        type            calculated;
+        value           $internalField;
+    }
+    propeller
+    {
+        type            calculated;
+        value           $internalField;
+    }
+}

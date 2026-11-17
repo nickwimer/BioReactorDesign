@@ -1,0 +1,22 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      globalVars;
+}
+
+// Plain numbers only (no #calc), so the case needs no run-time compilation.
+
+T0              303.15;     // K, fixed
+P0              101325;     // Pa, at the top of the tank
+
+rhoLiq          1000;       // kg/m^3
+muLiq           7.97e-4;    // Pa s, water at 303.15 K
+CpLiq           4181;       // J/kg/K
+PrLiq           5.37;
+sigmaLiq        0.07;       // N/m
+
+WGas            28.9;       // kg/kmol
+muGas           1.88e-5;    // Pa s
+CpGas           1007;       // J/kg/K
+PrGas           0.7;

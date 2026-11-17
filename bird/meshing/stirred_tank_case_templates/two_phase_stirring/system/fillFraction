@@ -1,0 +1,3 @@
+// Fraction of liquid in the partly filled cell layer. Overwritten by
+// Allrun.pre; this value is only a placeholder.
+layerFraction   0.5;

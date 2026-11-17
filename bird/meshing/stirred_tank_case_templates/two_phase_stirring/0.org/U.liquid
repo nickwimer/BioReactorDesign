@@ -1,0 +1,29 @@
+FoamFile
+{
+    format      ascii;
+    class       volVectorField;
+    object      U.liquid;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    // Closed to liquid: no liquid flux through the top of the tank.
+    outlet
+    {
+        type            slip;
+    }
+    walls
+    {
+        type            noSlip;
+    }
+    propeller
+    {
+        type            noSlip;
+    }
+}

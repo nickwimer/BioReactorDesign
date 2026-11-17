@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Decompose (first time only) and run, continuing from the latest time.
+#
+#   NPROCS       MPI tasks (default 52)
+#   BIRD_SOLVER  solver executable (default birdmultiphaseEulerFoam)
+#   SRUN_ARGS    extra srun arguments, e.g. "-c 1" inside a shared session
+set -euo pipefail
+
+CASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NPROCS="${NPROCS:-52}"
+SOLVER="${BIRD_SOLVER:-birdmultiphaseEulerFoam}"
+
+die() { echo "ERROR: $*" >&2; exit 2; }
+
+[[ -n "${WM_PROJECT_DIR:-}" ]] || die "the OpenFOAM environment is not loaded"
+command -v "$SOLVER" > /dev/null || die "solver not found: $SOLVER"
+
+cd "$CASE"
+[[ -d 0 && -d constant/polyMesh ]] || die "run ./Allrun.pre first"
+
+if ! compgen -G "processor*" > /dev/null; then
+    foamDictionary system/decomposeParDict \
+        -entry numberOfSubdomains -set "$NPROCS" > /dev/null
+    decomposePar -fileHandler collated > log.decomposePar 2>&1 \
+        || die "decomposePar failed, see log.decomposePar"
+fi
+
+# shellcheck disable=SC2086
+srun -n "$NPROCS" ${SRUN_ARGS:-} "$SOLVER" -parallel -fileHandler collated \
+    >> log.solver 2>&1

@@ -1,0 +1,33 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      k.liquid;
+}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 3.75e-5;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            inletOutlet;
+        phi             phi.liquid;
+        inletValue      $internalField;
+        value           $internalField;
+    }
+    walls
+    {
+        type            kqRWallFunction;
+        value           $internalField;
+    }
+    propeller
+    {
+        type            kqRWallFunction;
+        value           $internalField;
+    }
+}

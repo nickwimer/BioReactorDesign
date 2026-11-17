@@ -1,0 +1,38 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      setFieldsDict;
+}
+
+// Liquid in every cell layer below y = 1.0124 m, and a partly filled layer
+// from 1.0124 to 1.0249 m (the same two boxes as the three-phase template).
+// Allrun.pre writes system/fillFraction so that the total liquid volume is
+// the requested one; for 1000 L the surface is at about 1.0185 m.
+
+#include "fillFraction"
+
+defaultFieldValues
+(
+    volScalarFieldValue alpha.liquid 0
+);
+
+regions
+(
+    boxToCell
+    {
+        box (-1 -0.5 -1) (1 1.016 1);
+        fieldValues
+        (
+            volScalarFieldValue alpha.liquid 1
+        );
+    }
+    boxToCell
+    {
+        box (-1 1.0124 -1) (1 1.0249 1);
+        fieldValues
+        (
+            volScalarFieldValue alpha.liquid $layerFraction
+        );
+    }
+);

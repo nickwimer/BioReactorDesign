@@ -1,0 +1,34 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      p_rgh;
+}
+
+#include "${FOAM_CASE}/constant/globalVars"
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform $P0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            prghPressure;
+        p               $internalField;
+        value           $internalField;
+    }
+    walls
+    {
+        type            fixedFluxPressure;
+        value           $internalField;
+    }
+    propeller
+    {
+        type            fixedFluxPressure;
+        value           $internalField;
+    }
+}

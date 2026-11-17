@@ -1,0 +1,137 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      phaseProperties;
+}
+
+// Stage 1 of the two-phase reset: liquid and gas, stirring only.
+// No sparging, no bubble sizes, no species, no mass transfer.
+
+#include "$FOAM_CASE/constant/globalVars"
+
+type            basicMultiphaseSystem;
+
+phases          (gas liquid);
+
+// Only the liquid fraction is transported; gas is the remainder, so the
+// two fractions cannot drift apart and nothing is rescaled.
+referencePhase  gas;
+
+gas
+{
+    type            pureIsothermalPhaseModel;
+    diameterModel   constant;
+    constantCoeffs
+    {
+        d           3e-3;       // bubbles, where liquid is continuous
+    }
+    residualAlpha   1e-6;
+}
+
+liquid
+{
+    type            pureIsothermalPhaseModel;
+    diameterModel   constant;
+    constantCoeffs
+    {
+        d           1e-3;       // drops, where gas is continuous
+    }
+    residualAlpha   1e-6;
+}
+
+blending
+{
+    default
+    {
+        type            linear;
+        minFullyContinuousAlpha.gas     0.7;
+        minPartlyContinuousAlpha.gas    0.3;
+        minFullyContinuousAlpha.liquid  0.7;
+        minPartlyContinuousAlpha.liquid 0.3;
+    }
+}
+
+surfaceTension
+(
+    (gas and liquid)
+    {
+        type            constant;
+        sigma           $sigmaLiq;
+    }
+);
+
+// Off in the baseline. Compression acts on every gas-liquid gradient, so
+// with one gas phase it would also squeeze bubble plumes once sparging is
+// added. Set "(gas and liquid) 1" to test its effect on the free surface.
+interfaceCompression
+(
+);
+
+aspectRatio
+(
+    (gas in liquid)
+    {
+        type            constant;
+        E0              1.0;
+    }
+    (liquid in gas)
+    {
+        type            constant;
+        E0              1.0;
+    }
+);
+
+// Both directions are coupled: bubbles in liquid and drops in gas.
+drag
+(
+    (gas in liquid)
+    {
+        type            Grace;
+        residualRe      1e-3;
+        swarmCorrection { type none; }
+    }
+    (liquid in gas)
+    {
+        type            SchillerNaumann;
+        residualRe      1e-3;
+        swarmCorrection { type none; }
+    }
+);
+
+virtualMass
+(
+    (gas in liquid)
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+    (liquid in gas)
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+);
+
+// Deliberately empty at this stage. Lift, wall lubrication and turbulent
+// dispersion are bubble forces; they are added one at a time in stage 2 so
+// that their effect on the free surface and the wall film can be measured.
+lift
+(
+);
+
+wallLubrication
+(
+);
+
+turbulentDispersion
+(
+);
+
+heatTransfer
+(
+);
+
+phaseTransfer
+(
+);

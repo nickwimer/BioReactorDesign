@@ -1,0 +1,58 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+    limited         cellLimited Gauss linear 1;
+}
+
+divSchemes
+{
+    default         none;
+
+    // Phase fraction: bounded second order, limited by MULES.
+    "div\(phi,alpha.*\)"            Gauss vanLeer;
+    "div\(phir,alpha.*,alpha.*\)"   Gauss vanLeer;
+
+    "div\(alphaRhoPhi.*,U.*\)"      Gauss upwind;
+    "div\(phi.*,U.*\)"              Gauss upwind;
+    "div\(alphaRhoPhi.*,(k|epsilon).*\)"    Gauss upwind;
+    "div\(alphaRhoPhi.*,K.*\)"      Gauss upwind;
+    "div\(alphaRhoPhi.*,(h|e).*\)"  Gauss upwind;
+    "div\(alphaRhoPhi.*,\(p\|thermo:rho.*\)\)"    Gauss upwind;
+
+    "div\(\(\(\(alpha.*\*thermo:rho.*\)*nuEff.*\)*dev2\(T\(grad\(U.*\)\)\)\)\)" Gauss linear;
+}
+
+// The Laplacian and the surface-normal gradient use the same treatment, so
+// the pressure and gravity terms balance at a free surface at rest.
+laplacianSchemes
+{
+    default         Gauss linear uncorrected;
+}
+
+snGradSchemes
+{
+    default         uncorrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+wallDist
+{
+    method          Poisson;
+    nRequired       true;
+}

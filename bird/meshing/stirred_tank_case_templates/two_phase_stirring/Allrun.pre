@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Prepare the case: mesh, rotating zone, monitoring zones and liquid fill.
+#
+#   TANK_YAML      tank geometry and mesh settings
+#                  (default: the NLR pilot-plant yaml of this repository)
+#   LIQUID_LITRES  liquid volume to fill, in litres (default 1000)
+#   RAMP_S         time for the impellers to reach full speed, s (default 2)
+#
+# Needs the OpenFOAM environment and the bird package on PYTHONPATH.
+set -euo pipefail
+
+CASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+YAML="${TANK_YAML:-$CASE/../../stirred_tank_mesh_templates/nlr_pilot_plant/tank_par.yaml}"
+LITRES="${LIQUID_LITRES:-1000}"
+RAMP="${RAMP_S:-2}"
+
+die() { echo "ERROR: $*" >&2; exit 2; }
+
+[[ -n "${WM_PROJECT_DIR:-}" ]] || die "the OpenFOAM environment is not loaded"
+[[ -f "$YAML" ]] || die "tank yaml not found: $YAML (set TANK_YAML)"
+python3 -c "import bird.meshing.build_stirred_tank_mesh" 2>/dev/null \
+    || die "the bird package is not importable (add the repository to PYTHONPATH)"
+
+cd "$CASE"
+
+# 1. Mesh, active rotating zone and monitoring zones.
+if [[ -d constant/polyMesh ]]; then
+    echo "Mesh exists, not rebuilt: $CASE/constant/polyMesh"
+else
+    echo "Building the mesh from $YAML (log.mesh)"
+    python3 -m bird.meshing.build_stirred_tank_mesh \
+        --yaml "$YAML" --case "$CASE" > log.mesh 2>&1 \
+        || { tail -20 log.mesh >&2; die "mesh generation failed, see log.mesh"; }
+    grep -E "^ +cells:|Mesh OK|Failed [0-9]+ mesh checks|Max non-orthogonality" \
+        log.checkMesh || true
+fi
+
+# 2. Impeller speed from the yaml, with the requested ramp.
+python3 - "$YAML" "$CASE" "$RAMP" <<'PY'
+import sys
+from pathlib import Path
+
+from bird.meshing.mrf_zone_from_yaml import write_mrf_properties
+from bird.utilities.parser import parse_yaml
+
+cfg = parse_yaml(sys.argv[1])
+cfg["mrf"]["ramp_time_s"] = float(sys.argv[3])
+cfg["mrf"]["hold_until_s"] = 1.0e6
+write_mrf_properties(cfg, Path(sys.argv[2]))
+PY
+
+# 3. Liquid fill. The liquid volume is linear in the fraction of the partly
+#    filled layer, so two measurements give the fraction for any volume
+#    that falls inside that layer.
+rm -rf 0
+cp -r 0.org 0
+
+liquid_volume()  # layer fraction -> liquid volume, m^3
+{
+    printf 'layerFraction   %s;\n' "$1" > system/fillFraction
+    setFields > log.setFields 2>&1 || die "setFields failed, see log.setFields"
+    postProcess -func liquidVolumeCheck -time 0 > log.liquidVolumeCheck 2>&1 \
+        || die "postProcess failed, see log.liquidVolumeCheck"
+    awk '/volIntegrate\(.*\) of alpha.liquid/ { v = $NF } END { print v }' \
+        log.liquidVolumeCheck
+}
+
+V0="$(liquid_volume 0)"
+V1="$(liquid_volume 1)"
+[[ -n "$V0" && -n "$V1" ]] || die "could not read the liquid volume, see log.liquidVolumeCheck"
+
+FRACTION="$(python3 - "$V0" "$V1" "$LITRES" <<'PY'
+import sys
+
+v0, v1, target = float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]) / 1000
+layer = v1 - v0
+if layer <= 0:
+    sys.exit("the partly filled layer in system/setFieldsDict selects no cells")
+fraction = (target - v0) / layer
+if not 0 <= fraction <= 1:
+    sys.exit(
+        f"{target * 1000:g} L is outside the partly filled layer: "
+        f"{v0 * 1000:.2f} L below it, {v1 * 1000:.2f} L with it; "
+        "move the boxes in system/setFieldsDict"
+    )
+print(f"{fraction:.8f}")
+PY
+)" || die "could not set the fill"
+
+V="$(liquid_volume "$FRACTION")"
+rm -rf postProcessing/liquidVolumeCheck
+rmdir postProcessing 2>/dev/null || true
+
+echo "Liquid below the partly filled layer: $V0 m^3"
+echo "Volume of the partly filled layer:    $(python3 -c "print(f'{$V1 - $V0:.6f}')") m^3"
+echo "Layer fraction:                       $FRACTION"
+echo "Liquid volume:                        $V m^3 (requested $LITRES L)"
+echo "Impeller ramp:                        $RAMP s"
