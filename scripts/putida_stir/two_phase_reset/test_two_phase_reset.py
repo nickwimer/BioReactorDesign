@@ -413,8 +413,8 @@ def _polar_tank(surface_of_r, film_top=None, radius=0.5, layers=80):
     import numpy as np
 
     dy = 0.0125
-    radii = np.linspace(0.05, radius - 0.01, 12)
-    angles = np.linspace(0.0, 2.0 * np.pi, 16, endpoint=False)
+    radii = radius * (np.arange(10) + 0.5) / 10
+    angles = 2.0 * np.pi * (np.arange(16) + 0.5) / 16
     heights = 0.5 + dy * (np.arange(layers) + 0.5)
     centres, alpha = [], []
     for r in radii:
@@ -469,23 +469,42 @@ def test_surface_flat_is_recovered():
     import surface_metrics
 
     centres, alpha = _polar_tank(lambda r: 1.0)
-    columns = surface_metrics.column_metrics(centres, alpha)
+    columns = surface_metrics.column_metrics(
+        centres, alpha, radius=0.5, sectors=16
+    )
     summary = surface_metrics.summarise(columns, radius=0.5)
-    assert summary["columns"] == 12 * 16
+    assert summary["columns"] == 10 * 16
     assert summary["dry_columns"] == 0
     assert np.allclose(columns["surface"], 1.0, atol=0.0125)
-    assert abs(summary["surface_mean"] - 1.0) < 0.0125
+
+
+def test_surface_does_not_need_aligned_columns():
+    import numpy as np
+
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 1.0)
+    twist = 3.0 * (centres[:, 1] - 0.5)
+    x, z = centres[:, 0].copy(), centres[:, 2].copy()
+    centres[:, 0] = x * np.cos(twist) - z * np.sin(twist)
+    centres[:, 2] = x * np.sin(twist) + z * np.cos(twist)
+    columns = surface_metrics.column_metrics(
+        centres, alpha, radius=0.5, sectors=8
+    )
+    assert np.allclose(columns["surface"], 1.0, atol=0.0125)
 
 
 def test_surface_vortex_shape_and_wall_rise():
     import surface_metrics
 
     centres, alpha = _polar_tank(lambda r: 0.9 + 0.8 * r * r)
-    columns = surface_metrics.column_metrics(centres, alpha)
+    columns = surface_metrics.column_metrics(
+        centres, alpha, radius=0.5, sectors=16
+    )
     summary = surface_metrics.summarise(columns, radius=0.5)
     assert summary["surface_min"] < 0.92
     assert summary["wall_surface_max"] > 1.07
-    assert summary["wall_surface_mean"] > summary["core_surface_mean"]
+    assert summary["wall_surface_mean"] > summary["core_surface_mean"] + 0.1
     assert summary["wall_wetted_max"] - summary["wall_surface_max"] < 0.02
 
 
@@ -493,22 +512,45 @@ def test_surface_wall_film_shows_as_wetted_height():
     import surface_metrics
 
     centres, alpha = _polar_tank(lambda r: 1.0, film_top=1.3)
-    columns = surface_metrics.column_metrics(centres, alpha)
+    columns = surface_metrics.column_metrics(
+        centres, alpha, radius=0.5, sectors=16
+    )
     summary = surface_metrics.summarise(columns, radius=0.5)
     assert abs(summary["wall_surface_max"] - 1.0) < 0.0125
     assert summary["wall_wetted_max"] > 1.27
-    rows = surface_metrics.band_table(columns, radius=0.5)
+    rows = surface_metrics.ring_table(columns)
     assert rows[0]["wetted_max"] < 1.02
     assert rows[-1]["wetted_max"] > 1.27
 
 
-def test_surface_dry_column_is_counted():
+def test_surface_dry_column_counts_as_the_floor():
     import surface_metrics
 
-    centres, alpha = _polar_tank(lambda r: 0.4 if r < 0.07 else 1.0)
-    columns = surface_metrics.column_metrics(centres, alpha)
+    centres, alpha = _polar_tank(lambda r: 0.4 if r < 0.05 else 1.0)
+    columns = surface_metrics.column_metrics(
+        centres, alpha, radius=0.5, sectors=16
+    )
     summary = surface_metrics.summarise(columns, radius=0.5)
     assert summary["dry_columns"] == 16
+    assert summary["surface_min"] < 0.52
+    assert surface_metrics.ring_table(columns)[0]["dry"] == 16
+
+
+def test_surface_volume_weighting():
+    import numpy as np
+
+    import surface_metrics
+
+    centres = np.array([[0.2, 0.5, 0.0], [0.21, 0.5, 0.0], [0.2, 0.6, 0.0]])
+    alpha = np.array([1.0, 0.0, 0.0])
+    heavy = surface_metrics.column_metrics(
+        centres, alpha, 0.5, volumes=[9.0, 1.0, 1.0], rings=2, sectors=1
+    )
+    light = surface_metrics.column_metrics(
+        centres, alpha, 0.5, volumes=[1.0, 9.0, 1.0], rings=2, sectors=1
+    )
+    assert not np.isnan(heavy["surface"][0])
+    assert np.isnan(light["surface"][0])
 
 
 def test_surface_reads_case_files(tmp_path, capsys):
@@ -528,15 +570,18 @@ def test_surface_reads_case_files(tmp_path, capsys):
             "1.0",
             "--radius",
             "0.5",
+            "--sectors",
+            "16",
             "--csv",
             str(out),
         ]
     )
     text = capsys.readouterr().out
     assert code == 0
-    assert "Radial bands at time 2" in text
-    assert out.read_text().splitlines()[0] == "a,b,r,surface,wetted,cells"
-    assert len(out.read_text().splitlines()) == 12 * 16 + 1
+    assert "By ring at time 2" in text
+    assert "cells are weighted equally" in text
+    assert out.read_text().splitlines()[0] == "r,theta,surface,wetted,bottom"
+    assert len(out.read_text().splitlines()) == 10 * 16 + 1
 
 
 def test_surface_uniform_and_missing_fields(tmp_path, capsys):
@@ -555,3 +600,84 @@ def test_surface_uniform_and_missing_fields(tmp_path, capsys):
     )
     assert code == 2
     assert "cell centres not found" in capsys.readouterr().err
+
+
+# ----------------------------------------------------------------- swirl
+
+
+def _rotating_tank(rate_of_r, omega=10.0):
+    """Synthetic tank whose liquid turns about +y at ``rate_of_r(r)``."""
+    import numpy as np
+
+    centres, alpha = _polar_tank(lambda r: 1.0)
+    r = np.hypot(centres[:, 0], centres[:, 2])
+    rate = np.array([rate_of_r(value) for value in r])
+    # omega * (y axis) x (x, 0, z) = omega * (z, 0, -x)
+    velocity = np.column_stack(
+        [rate * centres[:, 2], 0.3 * np.ones(r.size), -rate * centres[:, 0]]
+    )
+    return centres, alpha, velocity
+
+
+def test_swirl_rigid_body_is_recovered():
+    import numpy as np
+
+    import swirl_metrics
+
+    centres, alpha, velocity = _rotating_tank(lambda r: 4.0)
+    r, u_t = swirl_metrics.tangential_velocity(centres, velocity)
+    assert np.allclose(u_t, 4.0 * r)
+    rows = swirl_metrics.swirl_table(
+        r, centres[:, 1], u_t, alpha, 0.5, [0.5, 0.75, 1.0]
+    )
+    assert len(rows) == 2
+    assert np.allclose([row["rate"] for row in rows], 4.0)
+    assert np.allclose(rows[0]["velocity"], 4.0 * rows[0]["mean_r"])
+
+
+def test_swirl_sign_and_dry_bands():
+    import numpy as np
+
+    import swirl_metrics
+
+    centres, alpha, velocity = _rotating_tank(lambda r: -2.0)
+    r, u_t = swirl_metrics.tangential_velocity(centres, velocity)
+    rows = swirl_metrics.swirl_table(
+        r, centres[:, 1], u_t, alpha, 0.5, [0.5, 1.0, 1.4]
+    )
+    assert rows[0]["rate"] < 0
+    assert np.isnan(rows[1]["rate"])
+    assert np.isnan(rows[1]["velocity"]).all()
+
+
+def test_swirl_rise_of_a_rigid_body():
+    import swirl_metrics
+
+    assert abs(swirl_metrics.rise(6.0, 0.5) - 36 * 0.25 / 19.62) < 1e-12
+
+
+def test_swirl_reads_case_files(tmp_path, capsys):
+    import numpy as np
+
+    import swirl_metrics
+
+    centres, alpha, velocity = _rotating_tank(
+        lambda r: 10.0 if r < 0.2 else 1.0
+    )
+    _write_field(tmp_path / "0" / "C", centres)
+    _write_field(tmp_path / "0" / "V", np.ones(alpha.size))
+    _write_field(tmp_path / "3" / "alpha.liquid", alpha)
+    _write_field(tmp_path / "3" / "U.liquid", velocity)
+    args = [str(tmp_path), "3", "--omega", "10", "--radius", "0.5"]
+    code = swirl_metrics.main(args + ["--heights", "0.5", "1.0"])
+    text = capsys.readouterr().out
+    assert code == 0
+    assert "(1.00)" in text and "(0.10)" in text
+    assert "whole liquid" in text
+
+    code = swirl_metrics.main(
+        [str(tmp_path / "missing"), "3", "--omega", "10", "--radius", "0.5"]
+        + ["--heights", "0.5", "1.0"]
+    )
+    assert code == 2
+    assert "not found" in capsys.readouterr().err

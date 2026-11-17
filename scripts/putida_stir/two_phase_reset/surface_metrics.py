@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
 """Shape of the free surface in a two-phase tank run.
 
-For every vertical column of cells the script finds
+The tank is divided into vertical columns (radial rings times azimuthal
+sectors). In every column the script finds
 
 * the surface: the highest point where the liquid fraction crosses 0.5;
-* the wetted height: the highest cell with a liquid fraction above
+* the wetted height: the highest layer with a liquid fraction above
   ``--wet`` (default 0.05), which is where a thin film or spray shows up;
 
-and summarises them over the tank and over the band next to the wall. A
-surface that sits a few centimetres higher at the wall is a normal stirred
-tank; a wetted height far above the surface is liquid climbing the wall.
+and summarises them over the tank and over the ring next to the wall. A
+surface that is higher at the wall and lower at the shaft is a vortex; a
+wetted height far above the surface is a film climbing the wall.
 
 The fields must be ASCII and reconstructed::
 
-    postProcess -func writeCellCentres -func writeCellVolumes -time 0
+    postProcess -funcs '(writeCellCentres writeCellVolumes)' -time 0
     reconstructPar -fields '(alpha.liquid)'
-    surface_metrics.py CASE 0 2 4 6 8 10 --surface 1.0185 --radius 0.5334
+    surface_metrics.py CASE 0 2 4 6 8 10 --surface 1.0186 --radius 0.5334
 
-Heights are printed in centimetres relative to ``--surface``.
+Heights are printed in centimetres relative to ``--surface``. A column
+with no liquid above ``--ymin`` is counted as dry and reported as lying
+at ``--ymin`` or below.
 """
 
 import argparse
@@ -92,62 +95,108 @@ def read_field(path, n_cells=None):
     return values if width == 1 else values.reshape(count, 3)
 
 
-def column_metrics(centres, alpha, axis=1, ymin=None, wet=0.05, decimals=5):
-    """Surface and wetted height of every vertical column of cells.
+def column_metrics(
+    centres,
+    alpha,
+    radius,
+    volumes=None,
+    axis=1,
+    ymin=None,
+    wet=0.05,
+    rings=10,
+    sectors=24,
+    layer=None,
+):
+    """Surface and wetted height in columns of rings times sectors.
 
-    Returns a dict of arrays, one entry per column: the two horizontal
-    coordinates ``a`` and ``b``, the radius ``r``, ``surface`` (NaN where
-    the column holds no cell with a fraction of 0.5 or more), ``wetted``
-    (NaN where the column is dry) and ``cells``.
+    Cells are averaged, weighted by volume, into bins of ring, sector and
+    horizontal layer, so the result does not depend on how the mesh is
+    built. Layers follow the cell-centre heights; give ``layer`` (a
+    thickness) to use uniform slabs instead.
+
+    Returns a dict of arrays with one entry per column that holds cells:
+    ``r`` (mid radius of the ring), ``theta`` (mid angle of the sector),
+    ``surface`` (NaN where the column has no layer with a fraction of 0.5
+    or more), ``wetted`` (NaN where the column is dry) and ``bottom``, the
+    lowest layer of the column.
     """
     centres = np.asarray(centres, dtype=float)
     alpha = np.asarray(alpha, dtype=float)
+    weight = (
+        np.ones(alpha.size)
+        if volumes is None
+        else np.asarray(volumes, dtype=float)
+    )
     height = centres[:, axis]
     keep = np.ones(height.size, dtype=bool) if ymin is None else height >= ymin
-    height, alpha = height[keep], alpha[keep]
+    height, alpha, weight = height[keep], alpha[keep], weight[keep]
     horizontal = np.delete(centres[keep], axis, axis=1)
+    r = np.hypot(horizontal[:, 0], horizontal[:, 1])
+    theta = np.arctan2(horizontal[:, 1], horizontal[:, 0]) % (2.0 * np.pi)
 
-    keys, column = np.unique(
-        np.round(horizontal, decimals), axis=0, return_inverse=True
-    )
-    column = column.ravel()
-    order = np.lexsort((height, column))
-    height, alpha, column = height[order], alpha[order], column[order]
-    starts = np.searchsorted(column, np.arange(keys.shape[0] + 1))
+    # Horizontal layers: the distinct cell-centre heights where the mesh is
+    # layered, uniform slabs of thickness ``layer`` otherwise.
+    level, iy = np.unique(np.round(height, 6), return_inverse=True)
+    iy = iy.ravel()
+    if layer is not None or level.size > 2000:
+        if layer is None:
+            layer = (height.max() - height.min()) / 200.0
+        base = height.min() - 0.5 * layer
+        iy = np.floor((height - base) / layer).astype(int)
+        level = base + layer * (np.arange(int(iy.max()) + 1) + 0.5)
+    ir = np.minimum((r / radius * rings).astype(int), rings - 1)
+    it = np.minimum((theta / (2.0 * np.pi) * sectors).astype(int), sectors - 1)
+    n_layers = level.size
 
-    surface = np.full(keys.shape[0], np.nan)
-    wetted = np.full(keys.shape[0], np.nan)
-    for i in range(keys.shape[0]):
-        y = height[starts[i] : starts[i + 1]]
-        a = alpha[starts[i] : starts[i + 1]]
-        full = np.nonzero(a >= 0.5)[0]
-        if full.size:
-            j = full[-1]
-            if j == y.size - 1:
-                surface[i] = y[j]
-            else:
-                surface[i] = y[j] + (a[j] - 0.5) / (a[j] - a[j + 1]) * (
-                    y[j + 1] - y[j]
-                )
-        damp = np.nonzero(a >= wet)[0]
-        if damp.size:
-            wetted[i] = y[damp[-1]]
+    shape = (rings, sectors, n_layers)
+    flat = np.ravel_multi_index((ir, it, iy), shape)
+    size = rings * sectors * n_layers
+    total = np.bincount(flat, weights=weight, minlength=size).reshape(shape)
+    liquid = np.bincount(flat, weights=weight * alpha, minlength=size)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        mean = liquid.reshape(shape) / total
 
-    return {
-        "a": keys[:, 0],
-        "b": keys[:, 1],
-        "r": np.hypot(keys[:, 0], keys[:, 1]),
-        "surface": surface,
-        "wetted": wetted,
-        "cells": np.diff(starts),
-    }
+    out = {"r": [], "theta": [], "surface": [], "wetted": [], "bottom": []}
+    for i in range(rings):
+        for j in range(sectors):
+            filled = total[i, j] > 0
+            if not filled.any():
+                continue
+            y = level[filled]
+            a = mean[i, j][filled]
+            surface = wetted = np.nan
+            full = np.nonzero(a >= 0.5)[0]
+            if full.size:
+                k = full[-1]
+                surface = y[k]
+                if k < y.size - 1:
+                    surface += (
+                        (a[k] - 0.5) / (a[k] - a[k + 1]) * (y[k + 1] - y[k])
+                    )
+            damp = np.nonzero(a >= wet)[0]
+            if damp.size:
+                wetted = y[damp[-1]]
+            out["r"].append((i + 0.5) * radius / rings)
+            out["theta"].append((j + 0.5) * 2.0 * np.pi / sectors)
+            out["surface"].append(surface)
+            out["wetted"].append(wetted)
+            out["bottom"].append(y[0])
+    return {key: np.array(value) for key, value in out.items()}
 
 
-def summarise(columns, radius, wall_band=0.1):
-    """Reduce the column values to the numbers that describe the surface."""
-    r, surface, wetted = columns["r"], columns["surface"], columns["wetted"]
-    wall = r >= (1.0 - wall_band) * radius
-    core = ~wall
+def summarise(columns, radius, rings=10, floor=None):
+    """Reduce the column values to the numbers that describe the surface.
+
+    The wall ring is the outermost ring. Dry columns count as lying at
+    ``floor`` (default: the lowest layer of the column) in the means and
+    minima, so a vortex that reaches below the analysed range is not lost.
+    """
+    r, wetted = columns["r"], columns["wetted"]
+    dry = np.isnan(columns["surface"])
+    low = columns["bottom"] if floor is None else np.full(r.size, floor)
+    surface = np.where(dry, low, columns["surface"])
+    wall = r > (1.0 - 1.0 / rings) * radius
+    core = r < radius / rings * 2.0
 
     def stat(func, values):
         values = values[~np.isnan(values)]
@@ -155,8 +204,7 @@ def summarise(columns, radius, wall_band=0.1):
 
     return {
         "columns": int(r.size),
-        "dry_columns": int(np.isnan(surface).sum()),
-        "surface_mean": stat(np.mean, surface),
+        "dry_columns": int(dry.sum()),
         "surface_min": stat(np.min, surface),
         "surface_max": stat(np.max, surface),
         "core_surface_mean": stat(np.mean, surface[core]),
@@ -168,26 +216,25 @@ def summarise(columns, radius, wall_band=0.1):
     }
 
 
-def band_table(columns, radius, edges=(0.0, 0.25, 0.5, 0.75, 0.9, 1.0)):
-    """Surface and wetted height by radial band, as a list of rows."""
-    r = columns["r"] / radius
+def ring_table(columns, floor=None):
+    """Surface and wetted height by ring, as a list of rows."""
     rows = []
-    for lo, hi in zip(edges[:-1], edges[1:]):
-        last = hi == edges[-1]
-        inside = (r >= lo) & ((r <= hi + 1e-9) if last else (r < hi))
-        surface = columns["surface"][inside]
+    for radius in np.unique(columns["r"]):
+        inside = columns["r"] == radius
+        dry = np.isnan(columns["surface"][inside])
+        low = columns["bottom"][inside] if floor is None else floor
+        surface = np.where(dry, low, columns["surface"][inside])
         wetted = columns["wetted"][inside]
-        surface = surface[~np.isnan(surface)]
         wetted = wetted[~np.isnan(wetted)]
         rows.append(
             {
-                "lo": lo,
-                "hi": hi,
+                "r": float(radius),
                 "columns": int(inside.sum()),
-                "surface_mean": surface.mean() if surface.size else np.nan,
-                "surface_min": surface.min() if surface.size else np.nan,
-                "surface_max": surface.max() if surface.size else np.nan,
-                "wetted_max": wetted.max() if wetted.size else np.nan,
+                "dry": int(dry.sum()),
+                "surface_mean": float(surface.mean()),
+                "surface_min": float(surface.min()),
+                "surface_max": float(surface.max()),
+                "wetted_max": float(wetted.max()) if wetted.size else np.nan,
             }
         )
     return rows
@@ -227,12 +274,8 @@ def main(argv=None):
         help="ignore cells below this height (default: surface - 0.4 m)",
     )
     parser.add_argument("--wet", type=float, default=0.05)
-    parser.add_argument(
-        "--wall-band",
-        type=float,
-        default=0.1,
-        help="fraction of the radius counted as the wall band",
-    )
+    parser.add_argument("--rings", type=int, default=10)
+    parser.add_argument("--sectors", type=int, default=24)
     parser.add_argument(
         "--csv", help="write the columns of the last time here"
     )
@@ -241,22 +284,30 @@ def main(argv=None):
     axis = AXES[args.axis]
     ymin = args.surface - 0.4 if args.ymin is None else args.ymin
     case = Path(args.case)
+    cm = 100.0
 
     try:
         centre_file = find_geometry(case, "C", args.times)
         if centre_file is None:
             raise FieldError(
                 "cell centres not found; run "
-                "postProcess -func writeCellCentres -time 0"
+                "postProcess -funcs '(writeCellCentres writeCellVolumes)' "
+                "-time 0"
             )
         centres = read_field(centre_file)
         volume_file = find_geometry(case, "V", args.times)
         volumes = read_field(volume_file) if volume_file else None
+        if volumes is None:
+            print("note: cell volumes not found, cells are weighted equally")
 
-        to_cm = 100.0
         print(
-            "time[s]  liquid[L]   surface: mean    min    max |"
-            "  wall: surface mean    max  wetted mean    max   dry cols"
+            f"Heights in cm above the initial surface ({args.surface:g} m); "
+            f"columns are {args.rings} rings x {args.sectors} sectors, "
+            f"cells below {ymin:g} m ignored."
+        )
+        print(
+            "time[s]  liquid[L] | surface: lowest  shaft  wall mean  wall max"
+            " | wetted: wall mean  wall max  anywhere | dry columns"
         )
         columns = None
         for time in args.times:
@@ -268,55 +319,63 @@ def main(argv=None):
                     f"time {time}: {alpha.shape[0]} values for "
                     f"{centres.shape[0]} cells"
                 )
-            columns = column_metrics(centres, alpha, axis, ymin, args.wet)
-            s = summarise(columns, args.radius, args.wall_band)
+            columns = column_metrics(
+                centres,
+                alpha,
+                args.radius,
+                volumes,
+                axis,
+                ymin,
+                args.wet,
+                args.rings,
+                args.sectors,
+            )
+            s = summarise(columns, args.radius, args.rings)
             litres = (
                 f"{1000.0 * float(np.sum(alpha * volumes)):9.3f}"
                 if volumes is not None
                 else "        -"
             )
 
-            def rel(key):
-                return (s[key] - args.surface) * to_cm
+            def rel(key, summary=s):
+                return (summary[key] - args.surface) * cm
 
             print(
-                f"{time:>7}  {litres}   "
-                f"{rel('surface_mean'):13.2f} {rel('surface_min'):6.2f} "
-                f"{rel('surface_max'):6.2f} |"
-                f"  {rel('wall_surface_mean'):18.2f} "
-                f"{rel('wall_surface_max'):6.2f} "
-                f"{rel('wall_wetted_mean'):12.2f} {rel('wall_wetted_max'):6.2f}"
-                f"   {s['dry_columns']:8d}"
+                f"{time:>7}  {litres} | "
+                f"{rel('surface_min'):15.1f} {rel('core_surface_mean'):6.1f} "
+                f"{rel('wall_surface_mean'):10.1f} "
+                f"{rel('wall_surface_max'):9.1f} | "
+                f"{rel('wall_wetted_mean'):17.1f} "
+                f"{rel('wall_wetted_max'):9.1f} {rel('wetted_max'):9.1f} | "
+                f"{s['dry_columns']:5d} of {s['columns']}"
             )
     except FieldError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print()
-    print(
-        f"Radial bands at time {args.times[-1]} (cm above the initial surface):"
-    )
-    print("  r/R          columns  surface mean     min     max  wetted max")
-    for row in band_table(columns, args.radius):
+    print(f"By ring at time {args.times[-1]} (cm above the initial surface):")
+    print("  r/R    surface mean  lowest  highest  wetted max  dry sectors")
+    for row in ring_table(columns):
         print(
-            f"  {row['lo']:.2f}-{row['hi']:.2f}  {row['columns']:9d}"
-            f"  {(row['surface_mean'] - args.surface) * to_cm:12.2f}"
-            f" {(row['surface_min'] - args.surface) * to_cm:7.2f}"
-            f" {(row['surface_max'] - args.surface) * to_cm:7.2f}"
-            f" {(row['wetted_max'] - args.surface) * to_cm:11.2f}"
+            f"  {row['r'] / args.radius:4.2f}"
+            f"  {(row['surface_mean'] - args.surface) * cm:12.1f}"
+            f" {(row['surface_min'] - args.surface) * cm:7.1f}"
+            f" {(row['surface_max'] - args.surface) * cm:8.1f}"
+            f" {(row['wetted_max'] - args.surface) * cm:11.1f}"
+            f"  {row['dry']:5d} of {row['columns']}"
         )
 
     if args.csv:
         with open(args.csv, "w", newline="", encoding="utf-8") as stream:
             writer = csv.writer(stream)
-            writer.writerow(["a", "b", "r", "surface", "wetted", "cells"])
+            writer.writerow(["r", "theta", "surface", "wetted", "bottom"])
             for row in zip(
-                columns["a"],
-                columns["b"],
                 columns["r"],
+                columns["theta"],
                 columns["surface"],
                 columns["wetted"],
-                columns["cells"],
+                columns["bottom"],
             ):
                 writer.writerow([f"{value:.6g}" for value in row])
         print(f"\nColumns written to {args.csv}")
