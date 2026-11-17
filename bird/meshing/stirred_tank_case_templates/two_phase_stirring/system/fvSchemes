@@ -27,6 +27,7 @@ divSchemes
     "div\(alphaRhoPhi.*,U.*\)"      Gauss upwind;
     "div\(phi.*,U.*\)"              Gauss upwind;
     "div\(alphaRhoPhi.*,(k|epsilon).*\)"    Gauss upwind;
+    "div\(phim,(k|epsilon)m\)"      Gauss upwind;
     "div\(alphaRhoPhi.*,K.*\)"      Gauss upwind;
     "div\(alphaRhoPhi.*,(h|e).*\)"  Gauss upwind;
     "div\(alphaRhoPhi.*,\(p\|thermo:rho.*\)\)"    Gauss upwind;

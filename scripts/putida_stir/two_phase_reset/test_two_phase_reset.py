@@ -403,3 +403,155 @@ def test_checker_follows_a_differently_named_liquid():
     records = cr.read_log(log_text([0.4, 0.4], liquid="broth"), liquid="broth")
     assert len(records) == 2
     assert cr.read_log(log_text([0.4, 0.4], liquid="broth")) == []
+
+
+# --------------------------------------------------------------- surface
+
+
+def _polar_tank(surface_of_r, film_top=None, radius=0.5, layers=80):
+    """Cell centres and liquid fraction of a synthetic extruded tank."""
+    import numpy as np
+
+    dy = 0.0125
+    radii = np.linspace(0.05, radius - 0.01, 12)
+    angles = np.linspace(0.0, 2.0 * np.pi, 16, endpoint=False)
+    heights = 0.5 + dy * (np.arange(layers) + 0.5)
+    centres, alpha = [], []
+    for r in radii:
+        for t in angles:
+            level = surface_of_r(r)
+            for y in heights:
+                filled = min(max((level - (y - dy / 2)) / dy, 0.0), 1.0)
+                if film_top is not None and r > 0.45 and level < y < film_top:
+                    filled = max(filled, 0.2)
+                centres.append((r * np.cos(t), y, r * np.sin(t)))
+                alpha.append(filled)
+    return np.array(centres), np.array(alpha)
+
+
+def _write_field(path, values):
+    import numpy as np
+
+    values = np.asarray(values)
+    vector = values.ndim == 2
+    kind = "vector" if vector else "scalar"
+    lines = [
+        "FoamFile",
+        "{",
+        "    format      ascii;",
+        f"    class       vol{kind.capitalize()}Field;",
+        "}",
+        "dimensions      [0 0 0 0 0 0 0];",
+        f"internalField   nonuniform List<{kind}> ",
+        str(len(values)),
+        "(",
+    ]
+    for value in values:
+        if vector:
+            lines.append("(" + " ".join(f"{v:.8g}" for v in value) + ")")
+        else:
+            lines.append(f"{value:.8g}")
+    lines += [
+        ")",
+        ";",
+        "boundaryField",
+        "{",
+        "    walls { type zeroGradient; }",
+        "}",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n")
+
+
+def test_surface_flat_is_recovered():
+    import numpy as np
+
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 1.0)
+    columns = surface_metrics.column_metrics(centres, alpha)
+    summary = surface_metrics.summarise(columns, radius=0.5)
+    assert summary["columns"] == 12 * 16
+    assert summary["dry_columns"] == 0
+    assert np.allclose(columns["surface"], 1.0, atol=0.0125)
+    assert abs(summary["surface_mean"] - 1.0) < 0.0125
+
+
+def test_surface_vortex_shape_and_wall_rise():
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 0.9 + 0.8 * r * r)
+    columns = surface_metrics.column_metrics(centres, alpha)
+    summary = surface_metrics.summarise(columns, radius=0.5)
+    assert summary["surface_min"] < 0.92
+    assert summary["wall_surface_max"] > 1.07
+    assert summary["wall_surface_mean"] > summary["core_surface_mean"]
+    assert summary["wall_wetted_max"] - summary["wall_surface_max"] < 0.02
+
+
+def test_surface_wall_film_shows_as_wetted_height():
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 1.0, film_top=1.3)
+    columns = surface_metrics.column_metrics(centres, alpha)
+    summary = surface_metrics.summarise(columns, radius=0.5)
+    assert abs(summary["wall_surface_max"] - 1.0) < 0.0125
+    assert summary["wall_wetted_max"] > 1.27
+    rows = surface_metrics.band_table(columns, radius=0.5)
+    assert rows[0]["wetted_max"] < 1.02
+    assert rows[-1]["wetted_max"] > 1.27
+
+
+def test_surface_dry_column_is_counted():
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 0.4 if r < 0.07 else 1.0)
+    columns = surface_metrics.column_metrics(centres, alpha)
+    summary = surface_metrics.summarise(columns, radius=0.5)
+    assert summary["dry_columns"] == 16
+
+
+def test_surface_reads_case_files(tmp_path, capsys):
+    import surface_metrics
+
+    centres, alpha = _polar_tank(lambda r: 1.0, film_top=1.2)
+    _write_field(tmp_path / "0" / "C", centres)
+    _write_field(tmp_path / "0" / "alpha.liquid", alpha)
+    _write_field(tmp_path / "2" / "alpha.liquid", alpha)
+    out = tmp_path / "columns.csv"
+    code = surface_metrics.main(
+        [
+            str(tmp_path),
+            "0",
+            "2",
+            "--surface",
+            "1.0",
+            "--radius",
+            "0.5",
+            "--csv",
+            str(out),
+        ]
+    )
+    text = capsys.readouterr().out
+    assert code == 0
+    assert "Radial bands at time 2" in text
+    assert out.read_text().splitlines()[0] == "a,b,r,surface,wetted,cells"
+    assert len(out.read_text().splitlines()) == 12 * 16 + 1
+
+
+def test_surface_uniform_and_missing_fields(tmp_path, capsys):
+    import numpy as np
+
+    import surface_metrics
+
+    path = tmp_path / "0" / "alpha.liquid"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "FoamFile\n{\n    format ascii;\n}\ninternalField   uniform 0.25;\n"
+    )
+    assert np.allclose(surface_metrics.read_field(path, n_cells=4), 0.25)
+    code = surface_metrics.main(
+        [str(tmp_path), "0", "--surface", "1.0", "--radius", "0.5"]
+    )
+    assert code == 2
+    assert "cell centres not found" in capsys.readouterr().err

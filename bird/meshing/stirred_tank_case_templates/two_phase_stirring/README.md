@@ -22,6 +22,10 @@ stage 2, bubble sizes and oxygen transfer in stage 3.
 No velocity limiters, no staged start-up and no interface compression are
 used. If the case needs one of them, that is a finding.
 
+Turbulence is mixture k-epsilon on both phases, as in the earlier two-phase
+runs. (The three-phase template uses k-epsilon on the liquid alone, which
+only works because it starts with a trace of liquid in every cell.)
+
 ## Run
 
 ```bash

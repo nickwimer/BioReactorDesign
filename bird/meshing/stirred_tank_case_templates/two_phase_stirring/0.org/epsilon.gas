@@ -1,0 +1,33 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    object      epsilon.gas;
+}
+
+dimensions      [0 2 -3 0 0 0 0];
+
+internalField   uniform 1.5e-4;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    outlet
+    {
+        type            inletOutlet;
+        phi             phi.gas;
+        inletValue      $internalField;
+        value           $internalField;
+    }
+    walls
+    {
+        type            epsilonWallFunction;
+        value           $internalField;
+    }
+    propeller
+    {
+        type            epsilonWallFunction;
+        value           $internalField;
+    }
+}

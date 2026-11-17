@@ -5,4 +5,15 @@ FoamFile
     object      momentumTransport.gas;
 }
 
-simulationType  laminar;
+// Mixture k-epsilon on both phases, as in the earlier two-phase runs. A
+// k-epsilon model on the liquid alone has no equation left in cells that
+// hold no liquid, and the solver stops there on a division by zero.
+
+simulationType  RAS;
+
+RAS
+{
+    model           mixtureKEpsilon;
+    turbulence      on;
+    printCoeffs     on;
+}
