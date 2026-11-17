@@ -1,0 +1,77 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format          ascii;
+    class           dictionary;
+    object          fvConstraints;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+limitp
+{
+    type            limitPressure;
+    min             10000;
+}
+
+limitUliq
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.liquid;
+    selectionMode   all;
+    max             10;
+}
+
+limitUbubble
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.bubbleGas;
+    selectionMode   all;
+    max             10;
+}
+
+limitUheadspace
+{
+    type            limitVelocity;
+    active          yes;
+    U               U.headspaceGas;
+    selectionMode   all;
+    max             10;
+}
+
+limitUheadspaceLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.headspaceGas;
+    alpha           alpha.headspaceGas;
+    alphaThreshold  0.001;
+    max             0.5;
+}
+
+limitUliquidLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.liquid;
+    alpha           alpha.liquid;
+    alphaThreshold  0.0001;
+    max             0.5;
+}
+
+limitUbubbleLowAlpha
+{
+    type            alphaLimitVelocity;
+    U               U.bubbleGas;
+    alpha           alpha.bubbleGas;
+    alphaThreshold  0.0001;
+    max             0.5;
+}
+
+
+// ************************************************************************* //

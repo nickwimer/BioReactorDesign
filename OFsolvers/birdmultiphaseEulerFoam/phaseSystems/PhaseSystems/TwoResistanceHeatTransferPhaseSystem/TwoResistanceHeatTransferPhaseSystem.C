@@ -67,7 +67,8 @@ void Foam::TwoResistanceHeatTransferPhaseSystem<BasePhaseSystem>::addDmdtHefs
         // Transfer coefficients
         const volScalarField H1(heatTransferModels_[key].first()->K());
         const volScalarField H2(heatTransferModels_[key].second()->K());
-        const volScalarField H1Fac(H1/(H1 + H2));
+        const dimensionedScalar HSmall("small", heatTransferModel::dimK, small);
+        const volScalarField H1Fac(H1/(H1 + H2 + HSmall));
         const volScalarField HEff(H1Fac*H2);
 
         // Latent heat contribution
@@ -131,7 +132,8 @@ void Foam::TwoResistanceHeatTransferPhaseSystem<BasePhaseSystem>::addDmidtHefs
         // Transfer coefficients
         const volScalarField H1(heatTransferModels_[key].first()->K());
         const volScalarField H2(heatTransferModels_[key].second()->K());
-        const volScalarField H1Fac(H1/(H1 + H2));
+        const dimensionedScalar HSmall("small", heatTransferModel::dimK, small);
+        const volScalarField H1Fac(H1/(H1 + H2 + HSmall));
         const volScalarField HEff(H1Fac*H2);
 
         // Loop the species
@@ -290,7 +292,8 @@ heatTransfer() const
 
         const volScalarField H1(heatTransferModelIter().first()->K());
         const volScalarField H2(heatTransferModelIter().second()->K());
-        const volScalarField HEff(H1*H2/(H1 + H2));
+        const dimensionedScalar HSmall("small", heatTransferModel::dimK, small);
+        const volScalarField HEff(H1*H2/(H1 + H2 + HSmall));
 
         *eqns[phase1.name()] +=
             HEff*(phase2.thermo().T() - phase1.thermo().T())

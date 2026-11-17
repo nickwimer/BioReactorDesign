@@ -1,35 +1,83 @@
+# NLR pilot-plant stirred tank.
+#
+# Geometry values are literal physical dimensions in geometry.units.
+# The lower and upper impellers are independently specified.
+#
+# MRF topology and MRF activity are intentionally separate:
+#
+#   mesh.mrf_mesh_vertical_buffer_cells
+#       broad blockMesh rotor envelope
+#
+#   mrf.vertical_buffer_cells
+#       active rotating zone selected inside that envelope
+
 geometry:
-    units:                 "in"           # units for the geometry parameters (inches)
-    tank_diameter:         42.0         # Tank diameter  [in] (old Dt)
-    reactor_height:        68.525       # Height of the reactor  [in] (old H)
-    impeller_tip_diameter: 22.0         # Impleller tip Diameter  [in] (old Da)
-    nimpellers:            2            # number of impellers
-    impeller_centers:  [13.025,36.025]  # height of the center of impellers [in] (old C)
-    blade_width:           4.4          # impeller blade width [in] (old W)
-    blade_length:          2.75         # impeller blade length (beyond the hub) [in] (old L)
-    inner_blade_length:    2.75         # impeller blade length (inside the hub) [in] (old Lin)
-    baffle_width:          3.45         # Baffle width [in] (old J)
-    hub_height_width:      0.88         # Hub height (Width) [in] (old Wh)
-    polyrad:               1            # Stem radius [in] (R_shaft)
-    nbaffles:              4            # number of baffles and impeller fins
-    bottom_inlet:          false        # whether the bottom of the tank is an inlet or wall
-    round_bottom:          true         # whether the bottom of the tank is rounded or flat
-    reactor_bottom:        0.0          # z-coordinate of the bottom of the reactor
-    n_fins_per_impeller:   [6, 4]       # number of fins per impeller
-    blade_pitch:           [0, 45]      # blade pitch in degrees (0 = vertical)
-    impeller_scale:        [0.81818, 1] # scale factor for impellers
-    # alternate way to create tank instead of diameter and height
-    aspect_ratio:          null         # aspect ratio of the tank
-    target_volume_L:       null         # target volume in liters
+    units: "in"
 
- 
+    tank:
+        diameter:        42.0
+        height:          68.525
+        bottom_z:        0.0
+        round_bottom:    true
+        bottom_inlet:    false
+        aspect_ratio:    null
+        target_volume_L: null
+
+    shaft:
+        radius: 1.0
+
+    baffles:
+        count: 4
+        width: 3.45
+
+    impellers:
+        - name: lower
+          center_z: 10.375
+          tip_diameter: 18.0
+          hub_height: 0.9
+          blades:
+              count: 6
+              axial_width: 3.6
+              radial_length: 4.5
+              inner_radial_length: 0.20
+              pitch_deg: 0.0
+
+        - name: upper
+          center_z: 32.375
+          tip_diameter: 22.0
+          hub_height: 0.9
+          blades:
+              count: 4
+              axial_width: 8.485
+              radial_length: 6.25
+              inner_radial_length: 0.20
+              pitch_deg: 45.0
+
 mesh:
-    nr:         2            # mesh points per unit radial length
-    nz:         2            # mesh points per unit axial length
-    n_poly:     2            # mesh points in the polygon at the axis
-    n_azimuth:  2            # mesh points in the azimuthal direction
-    mrf_vertical_buffer_cells: 2   # number of cells added above/below each impeller span
-    mrf_radial_buffer_cells: 2      # additional radial ring cells in the MRF zone
-    
+    nr: 2
+    nz: 2
+    n_poly: 2
+    n_azimuth: 2
 
+    # Broad mesh envelope. This must not be interpreted as the
+    # physically active MRF extent.
+    mrf_mesh_vertical_buffer_cells: 6
+    mrf_radial_buffer_cells: 6
 
+mrf:
+    parent_zone: rotorEnvelope
+    cell_zone: rotor
+
+    # Validated V3 active axial buffer.
+    vertical_buffer_cells: 3
+
+    origin: [0, 0, 0]
+    axis: [0, 1, 0]
+
+    # +17.38 rad/s ~= 166 rpm; upper 45-degree blade geometry is
+    # down-pumping with this rotation direction.
+    omega_rad_s: 17.38
+    ramp_time_s: 0.10
+    hold_until_s: 10.0
+
+    nonRotatingPatches: []

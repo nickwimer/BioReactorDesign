@@ -1,0 +1,55 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+
+defaultFieldValues
+(
+    // Liquid k-epsilon is still solved everywhere.  A tiny liquid floor keeps
+    // its transient matrix nonsingular in the nominal headspace while adding
+    // less than 1 mL to the ~1000-L inventory.
+    volScalarFieldValue alpha.liquid    1e-6
+    volScalarFieldValue alpha.bubbleGas 0
+);
+
+regions
+(
+    // Bulk liquid: preserve the stable 0.999 liquid initialization and use the
+    // remaining 0.001 as the dispersed bubbleGas numerical seed.  Because
+    // headspaceGas is the reference phase and is exactly zero in this bulk
+    // initialization.  That is safe because headspaceGas is isothermal/laminar.
+    boxToCell
+    {
+        box (-1.0 -0.5 -1.0) (1.0 1.016 1.0);
+        fieldValues
+        (
+            volScalarFieldValue alpha.liquid    0.999
+            volScalarFieldValue alpha.bubbleGas 0.001
+        );
+    }
+
+    // Partially filled next axial layer used to hit the 1.000 m3 liquid target.
+    // Keep the same small bubbleGas seed through the interface layer; the
+    // reference headspaceGas occupies the remaining fraction.
+    boxToCell
+    {
+        box (-1.0 1.0124 -1.0) (1.0 1.0249 1.0);
+        fieldValues
+        (
+            volScalarFieldValue alpha.liquid    0.5814257
+            volScalarFieldValue alpha.bubbleGas 0.001
+        );
+    }
+);
+
+// ************************************************************************* //

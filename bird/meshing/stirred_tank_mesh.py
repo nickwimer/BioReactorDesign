@@ -393,7 +393,7 @@ def write_blocks(outfile, react):
 
                 zonename = "none"
                 if zi in mrf_volumes:
-                    zonename = "rotor"
+                    zonename = "rotorEnvelope"
 
                 write_this_block(
                     outfile, "block %d" % (i), idarray, mesharray, zonename
@@ -413,7 +413,7 @@ def write_blocks(outfile, react):
             outfile.write("\n//circle " + str(ci) + "\n")
 
             if (zi in mrf_volumes) and (ci <= mrf_circ):
-                zonename = "rotor"
+                zonename = "rotorEnvelope"
 
             for i in range(nsplits):
                 idarray[0] = get_baffle_point_of(i, ci, zi, react)

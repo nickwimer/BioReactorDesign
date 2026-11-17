@@ -1,0 +1,640 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  9
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvModels;
+}
+
+#include "${FOAM_CASE}/constant/globalVars"
+
+// The 23 physical sparger holes are represented by 15 independent row sources.
+// Double rows receive 2/23 of the total mass flow; single rows receive 1/23.
+// Each source ramps linearly from zero at t=0 to full flow at t=0.5 s.
+// U.bubbleGas is deliberately kept at zero for this diagnostic: the source kernels
+// represent unresolved near-orifice mixing, not a resolved 66+ m/s hole jet.
+// Isothermal phases do not solve e.bubbleGas, so no temperature/energy source is added.
+
+spargerMassSource01
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow01;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource02
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow02;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource03
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow03;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource04
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow04;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource05
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow05;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource06
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow06;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource07
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow07;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource08
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow08;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource09
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow09;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource10
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow10;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource11
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow11;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource12
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow12;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource13
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow13;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource14
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow14;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_oneHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+spargerMassSource15
+{
+    type            massSource;
+    selectionMode   cellZone;
+    cellZone        spargerRow15;
+
+    massFlowRate
+    {
+        type                table;
+        values
+        (
+            (0.0 0.0)
+            (0.5 $M_flowRate_twoHole)
+        );
+        outOfBounds         clamp;
+        interpolationScheme linear;
+    }
+
+    phase           bubbleGas;
+    rho             thermo:rho.bubbleGas;
+
+    fieldValues
+    {
+        f1.bubbleGas      0;
+        f2.bubbleGas      0;
+        f3.bubbleGas      1;
+        f4.bubbleGas      0;
+        f5.bubbleGas      0;
+        f6.bubbleGas      0;
+        f7.bubbleGas      0;
+        f8.bubbleGas      0;
+        f9.bubbleGas      0;
+        f10.bubbleGas     0;
+        f11.bubbleGas     0;
+
+        U.bubbleGas       (0 0 0);
+        O2.bubbleGas      0.23;
+        H2O.bubbleGas     0;
+    }
+}
+
+// ************************************************************************* //
