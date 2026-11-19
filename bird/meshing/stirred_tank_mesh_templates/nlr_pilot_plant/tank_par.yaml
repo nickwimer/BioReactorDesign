@@ -66,6 +66,14 @@ mesh:
     mrf_mesh_vertical_buffer_cells: 6
     mrf_radial_buffer_cells: 6
 
+    # Below the first hub the axis is fluid. square_core: true meshes the
+    # shaft-radius disc there with a square of hex blocks plus one ring,
+    # instead of the fan of wedge cells with one edge on the axis.
+    # square_core_fraction is the square's half-width over the shaft
+    # radius (corners at fraction * sqrt(2), so below 1/sqrt(2)).
+    square_core: false
+    square_core_fraction: 0.55
+
 mrf:
     parent_zone: rotorEnvelope
     cell_zone: rotor

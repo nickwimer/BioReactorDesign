@@ -41,6 +41,8 @@ class StirredTankReactor:
         mrf_mesh_vertical_buffer_cells=None,
         mrf_vertical_buffer_cells=None,
         mrf_radial_buffer_cells=0,
+        square_core=False,
+        square_core_fraction=0.55,
     ):
         # Loop through params and setattr v to self.k
         for k, v in locals().items():
@@ -278,6 +280,27 @@ class StirredTankReactor:
 
         self.nsplits = 2 * n_base  # we need twice the number of splits
         self.dangle = 2.0 * np.pi / float(self.nsplits)
+
+        # Optional square core on the axis, below the first hub: replaces the
+        # fan of wedge cells (one edge collapsed onto the axis) by a grid of
+        # hex blocks. Each square side takes nsplits/4 of the polygon
+        # segments, so the corners must fall on split lines (nsplits % 8 == 0)
+        # and must stay inside the polygon (fraction < 1/sqrt(2)).
+        self.square_core = bool(self.square_core)
+        self.square_core_fraction = float(self.square_core_fraction)
+        if self.square_core:
+            if self.nsplits % 8 != 0:
+                raise ValueError(
+                    "square_core needs the number of azimuthal splits to be a "
+                    f"multiple of 8; got {self.nsplits}"
+                )
+            if not 0.0 < self.square_core_fraction < 1.0 / np.sqrt(2.0):
+                raise ValueError(
+                    "square_core_fraction must lie between 0 and 1/sqrt(2) "
+                    "so the square's corners stay inside the shaft-radius "
+                    "polygon; "
+                    f"got {self.square_core_fraction}"
+                )
 
         if self.round_bottom:
             self.curved_bottom_center = [

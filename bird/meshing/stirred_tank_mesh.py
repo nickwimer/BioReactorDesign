@@ -64,6 +64,90 @@ def write_ofoam_preamble(outfile, react):
     )
 
 
+def _square_core_sections(react):
+    """Sections that bound the volumes below the first hub.
+
+    These are the only volumes with fluid on the axis (above the first hub
+    the axis is the shaft), so the square core lives only here.
+    """
+    if not react.nonstem_volumes:
+        return range(0)
+    return range(max(react.nonstem_volumes) + 2)
+
+
+def _square_core_side(react):
+    """Polygon segments (and core blocks) along one side of the square."""
+    return react.nsplits // 4
+
+
+def square_core_index_of(j, k, zi, react):
+    """Vertex id of core grid point (j, k), 0 <= j, k <= m, in section zi.
+
+    Core points are numbered after both copies of the regular points, so
+    adding the core changes no other vertex id.
+    """
+    m = _square_core_side(react)
+    base = 2 * react.nsections * react.npts_per_section
+    return base + zi * (m + 1) ** 2 + k * (m + 1) + j
+
+
+def square_core_perimeter_of(splti, react):
+    """Core grid point (j, k) that polygon point splti connects to.
+
+    Walks the square counter-clockwise from its 315 deg corner, m segments
+    per side, so polygon point splti (at splti * dangle) maps to the
+    perimeter point at about the same angle and the corners (45, 135, 225,
+    315 deg) fall on polygon points.
+    """
+    m = _square_core_side(react)
+    t = (splti - (3 * m + m // 2)) % react.nsplits
+    side, pos = divmod(t, m)
+    if side == 0:  # x = +s
+        return m, pos
+    if side == 1:  # y = +s
+        return m - pos, m
+    if side == 2:  # x = -s
+        return 0, m - pos
+    return pos, 0  # y = -s
+
+
+def _write_center_faces(outfile, zi, react):
+    """Boundary faces covering the shaft-radius disc at section zi."""
+    poly_ci = -1
+    nsplits = react.nsplits
+    if not getattr(react, "square_core", False):
+        centerid = zi * react.npts_per_section
+        outfile.write("\n\t\t//polygon\n")
+        for i in range(nsplits):
+            outfile.write("\t\t( ")
+            p0 = get_baffle_point_of(i, poly_ci, zi, react)
+            p1 = get_globalindex_of(i + 1, poly_ci, zi, react)
+            outfile.write(f"{p0} {p1} {centerid} {centerid})\n")
+        return
+
+    outfile.write("\n\t\t//polygon to square core\n")
+    for i in range(nsplits):
+        jk0 = square_core_perimeter_of(i, react)
+        jk1 = square_core_perimeter_of(i + 1, react)
+        q0 = square_core_index_of(*jk0, zi, react)
+        q1 = square_core_index_of(*jk1, zi, react)
+        p0 = get_baffle_point_of(i, poly_ci, zi, react)
+        p1 = get_globalindex_of(i + 1, poly_ci, zi, react)
+        outfile.write(f"\t\t( {p0} {p1} {q1} {q0})\n")
+
+    outfile.write("\n\t\t//square core\n")
+    m = _square_core_side(react)
+    for k in range(m):
+        for j in range(m):
+            ids = [
+                square_core_index_of(j, k, zi, react),
+                square_core_index_of(j + 1, k, zi, react),
+                square_core_index_of(j + 1, k + 1, zi, react),
+                square_core_index_of(j, k + 1, zi, react),
+            ]
+            outfile.write("\t\t( " + " ".join(str(v) for v in ids) + ")\n")
+
+
 def write_vertices(outfile, react):
     outfile.write(
         "\n// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n"
@@ -169,6 +253,27 @@ def write_vertices(outfile, react):
                         + str(counter)
                         + "\n"
                     )
+                    counter = counter + 1
+
+    if getattr(react, "square_core", False):
+        # Square core grid, (m + 1)^2 points per section below the first hub,
+        # numbered by square_core_index_of.
+        m = _square_core_side(react)
+        half = react.square_core_fraction * polyrad
+        for zi in _square_core_sections(react):
+            outfile.write("\n//square core, section " + str(zi) + "\n")
+            assert counter == square_core_index_of(0, 0, zi, react)
+            for k in range(m + 1):
+                for j in range(m + 1):
+                    x = half * (-1.0 + 2.0 * j / m)
+                    y = half * (-1.0 + 2.0 * k / m)
+                    if round_bottom and zi == 0:
+                        z = curved_bottom_center[2] - np.sqrt(
+                            curved_bottom_radius**2 - x**2 - y**2
+                        )
+                    else:
+                        z = reacthts[zi]
+                    outfile.write(f"({x} {y} {z}) // {counter}\n")
                     counter = counter + 1
 
     outfile.write(");\n")
@@ -372,8 +477,64 @@ def write_blocks(outfile, react):
         center_id0 = offset0
         center_id1 = offset1
 
+        square_core = getattr(react, "square_core", False)
+
         # skip polygon blocks in stem sections
-        if zi in nonstem_volumes:
+        if zi in nonstem_volumes and square_core:
+            zonename = "rotorEnvelope" if zi in mrf_volumes else "none"
+
+            # ring from the polygon in to the square: same vertex order as
+            # the wedge blocks, with the square's perimeter in place of the
+            # axis point
+            for i in range(nsplits):
+                jk0 = square_core_perimeter_of(i, react)
+                jk1 = square_core_perimeter_of(i + 1, react)
+                idarray[0] = offset0 + centeroffset + i % nsplits
+                idarray[1] = offset1 + centeroffset + i % nsplits
+                idarray[2] = offset1 + centeroffset + (i + 1) % nsplits
+                idarray[3] = offset0 + centeroffset + (i + 1) % nsplits
+                idarray[4] = square_core_index_of(*jk0, zi, react)
+                idarray[5] = square_core_index_of(*jk0, zi + 1, react)
+                idarray[6] = square_core_index_of(*jk1, zi + 1, react)
+                idarray[7] = square_core_index_of(*jk1, zi, react)
+
+                mesharray[0] = meshz[zi]
+                mesharray[1] = n_azimuth
+                mesharray[2] = n_poly
+                write_this_block(
+                    outfile,
+                    "core ring block %d" % (i),
+                    idarray,
+                    mesharray,
+                    zonename,
+                )
+
+            # the square itself: m x m blocks, local axes (z, x, y)
+            m = nsplits // 4
+            for k in range(m):
+                for j in range(m):
+                    idarray[0] = square_core_index_of(j, k, zi, react)
+                    idarray[1] = square_core_index_of(j, k, zi + 1, react)
+                    idarray[2] = square_core_index_of(j + 1, k, zi + 1, react)
+                    idarray[3] = square_core_index_of(j + 1, k, zi, react)
+                    idarray[4] = square_core_index_of(j, k + 1, zi, react)
+                    idarray[5] = square_core_index_of(j, k + 1, zi + 1, react)
+                    idarray[6] = square_core_index_of(
+                        j + 1, k + 1, zi + 1, react
+                    )
+                    idarray[7] = square_core_index_of(j + 1, k + 1, zi, react)
+
+                    mesharray[0] = meshz[zi]
+                    mesharray[1] = n_azimuth
+                    mesharray[2] = n_azimuth
+                    write_this_block(
+                        outfile,
+                        "core block %d %d" % (j, k),
+                        idarray,
+                        mesharray,
+                        zonename,
+                    )
+        elif zi in nonstem_volumes:
             for i in range(nsplits):
                 localind1 = centeroffset + i % nsplits
                 localind2 = centeroffset + (i + 1) % nsplits
@@ -439,7 +600,6 @@ def write_patches(outfile, react):
     inhub_ci = react.inhub_circ
     hub_ci = react.hub_circ
     rot_ci = react.rot_circ
-    npts_per_section = react.npts_per_section
     nsplits = react.nsplits
     hub_volumes = react.hub_volumes
     nsections = react.nsections
@@ -460,18 +620,11 @@ def write_patches(outfile, react):
     if bottom_inlet:
         # inlet patch
         zi = 0
-        centerid = zi * npts_per_section
 
         outfile.write("\n\tpatch inlet\n\t(\n")
 
-        # polygon
-        outfile.write("\n\t\t//polygon\n")
-        for i in range(nsplits):
-            outfile.write("\t\t( ")
-            outfile.write(str(get_baffle_point_of(i, poly_ci, zi, react)) + " ")
-            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
-            outfile.write(str(centerid) + " ")
-            outfile.write(str(centerid) + ")\n")
+        # polygon (wedge fan or square core)
+        _write_center_faces(outfile, zi, react)
 
         outfile.write("\n\t\t//inhub_circ to polygon\n")
         for i in range(nsplits):
@@ -501,7 +654,6 @@ def write_patches(outfile, react):
 
     # outlet patch
     zi = nsections - 1
-    centerid = zi * npts_per_section
     outfile.write("\n\tpatch outlet\n\t(\n")
 
     # no polygon patch in outlet when we include stem
@@ -520,17 +672,9 @@ def write_patches(outfile, react):
     # propeller patch
     outfile.write("\n\twall propeller\n\t(\n")
 
-    # need polygon patch at the first impeller
+    # need polygon patch at the first impeller (wedge fan or square core)
     zi = hub_volumes[0]
-    outfile.write("\n\t\t//polygon\n")
-    centerid = zi * npts_per_section
-    # polygon
-    for i in range(nsplits):
-        outfile.write("\t\t( ")
-        outfile.write(str(get_baffle_point_of(i, poly_ci, zi, react)) + " ")
-        outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
-        outfile.write(str(centerid) + " ")
-        outfile.write(str(centerid) + ")\n")
+    _write_center_faces(outfile, zi, react)
 
     for n_imp in range(nimpellers):
         zi_bottom = hub_volumes[n_imp]  # bottom of impeller section
@@ -655,15 +799,8 @@ def write_patches(outfile, react):
     # Do what used to be the inlet patch
     if not bottom_inlet:
         zi = 0
-        centerid = zi * npts_per_section
-        # polygon
-        outfile.write("\n\t\t//polygon\n")
-        for i in range(nsplits):
-            outfile.write("\t\t( ")
-            outfile.write(str(get_baffle_point_of(i, poly_ci, zi, react)) + " ")
-            outfile.write(str(get_globalindex_of(i + 1, poly_ci, zi, react)) + " ")
-            outfile.write(str(centerid) + " ")
-            outfile.write(str(centerid) + ")\n")
+        # polygon (wedge fan or square core)
+        _write_center_faces(outfile, zi, react)
         outfile.write("\n\t\t//inhub_circ to polygon\n")
         for i in range(nsplits):
             outfile.write("\t\t( ")
