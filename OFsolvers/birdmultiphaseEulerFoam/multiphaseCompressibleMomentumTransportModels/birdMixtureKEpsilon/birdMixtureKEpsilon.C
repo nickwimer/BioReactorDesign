@@ -32,6 +32,7 @@ License
 #include "fixedValueFvPatchFields.H"
 #include "inletOutletFvPatchFields.H"
 #include "epsilonWallFunctionFvPatchScalarField.H"
+#include "nutWallFunctionFvPatchScalarField.H"
 #include "fvmSup.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -752,6 +753,73 @@ void birdMixtureKEpsilon<BasicMomentumTransportModel>::correct()
     kl = Cc2*km;
     kl.correctBoundaryConditions();
     epsilonl = Cc2*epsilonm;
+
+    // Set epsilon in the liquid's wall-adjacent cells from the k just
+    // solved (log-law value, averaged over the cell's wall faces), so that
+    // nut there is the wall-function value Cmu^0.25 kappa y sqrt(k). The
+    // values held in the epsilonm equation above came from k at the start
+    // of the step; in wall cells where that k was ~0 (gas-liquid interface
+    // on a wall) and then grew, they would give an unbounded Cmu k^2/epsilon.
+    {
+        const volScalarField::Boundary& ebf = epsilonl.boundaryField();
+
+        scalarField eps0(epsilonl.size(), 0.0);
+        scalarField nWallFaces(epsilonl.size(), 0.0);
+
+        forAll(ebf, patchi)
+        {
+            if (!isA<epsilonWallFunctionFvPatchScalarField>(ebf[patchi]))
+            {
+                continue;
+            }
+
+            const nutWallFunctionFvPatchScalarField& nutw =
+                nutWallFunctionFvPatchScalarField::nutw
+                (
+                    liquidTurbulence,
+                    patchi
+                );
+
+            const scalarField& y = liquidTurbulence.y()[patchi];
+            const tmp<scalarField> tnuw = liquidTurbulence.nu(patchi);
+            const scalarField& nuw = tnuw();
+            const labelUList& faceCells =
+                this->mesh_.boundary()[patchi].faceCells();
+
+            const scalar Cmu25 = pow025(nutw.Cmu());
+            const scalar Cmu75 = pow(nutw.Cmu(), 0.75);
+
+            forAll(faceCells, facei)
+            {
+                const label celli = faceCells[facei];
+
+                const scalar yPlus =
+                    Cmu25*y[facei]*sqrt(kl[celli])/nuw[facei];
+
+                eps0[celli] +=
+                    yPlus > nutw.yPlusLam()
+                  ? Cmu75*pow(kl[celli], 1.5)/(nutw.kappa()*y[facei])
+                  : 2.0*kl[celli]*nuw[facei]/sqr(y[facei]);
+
+                nWallFaces[celli] += 1;
+            }
+        }
+
+        scalarField& epsilonli = epsilonl.primitiveFieldRef();
+
+        forAll(epsilonli, celli)
+        {
+            if (nWallFaces[celli] > 0)
+            {
+                epsilonli[celli] = max
+                (
+                    eps0[celli]/nWallFaces[celli],
+                    this->epsilonMin_.value()
+                );
+            }
+        }
+    }
+
     epsilonl.correctBoundaryConditions();
     liquidTurbulence.correctNut();
 

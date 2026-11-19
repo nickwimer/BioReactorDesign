@@ -37,7 +37,12 @@ Description
     dissipation there then falls far below the wall-function value, the
     turbulent viscosity becomes too large, and k and nut run away (in the
     NLR stirred tank: nut ~1 m2/s, dissipation ~17 times the impeller
-    power). Use it on both phases:
+    power). After k is solved, epsilon in the liquid's wall-adjacent cells
+    is set again from the new k (log-law value), so the turbulent viscosity
+    there is the wall-function one, Cmu^0.25 kappa y sqrt(k); held values
+    from the k at the start of the step alone are unstable in wall cells
+    where k grows from ~0 (gas-liquid interface on a wall). Use it on both
+    phases:
     \verbatim
         RAS
         {
