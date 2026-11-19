@@ -1,4 +1,5 @@
 EXE_INC = \
+    -IbirdMixtureKEpsilon \
     -I../phaseSystems/lnInclude \
     -I../interfacialModels/lnInclude\
     -I../interfacialCompositionModels/lnInclude \

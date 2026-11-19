@@ -39,6 +39,9 @@ makeRASModel(continuousGasKEpsilon);
 #include "mixtureKEpsilon.H"
 makeRASModel(mixtureKEpsilon);
 
+#include "birdMixtureKEpsilon.H"
+makeRASModel(birdMixtureKEpsilon);
+
 #include "SmagorinskyZhang.H"
 makeLESModel(SmagorinskyZhang);
 
