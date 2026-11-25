@@ -1,0 +1,4 @@
+# Collaborators' unpublished inputs and anything derived from them.
+local/
+local.yaml
+out/

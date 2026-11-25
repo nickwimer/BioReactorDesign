@@ -1,0 +1,33 @@
+# Batch runs used to fit the putidaFoam kinetics.
+#
+# Dissolved O2 is handled as a fraction of saturation. o2sat_lab is the
+# concentration at 100 % DO in the small Sartorius reactor (6.02 mg/L, from
+# 0dWillComp/gDCW_conv/0325ODDCW_conversion.xlsx, sheet fixedStirConversion).
+o2sat_lab: 0.188125  # mol/m3
+
+datasets:
+  # Fixed-stir batch runs (reactors BR1-BR3). The O2 column of each
+  # exptdata_ma.dat is DO fraction times do_basis; the three files were not
+  # written with the same basis.
+  fixedstir1:
+    group: fixedstir
+    file: ../0dWillComp/gDCW_conv/fixedstir1/exptdata_ma.dat
+    do_basis: 0.188125
+  fixedstir2:
+    group: fixedstir
+    file: ../0dWillComp/gDCW_conv/fixedstir2/exptdata_ma.dat
+    do_basis: 0.214
+    notes:
+      # DO % is identical to BR1 at every sample in the source spreadsheet.
+      do_suspect: true
+  fixedstir3:
+    group: fixedstir
+    file: ../0dWillComp/gDCW_conv/fixedstir3/exptdata_ma.dat
+    do_basis: 0.214
+
+  # Exp 17: DO-controlled batch with off-gas analysis.
+  # Read from the CSVs written by `exp17.py extract` (not in the repository).
+  exp17_49: {group: exp17, reactor: 49}
+  exp17_50: {group: exp17, reactor: 50}
+  exp17_52: {group: exp17, reactor: 52}
+  exp17_54: {group: exp17, reactor: 54}

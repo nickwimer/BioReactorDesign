@@ -1,0 +1,17 @@
+# Copy to local.yaml (git-ignored) and point at your own copies.
+#
+# surrogate_dir: a putidaFoam MEML case directory, i.e. one that holds
+#   scripted_model_biomass_h_muconate.pt, scaler_{x,y}_{mean,scale}.txt,
+#   tri_points.txt and tri_simplices.txt.
+# exp17_xlsx_dir: folder with the three Exp 17 workbooks.
+# exp17_dir: where `exp17.py extract` wrote its CSV files.
+# expected (optional): values the tests compare against for your copies
+#   of the unpublished inputs. They stay out of the repository like the
+#   inputs themselves; without the block those tests are skipped.
+#     surrogate_growth: list of [glucose uptake, O2 uptake, growth 1/h]
+#     surrogate_qs_range: [low, high] glucose uptake inside the
+#       surrogate's training range along the production O2/glucose ratio
+#     exp17_y_os, exp17_rq: [low, high] of the whole-run yields
+surrogate_dir: /path/to/meml_case
+exp17_xlsx_dir: /path/to/Exp17 Putida Batch Control
+exp17_dir: /path/to/kinetics_fit/local/exp17
