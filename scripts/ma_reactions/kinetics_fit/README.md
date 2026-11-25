@@ -11,6 +11,18 @@ One 0D model and one fit tool for both kinetics variants of `putidaFoam`:
 The parameters are the ones in a case's `constant/microbeUpdateProperties`:
 `q_max`, `K_o`, `K_s`, `y_xs`, `y_ms`, `y_os`, `x_max`.
 
+putidaFoam also reads one optional entry, `cap_n`, the sharpness of the
+biomass cap on growth, `1 - (X / x_max)^cap_n`:
+
+- It is a plain number (`cap_n 5;`), not a dimensioned entry. 1 is the
+  logistic cap, a larger value leaves early growth alone and stops it more
+  abruptly near `x_max`, and 0 switches the cap off.
+- Without the entry nothing changes: EMM keeps its logistic cap (1) and
+  MEML has no cap (0).
+- In the fit tool `cap_n` is fixed at 1 unless a fit frees it
+  (`--free ... cap_n`). `--model meml` is MEML without a cap and
+  `--model meml_cap` MEML with it.
+
 ## Files
 
 | File | Purpose |
@@ -76,4 +88,7 @@ are missing.
   training inputs, as in the solver. Fits penalise leaving the hull and
   report the time spent outside.
 - **Solver parity.** `advance_solver` copies `microbemodel::advance` step
-  for step and reproduces a `wellmixed.dat` written by putidaFoam.
+  for step and reproduces a `wellmixed.dat` written by putidaFoam. One test
+  also compiles the solver's `microbeModel.C` with a small driver
+  (`tests/solver_driver.cpp`, no OpenFOAM needed) and compares it with the
+  Python model update by update, with and without the biomass cap.

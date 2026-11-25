@@ -17,6 +17,7 @@ from pathlib import Path
 
 import numpy as np
 from kinetics0d import (
+    MEML_MODELS,
     Params,
     Surrogate,
     load_datasets,
@@ -28,7 +29,10 @@ from scipy.optimize import least_squares, minimize
 HERE = Path(__file__).resolve().parent
 KINETIC = ("q_max", "K_o", "K_s", "y_xs", "y_ms", "y_os", "x_max")
 NAMES = KINETIC + ("theta",)
+# Optional in putidaFoam; fixed at these values unless a fit frees them.
+OPTIONAL = {"cap_n": 1.0}
 BOUNDS = {
+    "cap_n": (1.0, 30.0),
     "q_max": (0.5, 40.0),
     "K_o": (1e-5, 1.0),
     "K_s": (1e-3, 30.0),
@@ -49,8 +53,16 @@ START = {
     "x_max": 7.6,
     "theta": 1.195 / 336.0,
 }
+START.update(OPTIONAL)
 # Floors for the noise levels, in data units.
 SIGMA_FLOOR = {"X": 0.1, "G": 5.0, "M": 2.0, "DO": 0.03, "OUR": 2.0}
+
+
+def params_of(values):
+    """Params from a dict of fitted values (theta and extras ignored)."""
+    kw = {k: values[k] for k in KINETIC}
+    kw.update({k: values.get(k, d) for k, d in OPTIONAL.items()})
+    return Params(**kw)
 
 
 def local_config(path=None):
@@ -131,9 +143,11 @@ class Problem:
         missing = set(NAMES) - set(self.free) - set(self.fixed)
         if missing:
             raise ValueError(f"neither free nor fixed: {sorted(missing)}")
+        defaults = {k: v for k, v in OPTIONAL.items() if k not in self.free}
+        self.fixed = {**defaults, **self.fixed}
         if self.sigma is None:
             self.sigma = noise_levels(self.datasets)
-        if self.model == "meml":
+        if self.model in MEML_MODELS:
             q_b, y_b = meml_bounds(self.sur)
             self.bounds["q_max"], self.bounds["y_os"] = q_b, y_b
 
@@ -143,7 +157,7 @@ class Problem:
         return v
 
     def split(self, values):
-        return Params(**{k: values[k] for k in KINETIC}), values["theta"]
+        return params_of(values), values["theta"]
 
     def blocks(self, values):
         """Scaled residual blocks, keyed by (dataset, quantity)."""
@@ -168,7 +182,7 @@ class Problem:
                 out[(ds.name, "OUR")] = (sim["OUR_at_our_t"] - ds.our) / sg[
                     "OUR"
                 ]
-            if self.model == "meml":
+            if self.model in MEML_MODELS:
                 out[(ds.name, "hull")] = np.array(
                     [self.hull_weight * max(0.0, sim["hull_distance"])]
                 )
@@ -209,7 +223,7 @@ class FitResult:
 
     @property
     def params(self):
-        return Params(**{k: self.values[k] for k in KINETIC})
+        return params_of(self.values)
 
     def summary(self):
         return {
@@ -266,10 +280,10 @@ def fit(problem, start=None, n_start=20, seed=0):
         if x - a < 0.05 or b - x < 0.05  # within 5 % of a bound
     ]
     t_out = 0.0
-    if problem.model == "meml":
+    if problem.model in MEML_MODELS:
         p, theta = problem.split(values)
         t_out = sum(
-            simulate(p, ds, "meml", problem.sur, theta)["t_outside"]
+            simulate(p, ds, problem.model, problem.sur, theta)["t_outside"]
             for ds in problem.datasets
         )
     return FitResult(
@@ -358,13 +372,19 @@ def main(argv=None):
         description="Fit putidaFoam kinetics to 0D batch data."
     )
     ap.add_argument("--datasets", nargs="+", required=True)
-    ap.add_argument("--model", choices=("emm", "meml"), default="emm")
-    ap.add_argument("--free", nargs="+", required=True, choices=NAMES)
+    ap.add_argument(
+        "--model",
+        choices=("emm",) + MEML_MODELS,
+        default="emm",
+        help="meml_cap is MEML with the biomass cap (cap_n in putidaFoam)",
+    )
+    every = NAMES + tuple(OPTIONAL)
+    ap.add_argument("--free", nargs="+", required=True, choices=every)
     ap.add_argument(
         "--fix", nargs="*", default=[], metavar="NAME=VALUE", help="fixed"
     )
     ap.add_argument("--starts", type=int, default=20)
-    ap.add_argument("--profile", choices=NAMES)
+    ap.add_argument("--profile", choices=every)
     ap.add_argument("--no-do", action="store_true")
     ap.add_argument("--no-our", action="store_true")
     ap.add_argument("--surrogate-dir")
@@ -377,7 +397,7 @@ def main(argv=None):
         HERE / "datasets.yaml", args.datasets, local_dir=exp17_dir
     )
     sur = None
-    if args.model == "meml":
+    if args.model in MEML_MODELS:
         sur = Surrogate(args.surrogate_dir or cfg["surrogate_dir"])
     fixed = {k: float(v) for k, v in (item.split("=") for item in args.fix)}
     for name in NAMES:
@@ -399,7 +419,10 @@ def main(argv=None):
     theta = result.values["theta"]
     y_os = result.values["y_os"]
     print(f"\ntheta = {theta:.5f} h -> kLa = {y_os / theta:.0f} 1/h at y_os")
-    print(result.params.to_foam(use_ml=args.model == "meml"))
+    block = result.params.to_foam(model=args.model)
+    print(block)
+    if "cap_n" in block:
+        print("// cap_n needs a putidaFoam build that reads it")
     if args.profile:
         lo, hi = problem.bounds[args.profile]
         grid = np.geomspace(lo, hi, 13)

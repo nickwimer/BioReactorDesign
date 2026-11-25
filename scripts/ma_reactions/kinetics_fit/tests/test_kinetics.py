@@ -1,3 +1,6 @@
+import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -109,6 +112,15 @@ def test_to_foam_block():
     assert "q_max           [ -1 0 -1 0 1 0 0 ] 8.26;" in text
     assert "K_o             [ 0 -3 0 0 1 0 0 ] 0.1134;" in text
     assert "x_max           [ -1 0 0 0 1 0 0 ] 7.6;" in text
+    # cap_n is written only where it differs from the solver's default.
+    assert "cap_n" not in text
+    assert "cap_n" not in PRODUCTION.to_foam()
+    sharp = PRODUCTION.with_(cap_n=5.0)
+    assert "cap_n           5;" in sharp.to_foam()
+    assert "cap_n           5;" in sharp.to_foam(model="meml_cap")
+    assert "use_ml          true;" in sharp.to_foam(model="meml_cap")
+    assert "cap_n" not in sharp.to_foam(model="meml")
+    assert "cap_n           1;" in PRODUCTION.to_foam(model="meml_cap")
 
 
 # -------------------------------------------------------------------- data
@@ -300,6 +312,139 @@ def test_reproduces_solver_wellmixed_output(sur, surrogate_dir):
         )
         assert now == row[0]
         assert np.array(state) == pytest.approx(row[1:6], rel=2e-5)
+
+
+def test_meml_cap_scales_only_growth(sur):
+    p = PRODUCTION.with_(q_max=5.0, K_o=0.003, y_os=2.4, x_max=8.0)
+    free = rates(6.0, 200.0, 0.1, p, "meml", sur)
+    capped = rates(6.0, 200.0, 0.1, p, "meml_cap", sur)
+    assert free[0] > 0.0
+    assert capped[0] == pytest.approx(free[0] * (1.0 - 6.0 / 8.0))
+    assert [float(v) for v in capped[1:]] == [float(v) for v in free[1:]]
+    at_cap = rates(8.0, 200.0, 0.1, p, "meml_cap", sur)
+    assert at_cap[0] == pytest.approx(0.0, abs=1e-12)
+    assert at_cap[1] < 0.0 and at_cap[2] > 0.0  # uptake and product go on
+    # A sharper cap leaves growth far below x_max almost untouched.
+    sharp = rates(6.0, 200.0, 0.1, p.with_(cap_n=4.0), "meml_cap", sur)
+    assert sharp[0] == pytest.approx(free[0] * (1.0 - 0.75**4))
+    # The same sharpness applies to EMM's cap; 1 is the solver's EMM.
+    emm = rates(6.0, 200.0, 0.1, p, "emm")[0]
+    emm_sharp = rates(6.0, 200.0, 0.1, p.with_(cap_n=4.0), "emm")[0]
+    assert emm_sharp == pytest.approx(emm * (1.0 - 0.75**4) / 0.25)
+    assert rates(6.0, 200.0, 0.1, p.with_(cap_n=1.0), "emm")[0] == emm
+
+
+def test_meml_cap_holds_biomass_below_x_max(sur, fixedstir):
+    ds = fixedstir[0]
+    p = PRODUCTION.with_(q_max=5.0, K_o=0.003, K_s=4.0, y_os=2.4, x_max=8.0)
+    theta = 2.4 / 700.0
+    free = simulate(p, ds, "meml", sur, theta)
+    capped = simulate(p, ds, "meml_cap", sur, theta)
+    assert free["X"][-1] > p.x_max
+    assert capped["X"][-1] < p.x_max
+    assert np.all(np.diff(capped["X"]) >= 0.0)
+    # With the cap far away the two models are the same.
+    far = simulate(p.with_(x_max=1e9), ds, "meml_cap", sur, theta)
+    assert far["X"] == pytest.approx(free["X"], rel=1e-6)
+    assert far["M"] == pytest.approx(free["M"], rel=1e-6, abs=1e-6)
+
+
+def test_unknown_model_is_refused(fixedstir):
+    with pytest.raises(ValueError):
+        simulate(PRODUCTION, fixedstir[0], "memlcap", theta=0.0036)
+
+
+# ------------------------------------------------------------- solver code
+SOLVER = HERE.parents[2] / "OFsolvers/birdmultiphaseEulerFoam/putidaFoam"
+SURROGATE_FILES = (
+    "scaler_x_mean.txt",
+    "scaler_x_scale.txt",
+    "scaler_y_mean.txt",
+    "scaler_y_scale.txt",
+    "tri_points.txt",
+    "tri_simplices.txt",
+    "scripted_model_biomass_h_muconate.pt",
+)
+CAPPED = PRODUCTION.with_(
+    q_max=4.7, K_o=0.003125, K_s=13.5, y_os=2.5, x_max=7.8, cap_n=5.0
+)
+
+
+@pytest.fixture(scope="module")
+def solver_driver(surrogate_dir, tmp_path_factory):
+    """putidaFoam's microbeModel.C built with a small driver, no OpenFOAM."""
+    torch = pytest.importorskip("torch")
+    cxx = shutil.which(os.environ.get("CXX", "c++"))
+    tdir = Path(torch.__file__).parent
+    inc = tdir / "include"
+    if cxx is None or not (inc / "torch" / "script.h").exists():
+        pytest.skip("no C++ compiler or no libtorch headers")
+    work = tmp_path_factory.mktemp("solver")
+    # microbeModel.H includes OpenFOAM's scalar.H and uses nothing from it.
+    (work / "scalar.H").write_text("\n")
+    for name in SURROGATE_FILES:  # the solver loads them from its cwd
+        shutil.copy(surrogate_dir / name, work / name)
+    cmd = [
+        cxx,
+        "-std=c++17",
+        "-O1",
+        f"-I{work}",
+        f"-I{SOLVER}",
+        f"-I{inc}",
+        f"-I{inc / 'torch' / 'csrc' / 'api' / 'include'}",
+        str(HERE / "tests" / "solver_driver.cpp"),
+        str(SOLVER / "microbeModel.C"),
+        f"-L{tdir / 'lib'}",
+        "-ltorch",
+        "-ltorch_cpu",
+        "-lc10",
+        f"-Wl,-rpath,{tdir / 'lib'}",
+        "-o",
+        str(work / "driver"),
+    ]
+    built = subprocess.run(cmd, capture_output=True, text=True)
+    assert built.returncode == 0, built.stderr[-4000:]
+    return work / "driver"
+
+
+@pytest.mark.parametrize(
+    "use_ml, solver_cap_n, model, p",
+    [
+        # Without a cap_n entry putidaFoam passes 1 (EMM) or 0 (MEML).
+        (0, 1.0, "emm", PRODUCTION),
+        (1, 0.0, "meml", PRODUCTION),
+        (1, 5.0, "meml_cap", CAPPED),
+        (1, 1.0, "meml_cap", CAPPED.with_(cap_n=1.0)),
+        (0, 5.0, "emm", CAPPED),
+        # cap_n 0 switches the cap off; slow uptake so glucose lasts.
+        (0, 0.0, "emm", CAPPED.with_(q_max=2.0, x_max=1e30, cap_n=1.0)),
+    ],
+)
+def test_compiled_solver_matches_python(
+    solver_driver, sur, use_ml, solver_cap_n, model, p
+):
+    """Seven 5 h updates as in wellMixed.H, solver code against Python."""
+    state = (0.350147052723467, 0.214, 545.9946375, 0.157763, 0.0)
+    values = [use_ml, solver_cap_n, p.y_xs, p.y_ms, p.y_os, p.x_max]
+    values += [p.q_max, p.K_o, p.K_s, *state[:4], 5.0, 0.1]
+    out = subprocess.run(
+        [str(solver_driver)] + [repr(float(v)) for v in values] + ["7"],
+        cwd=solver_driver.parent,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    solver = np.array([line.split() for line in out.stdout.splitlines()])
+    now, rows = 0.0, []
+    for _ in range(7):
+        state, our, _ = advance_solver(state, p, 5.0, 0.1, now, model, sur)
+        now += 5.0
+        rows.append([now, *state, our])
+    # EMM agrees to round-off; MEML runs the network in float32 in the
+    # solver and in float64 here.
+    assert solver.astype(float) == pytest.approx(
+        np.array(rows), rel=1e-6, abs=1e-9
+    )
 
 
 # ------------------------------------------------------------------ exp 17

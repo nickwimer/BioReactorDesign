@@ -30,6 +30,7 @@ REF_STATE = (7.33, 0.2528, 228.8, 0.0, 0.0)  # first CFD bio update
 K_O_CFD = 0.003125  # mol/m3 = 0.1 mg/L, the O2-sink floor used in the CFD
 K_S_PAPER = 0.4008
 RPM_BIN = 200  # rpm, width of the stir-rate bins of the kLa table
+CAP_GRID = (1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 10.0, 30.0)  # cap_n profile
 C = {
     "blue": "#2a78d6",
     "orange": "#eb6834",
@@ -207,7 +208,11 @@ def fig_profiles(profiles, dof, path):
 
 
 def fig_fits(datasets, models, sur, path, quantities):
-    """Small multiples: one column per quantity, one row per run."""
+    """Small multiples: one column per quantity, one row per run.
+
+    ``models`` holds (label, values, model) or (label, values, model,
+    colour); without a colour the series colours are taken in order.
+    """
     n = len(datasets)
     fig, axes = plt.subplots(
         n,
@@ -220,8 +225,10 @@ def fig_fits(datasets, models, sur, path, quantities):
         t = np.linspace(ds.t[0], ds.t[-1], 200)
         for j, (key, label) in enumerate(quantities):
             ax = axes[i][j]
-            for (name, values, model), col in zip(models, SERIES):
-                p = k.Params(**{q: values[q] for q in fk.KINETIC})
+            for entry, col in zip(models, SERIES):
+                name, values, model = entry[:3]
+                col = entry[3] if len(entry) > 3 else col
+                p = fk.params_of(values)
                 try:
                     s = k.simulate(
                         p, ds, model, sur, values["theta"], t_dense=t
@@ -327,7 +334,7 @@ def fig_qs_o2(cands, path, o2_set):
     fig, ax = plt.subplots(figsize=(6.0, 3.4))
     o2 = np.linspace(0.0, 0.26, 200)
     for (name, v, _), col in cands:
-        p = k.Params(**{q: v[q] for q in fk.KINETIC})
+        p = fk.params_of(v)
         ax.plot(o2, k.uptake(228.8, o2, p), color=col, label=name)
     ax.axvspan(0.08, 0.18, color=C["grid"], alpha=0.5, lw=0)
     ax.text(
@@ -582,6 +589,20 @@ def run(quick=False):
         {**base, "x_max": 12.0},
     )
 
+    # ---------------------------------------------------------------- R7
+    say("R7 MEML with a biomass cap")
+    base_cap = {q: r_ko.values[q] for q in ("K_o", "y_xs", "y_ms")}
+    free_c = ("q_max", "K_s", "y_os", "x_max", "theta")
+    _, c_one = fit(allds, free_c, base_cap, "meml_cap")
+    pb_cap, c_fit = fit(allds, free_c + ("cap_n",), base_cap, "meml_cap")
+    _, e_cap = fit(allds, free_ko + ("cap_n",), {"K_o": K_O_CFD})
+    _, e_cap_fs = fit(fs, free_fs + ("cap_n",), {"y_os": 2.4})
+    _, e_cap_17 = fit(ex, free17 + ("cap_n",), {"theta": r_fs.values["theta"]})
+    prof_cap = []
+    if not quick:
+        say("  profile cap_n")
+        prof_cap = fk.profile(pb_cap, c_fit, "cap_n", CAP_GRID)
+
     # ------------------------------------------------------- candidates
     say("candidates")
     cands = [
@@ -594,7 +615,7 @@ def run(quick=False):
     cand_rows = []
     cand_blocks = []
     for name, v, model in cands + [meml_c]:
-        p = k.Params(**{q: v[q] for q in fk.KINETIC})
+        p = fk.params_of(v)
         chi_e, rm_e = score(v, allds, sigma, "emm")
         chi_m, _ = score(v, allds, sigma, "meml", sur)
         chi_g, _ = score(v, grow, sigma, "meml", sur)
@@ -625,6 +646,21 @@ def run(quick=False):
         tag = name.split()[0]
         (out / "candidates" / f"{tag}.txt").write_text(block + "\n")
         cand_blocks.append((name, block))
+    q_fs = [
+        ("X", "biomass (kg/m3)"),
+        ("G", "glucose (mol/m3)"),
+        ("M", "muconate (mol/m3)"),
+        ("DO", "DO (fraction of sat.)"),
+    ]
+    q_ex = q_fs[:3] + [("OUR", "O2 uptake (mol/m3/h)")]
+    # Capped MEML is not production, so it takes the fourth colour.
+    cap_models = [
+        ("EMM refit (C)", r_ko.values, "emm", C["orange"]),
+        ("MEML, no cap (E)", m_grow.values, "meml", C["aqua"]),
+        ("MEML with cap", c_fit.values, "meml_cap", C["yellow"]),
+    ]
+    fig_fits(fs, cap_models, sur, out / "figures" / "cap_fixedstir.png", q_fs)
+    fig_fits(ex, cap_models, sur, out / "figures" / "cap_exp17.png", q_ex)
     fig_fits(
         fs,
         [
@@ -634,12 +670,7 @@ def run(quick=False):
         ],
         sur,
         out / "figures" / "fits_fixedstir.png",
-        [
-            ("X", "biomass (kg/m3)"),
-            ("G", "glucose (mol/m3)"),
-            ("M", "muconate (mol/m3)"),
-            ("DO", "DO (fraction of sat.)"),
-        ],
+        q_fs,
     )
     fig_fits(
         ex,
@@ -650,12 +681,7 @@ def run(quick=False):
         ],
         sur,
         out / "figures" / "fits_exp17.png",
-        [
-            ("X", "biomass (kg/m3)"),
-            ("G", "glucose (mol/m3)"),
-            ("M", "muconate (mol/m3)"),
-            ("OUR", "O2 uptake (mol/m3/h)"),
-        ],
+        q_ex,
     )
     fig_plane(
         sur,
@@ -743,8 +769,18 @@ def run(quick=False):
                 f"with y_os {m_grow.values['y_os']:.2f}, but it has no "
                 "mechanism for the biomass plateau and overshoots after "
                 "23 h.",
-                "- Candidate sets B-E below fit both experiments; A is the "
-                "current production set for comparison.",
+                "- **A biomass cap fixes that, if it is sharper than "
+                "EMM's.** MEML with growth "
+                "multiplied by 1 - (X / x_max)^n fits both experiments "
+                f"over the whole run at n {c_fit.values['cap_n']:.1f} "
+                f"(chi2 {c_fit.chi2:.0f}, EMM set C {r_ko.chi2:.0f}). "
+                f"With EMM's own form (n = 1) it does not ({c_one.chi2:.0f}"
+                "). EMM itself also fits better with the sharper cap "
+                f"({e_cap.chi2:.0f}). putidaFoam takes n as an optional "
+                "`cap_n` entry (sets F and G in section 6).",
+                "- Candidate sets B-E below fit both experiments with the "
+                "solver as it was; A is the current production set for "
+                "comparison. F and G need a build that reads `cap_n`.",
             ]
         )
         + "\n"
@@ -1003,7 +1039,8 @@ def run(quick=False):
         f"- x_max differs between experiments ({r_fs.values['x_max']:.1f} "
         f"fixed-stir, {r_17.values['x_max']:.1f} Exp 17). It is a property "
         "of the batch (whatever stops growth is not in the model), not a "
-        "kinetic constant, and should be chosen per reactor.\n"
+        "kinetic constant, and should be chosen per reactor. Most of this "
+        "gap comes from the form of the cap (section 6).\n"
         "- A large K_s improves the fit because specific uptake falls late "
         "in every run while glucose is still present. That is a stand-in "
         "for whatever slows the culture, not a glucose affinity. Set D "
@@ -1060,7 +1097,7 @@ def run(quick=False):
     ):
         model = "meml" if "MEML" in label else "emm"
         chi, _ = score(v, data, sigma, model, sur)
-        p = k.Params(**{q: v[q] for q in fk.KINETIC})
+        p = fk.params_of(v)
         x_end = [
             k.simulate(p, d, model, sur, v["theta"])["X"][-1]
             for d in (fs[0], ex[2])
@@ -1109,6 +1146,160 @@ def run(quick=False):
         "- EMM's y_xs, y_ms and x_max are unused by MEML; set E carries "
         "the values of set C so the file stays complete.\n"
     )
+
+    md.append("### A biomass cap for MEML, and a sharper one for EMM\n")
+    md.append(
+        "The cap multiplies growth by 1 - (X / x_max)^n and leaves glucose "
+        "uptake, oxygen uptake and muconate as they are. n = 1 is the cap "
+        "EMM always had; a larger n leaves early growth alone and stops it "
+        "more abruptly near x_max. putidaFoam reads n as the optional "
+        "entry `cap_n`. All rows are scored on both experiments over the "
+        "whole run with K_o fixed as in set C. The MEML refits free q_max, "
+        "K_s, y_os, x_max and theta; EMM frees y_xs and y_ms as well.\n"
+    )
+    cap_cases = (
+        ("EMM (C), n = 1", r_ko.values, "emm"),
+        ("EMM refitted, n fitted (G)", e_cap.values, "emm"),
+        ("MEML, no cap, refitted", m_full.values, "meml"),
+        ("MEML set E, cap switched on, n = 1", m_grow.values, "meml_cap"),
+        ("MEML refitted, n = 1", c_one.values, "meml_cap"),
+        ("MEML refitted, n fitted (F)", c_fit.values, "meml_cap"),
+    )
+    rows, rows_rm = [], []
+    cap_ref = {}
+    for label, v, model in cap_cases:
+        chi, rm = score(v, allds, sigma, model, sur)
+        p = fk.params_of(v)
+        x_end = [
+            k.simulate(p, d, model, sur, v["theta"])["X"][-1]
+            for d in (fs[0], ex[2])
+        ]
+        st, our, _ = k.advance_solver(REF_STATE, p, model=model, sur=sur)
+        cap_ref[label] = (chi, st[0], our)
+        rows.append(
+            [
+                label,
+                f"{chi:.0f}",
+                f(v["q_max"]),
+                f(v["K_s"]),
+                f(v["y_os"]),
+                "-" if model == "meml" else f(v["x_max"]),
+                "-" if model == "meml" else f(p.cap_n),
+                f"{v['y_os'] / v['theta']:.0f}",
+                f"{x_end[0]:.1f} ({fs[0].X[-1]:.1f})",
+                f"{x_end[1]:.1f} ({ex[2].X[-1]:.1f})",
+                f"{st[0]:.2f}, {our:.1f}",
+            ]
+        )
+        rows_rm.append([label] + rm_cells(rm))
+    md.append(
+        table(
+            [
+                "case",
+                "chi2 (all data)",
+                "q_max",
+                "K_s",
+                "y_os",
+                "x_max",
+                "n",
+                "kLa fs",
+                "final X fixedstir1 (measured)",
+                "final X Exp 17 r52 (measured)",
+                "CFD ref. update: X, OUR",
+            ],
+            rows,
+        )
+        + "\n"
+    )
+    md.append("RMSE divided by the noise level, per experiment:\n")
+    md.append(table(["case"] + RM_HEAD, rows_rm) + "\n")
+    if prof_cap:
+        md.append(
+            "chi2 against the sharpness n, the other parameters refitted:\n"
+        )
+        md.append(
+            table(
+                ["n", "chi2", "q_max", "K_s", "y_os", "x_max"],
+                [
+                    [f(n, 3), f"{chi:.0f}"]
+                    + [f(v[q]) for q in ("q_max", "K_s", "y_os", "x_max")]
+                    for n, chi, v in prof_cap
+                ],
+            )
+            + "\n"
+        )
+        md.append(
+            "The profile walks outwards from the optimum with one start "
+            "per point, so its n = 1 row can sit a little above the "
+            "ten-start fit in the first table "
+            f"({cap_ref['MEML refitted, n = 1'][0]:.0f}).\n"
+        )
+    md.append("![cap fixed-stir](figures/cap_fixedstir.png)\n")
+    md.append("![cap Exp 17](figures/cap_exp17.png)\n")
+    chi_c = cap_ref["EMM (C), n = 1"][0]
+    chi_e = cap_ref["EMM refitted, n fitted (G)"][0]
+    chi_one = cap_ref["MEML refitted, n = 1"][0]
+    chi_fit, x_ref, our_ref = cap_ref["MEML refitted, n fitted (F)"]
+    md.append(
+        "- **EMM's cap form does not rescue MEML.** With n = 1 the refit "
+        f"reaches chi2 {chi_one:.0f} against {chi_c:.0f} for EMM, with "
+        f"x_max pushed to {c_one.values['x_max']:.1f} kg/m3, above any "
+        "measured biomass. That cap slows growth from the start of the "
+        "batch. EMM absorbs this in a free y_xs; MEML cannot, because its "
+        "growth per glucose comes from the surrogate.\n"
+        f"- **A sharper cap does.** With n fitted ({c_fit.values['cap_n']:.1f}"
+        f") MEML reaches chi2 {chi_fit:.0f} with one x_max of "
+        f"{c_fit.values['x_max']:.2f} kg/m3 for both reactors, and it "
+        "follows the rise and fall of the Exp 17 oxygen uptake.\n"
+        f"- **EMM gains from the same change** ({chi_c:.0f} to "
+        f"{chi_e:.0f}, n {e_cap.values['cap_n']:.1f}, x_max "
+        f"{e_cap.values['x_max']:.2f}). On Exp 17 alone it takes EMM from "
+        f"chi2 {r_17.chi2:.0f} to {e_cap_17.chi2:.0f} for "
+        f"{e_cap_17.n_residuals} residuals; the fixed-stir runs alone "
+        f"hardly tell the two forms apart ({r_fs.chi2:.0f} and "
+        f"{e_cap_fs.chi2:.0f}).\n"
+        "- **Most of the gap in x_max between the experiments came from "
+        "the n = 1 form.** Fitted separately, EMM's x_max is "
+        f"{r_fs.values['x_max']:.1f} (fixed-stir) and "
+        f"{r_17.values['x_max']:.1f} (Exp 17) with n = 1, and "
+        f"{e_cap_fs.values['x_max']:.1f} and "
+        f"{e_cap_17.values['x_max']:.1f} with n fitted.\n"
+        + (
+            "- **The exact sharpness matters little above about 4** (table "
+            "above); n = 30, close to a hard stop at x_max, costs "
+            f"{prof_cap[-1][1] - chi_fit:.0f} in chi2.\n"
+            if prof_cap
+            else ""
+        )
+        + "- **Oxygen demand in the CFD.** For the reference update capped "
+        f"MEML gives X {x_ref:.2f} and a mean oxygen sink of {our_ref:.1f} "
+        f"mol/m3/h, against {Cc['emm'][2]:.1f} for EMM set C and "
+        f"{E['meml'][2]:.1f} for uncapped MEML set E.\n"
+        "- **In the solver.** putidaFoam reads an optional `cap_n` entry in "
+        "`microbeUpdateProperties`, a plain number, and applies the cap to "
+        "growth in both models (`biomass_cap` in `microbeModel.C`). "
+        "Without the entry nothing changes: EMM keeps n = 1 and MEML has "
+        "no cap. The tests compile `microbeModel.C` on its own and compare "
+        "it with this Python model; they do not build or run the solver "
+        "inside OpenFOAM.\n"
+        "- The data do not say what stops growth (question 4 below), so "
+        "x_max and n describe these batches; a run with a different "
+        "medium or feed may plateau elsewhere.\n"
+    )
+    md.append(
+        "Parameter blocks for the two capped sets (they need a putidaFoam "
+        "build that reads `cap_n`):\n"
+    )
+    for name, r, model in (
+        ("F MEML with the cap", c_fit, "meml_cap"),
+        ("G EMM with the sharper cap", e_cap, "emm"),
+    ):
+        p = r.params
+        block = p.to_foam(kLa=p.y_os / r.values["theta"], model=model)
+        (out / "candidates" / f"{name.split()[0]}.txt").write_text(
+            block + "\n"
+        )
+        md.append(f"**{name}**\n\n```\n{block}\n```\n")
 
     md.append("## 7. Candidate parameter sets\n")
     md.append(
@@ -1165,7 +1356,9 @@ def run(quick=False):
         f"cover {o2_set:.3f}-0.18 mol/m3 dissolved O2; below that every "
         "set is an extrapolation.\n"
         "- **Set E** is the MEML counterpart. Use it knowing that MEML "
-        "overshoots biomass once growth should stop.\n"
+        "overshoots biomass once growth should stop. Set F in section 6 "
+        "removes the overshoot; it needs a putidaFoam build that reads "
+        "`cap_n`.\n"
         "- x_max in B-D is a compromise between the two experiments; pick "
         "it for the reactor being simulated.\n"
         "- All refits roughly double the oxygen demand per glucose "
@@ -1216,6 +1409,18 @@ def run(quick=False):
         f"- MEML refit (growth phase): q_max {m_grow.values['q_max']:.2f}, "
         f"y_os {m_grow.values['y_os']:.2f}. MEML has no biomass cap and "
         "overshoots after growth should stop.\n"
+        "- New optional entry cap_n in putidaFoam on this branch (plain "
+        "number; growth is multiplied by 1 - (X/x_max)^cap_n; without the "
+        "entry EMM and MEML behave as before). With it MEML fits both "
+        f"experiments over the whole run: cap_n {c_fit.values['cap_n']:.1f}"
+        f", x_max {c_fit.values['x_max']:.2f}, q_max "
+        f"{c_fit.values['q_max']:.2f}, K_s {c_fit.values['K_s']:.1f}, y_os "
+        f"{c_fit.values['y_os']:.2f} (chi2 {chi_fit:.0f} against "
+        f"{chi_c:.0f} for EMM set C). cap_n 1, EMM's old form, does not "
+        f"work for MEML. Reference update with it: X {x_ref:.2f}, mean OUR "
+        f"{our_ref:.1f} mol/m3/h. Checked against the 0D model by "
+        "compiling microbeModel.C alone; not yet built or run in "
+        "OpenFOAM.\n"
         f"- Reference 4 h update (X 7.33, O2 0.2528, G 228.8): set C EMM "
         f"mean OUR {Cc['emm'][2]:.1f} mol/m3/h (production 50.3); set E "
         f"MEML {E['meml'][2]:.1f} (production 56.1). The stage-2 notes "
@@ -1257,6 +1462,9 @@ def run(quick=False):
                 ("C", r_ko),
                 ("D", r_kk),
                 ("E", m_grow),
+                ("MEML cap n = 1", c_one),
+                ("MEML cap n fitted", c_fit),
+                ("EMM n fitted", e_cap),
             )
         )
         + ".\n"
@@ -1266,12 +1474,22 @@ def run(quick=False):
         "`python -m pytest scripts/ma_reactions/kinetics_fit/tests`.\n"
     )
     (out / "REPORT.md").write_text("\n".join(md))
+    cap_names = names + ("cap_n",)
     summary = {
         "candidates": {
             c["name"]: {q: float(c["v"][q]) for q in names} for c in cand_rows
         },
         "y_os_measured": mean["y_os"],
         "theta_fixedstir": th_fs,
+        # These need a putidaFoam build that reads cap_n (section 6).
+        "capped": {
+            "F MEML with the cap": {
+                q: float(c_fit.values[q]) for q in cap_names
+            },
+            "G EMM with the sharper cap": {
+                q: float(e_cap.values[q]) for q in cap_names
+            },
+        },
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
     say("wrote", out / "REPORT.md")

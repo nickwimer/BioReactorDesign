@@ -5,6 +5,12 @@ OFsolvers/birdmultiphaseEulerFoam/putidaFoam/microbeModel.C). MEML keeps the
 same glucose and oxygen uptake and takes growth, H+ and muconate rates from
 the ME-model surrogate (``get_rhs_ml``).
 
+Growth carries a biomass cap, 1 - (X / x_max) ** cap_n (``biomass_cap`` in
+the solver). ``cap_n`` is its sharpness: 1 is the logistic cap EMM always
+had, a larger value leaves early growth alone and stops it more abruptly
+near x_max. ``meml`` is MEML without a cap, ``meml_cap`` MEML with it; in
+putidaFoam that is ``use_ml true`` without and with a ``cap_n`` entry.
+
 Units: time h, biomass X kg/m3, glucose G, muconate M and oxygen O2 mol/m3,
 specific rates mol/kg/h (= mmol/gDCW/h).
 """
@@ -23,6 +29,7 @@ MW_BIOMASS_CMOL = 24.6  # g per C-mol, CH1.8 O0.5 N0.2
 GAMMA_GLUCOSE = 24.0  # electrons per mol
 GAMMA_MUCONATE = 22.0  # C6H6O4
 GAMMA_BIOMASS_CMOL = 4.2  # per C-mol, ammonia as N source
+MEML_MODELS = ("meml", "meml_cap")  # models that need a Surrogate
 
 
 @dataclass(frozen=True)
@@ -36,6 +43,9 @@ class Params:
     y_ms: float  # mol muconate / mol glucose (EMM only)
     y_os: float  # mol O2 / mol glucose
     x_max: float  # kg/m3, logistic cap (EMM only)
+    # Sharpness of the biomass cap, 1 - (X / x_max) ** cap_n. Optional in
+    # putidaFoam; 1 is the logistic cap of EMM. Model "meml" ignores it.
+    cap_n: float = 1.0
 
     def with_(self, **changes):
         return replace(self, **changes)
@@ -43,11 +53,19 @@ class Params:
     def as_dict(self):
         return asdict(self)
 
-    def to_foam(self, o2_max=0.25906, kLa=0.0, use_ml=False):
+    def to_foam(self, o2_max=0.25906, kLa=0.0, use_ml=False, model=None):
         """Entries for constant/microbeUpdateProperties.
 
-        ``o2_max`` and ``kLa`` are read by putidaFoam but not used.
+        ``o2_max`` and ``kLa`` are read by putidaFoam but not used. Give
+        ``model`` ("emm", "meml" or "meml_cap") instead of ``use_ml`` to get
+        the biomass cap right: a ``cap_n`` entry is written only when it
+        differs from what putidaFoam assumes without one (1 for EMM, 0 = no
+        cap for MEML), so other blocks also work in builds that predate it.
         """
+        if model is None:
+            model = "meml" if use_ml else "emm"
+        use_ml = model in MEML_MODELS
+        cap_n = 0.0 if model == "meml" else self.cap_n
         lines = [
             f"use_ml          {'true' if use_ml else 'false'};",
             f"y_xs            [ 0 0 0 0 0 0 0 ] {self.y_xs:.5g};",
@@ -60,6 +78,8 @@ class Params:
             f"K_s             [ 0 -3 0 0 1 0 0 ] {self.K_s:.5g};",
             f"kLa             [ 0 0 -1 0 0 0 0 ] {kLa:.5g};",
         ]
+        if cap_n != (0.0 if use_ml else 1.0):
+            lines.append(f"cap_n           {cap_n:.5g};")
         return "\n".join(lines)
 
 
@@ -225,12 +245,14 @@ def rates(X, G, O2, p, model="emm", sur=None, clamp=True):
     qs = uptake(G, O2, p, clamp)
     our = p.y_os * qs * X
     if model == "emm":
-        dX = p.y_xs * qs * X * (1.0 - X / p.x_max)
+        dX = p.y_xs * qs * X * (1.0 - (X / p.x_max) ** p.cap_n)
         dM = p.y_ms * qs * X
         dH = np.zeros_like(dX)
-    elif model == "meml":
+    elif model in MEML_MODELS:
         out = sur(qs, p.y_os * qs)
         dX = out[..., 0] * X
+        if model == "meml_cap":
+            dX = dX * (1.0 - (X / p.x_max) ** p.cap_n)
         dH = out[..., 1] * X
         dM = out[..., 2] * X
     else:
@@ -323,6 +345,8 @@ def _scalar_rhs(p, ds, model, sur, theta):
     do_t = ds.do_t
     do_c = None if not prescribed else ds.do_frac * o2sat
     emm = model == "emm"
+    capped = model == "meml_cap"
+    cap_n = float(p.cap_n)
 
     def f(y, t):
         X = y[0] if y[0] > 1e-12 else 1e-12
@@ -337,11 +361,13 @@ def _scalar_rhs(p, ds, model, sur, theta):
         qs = q_max * fs * O2 / (O2 + K_o)
         if emm:
             return (
-                y_xs * qs * X * (1.0 - X / x_max),
+                y_xs * qs * X * (1.0 - (X / x_max) ** cap_n),
                 -qs * X,
                 y_ms * qs * X,
             )
         mu, _, r_muc = sur.point(qs, y_os * qs)
+        if capped:
+            mu *= 1.0 - (X / x_max) ** cap_n
         return (mu * X, -qs * X, r_muc * X)
 
     return f
@@ -364,7 +390,9 @@ def simulate(
         t_eval = np.union1d(t_out, ds.our_t)
     t0 = ds.t[0]
     t_eval = t_eval[t_eval >= t0]
-    if model == "meml" and sur is None:
+    if model not in ("emm",) + MEML_MODELS:
+        raise ValueError(f"unknown model {model!r}")
+    if model in MEML_MODELS and sur is None:
         raise ValueError("MEML needs a Surrogate")
     if ds.o2_mode == "qss" and theta is None:
         raise ValueError(f"{ds.name} needs theta = y_os / kLa")
@@ -404,7 +432,7 @@ def simulate(
     }
     if ds.our_t is not None and t_dense is None:
         out["OUR_at_our_t"] = our[np.searchsorted(t_eval, ds.our_t)]
-    if model == "meml":
+    if model in MEML_MODELS:
         dist = sur.signed_distance(np.column_stack([-qs, -p.y_os * qs]))
         live = G > 1e-6
         out["hull_distance"] = float(np.max(dist[live])) if live.any() else 0.0
