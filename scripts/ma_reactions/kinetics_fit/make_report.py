@@ -10,6 +10,7 @@ local.yaml (surrogate files and the Exp 17 extract).
 
 import argparse
 import datetime
+import hashlib
 import json
 import subprocess
 from dataclasses import replace
@@ -31,6 +32,12 @@ K_O_CFD = 0.003125  # mol/m3 = 0.1 mg/L, the O2-sink floor used in the CFD
 K_S_PAPER = 0.4008
 RPM_BIN = 200  # rpm, width of the stir-rate bins of the kLa table
 CAP_GRID = (1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 10.0, 30.0)  # cap_n profile
+MODEL_FILE = "scripted_model_biomass_h_muconate.pt"
+# sha256 of MODEL_FILE in the 1000 L reacting cases on Kestrel (runs/rx_meml)
+# on 2026-11-25. It is not the file of the April sc1_test case.
+KESTREL_MODEL_SHA256 = (
+    "c46adcaa7565fbeb1834c7732e5dff8aa39b9470b67ba5687d220ab893a10a51"
+)
 C = {
     "blue": "#2a78d6",
     "orange": "#eb6834",
@@ -381,6 +388,9 @@ def run(quick=False):
     do_pct = f"{100 * do_set:.0f}"
     sigma = fk.noise_levels(allds)
     sur = k.Surrogate(cfg["surrogate_dir"])
+    model_sha = hashlib.sha256(
+        (Path(cfg["surrogate_dir"]) / MODEL_FILE).read_bytes()
+    ).hexdigest()
     ns = 4 if quick else 10
     md = []
     res = {}
@@ -1146,6 +1156,22 @@ def run(quick=False):
         "- EMM's y_xs, y_ms and x_max are unused by MEML; set E carries "
         "the values of set C so the file stays complete.\n"
     )
+    if model_sha == KESTREL_MODEL_SHA256:
+        md.append(
+            "- **Model file.** These fits use the same surrogate model "
+            f"file as the 1000 L cases on Kestrel (sha256 {model_sha[:12]}"
+            ").\n"
+        )
+    else:
+        md.append(
+            "- **Model file.** These fits use the surrogate model file "
+            f"with sha256 {model_sha[:12]}. The 1000 L cases on Kestrel "
+            "carried a different training of the same network on "
+            f"2026-11-25 ({KESTREL_MODEL_SHA256[:12]}; scalers and hull "
+            "files are the same). Its growth rates differ by 0.6 % at the "
+            "median over the training inputs, so the MEML sets should be "
+            "refitted with that file before they are used there.\n"
+        )
 
     md.append("### A biomass cap for MEML, and a sharper one for EMM\n")
     md.append(
@@ -1280,8 +1306,12 @@ def run(quick=False):
         "growth in both models (`biomass_cap` in `microbeModel.C`). "
         "Without the entry nothing changes: EMM keeps n = 1 and MEML has "
         "no cap. The tests compile `microbeModel.C` on its own and compare "
-        "it with this Python model; they do not build or run the solver "
-        "inside OpenFOAM.\n"
+        "it with this Python model. On 2026-11-25 the change was also "
+        "built with OpenFOAM 9 on Kestrel and one bio update of the 1000 L "
+        "reacting case was run for EMM and MEML, each with and without "
+        "the entry. The liquid averages after the update agree with this "
+        "Python model to 2e-5 when it is given the model file of that "
+        "case.\n"
         "- The data do not say what stops growth (question 4 below), so "
         "x_max and n describe these batches; a run with a different "
         "medium or feed may plateau elsewhere.\n"
@@ -1418,9 +1448,9 @@ def run(quick=False):
         f"{c_fit.values['y_os']:.2f} (chi2 {chi_fit:.0f} against "
         f"{chi_c:.0f} for EMM set C). cap_n 1, EMM's old form, does not "
         f"work for MEML. Reference update with it: X {x_ref:.2f}, mean OUR "
-        f"{our_ref:.1f} mol/m3/h. Checked against the 0D model by "
-        "compiling microbeModel.C alone; not yet built or run in "
-        "OpenFOAM.\n"
+        f"{our_ref:.1f} mol/m3/h. Built and smoke-tested on Kestrel on "
+        "2026-11-25 in /scratch/nwimer/agent/accelerate/capn-check (see "
+        "the README there); build/two-phase-reset was not touched.\n"
         f"- Reference 4 h update (X 7.33, O2 0.2528, G 228.8): set C EMM "
         f"mean OUR {Cc['emm'][2]:.1f} mol/m3/h (production 50.3); set E "
         f"MEML {E['meml'][2]:.1f} (production 56.1). The stage-2 notes "
