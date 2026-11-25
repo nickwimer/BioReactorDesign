@@ -10,7 +10,7 @@
     double H_start = 1.0E-7;
     double H_new;
 
-    std::vector<double> MM_params(9);
+    std::vector<double> MM_params(10);
     MM_params[microbemodel::MM_param_keys["y_xs"]] = y_xs.value();
     MM_params[microbemodel::MM_param_keys["y_ms"]] = y_ms.value();
     MM_params[microbemodel::MM_param_keys["y_os"]] = y_os.value();
@@ -20,6 +20,7 @@
     MM_params[microbemodel::MM_param_keys["K_o"]] = K_o.value();
     MM_params[microbemodel::MM_param_keys["K_s"]] = K_s.value();
     MM_params[microbemodel::MM_param_keys["kLa"]] = kLa.value();
+    MM_params[microbemodel::MM_param_keys["cap_n"]] = cap_n;
     bool do_ml = bool(use_ml);
 
     // BR52 04112025 initial conditions (except base concentration, which is endpoint condition)

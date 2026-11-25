@@ -155,6 +155,12 @@ dimensionedScalar kLa
 (   "kLa",
      dimless/dimTime,
      reaction_props.lookup("kLa"));
+// Sharpness of the biomass cap on growth, 1 - (X/x_max)^cap_n. Optional,
+// a plain number: "cap_n 5;". 0 means no cap. Without the entry the MM model
+// keeps its logistic cap (1) and the ML model has no cap (0), as before the
+// entry existed.
+scalar cap_n(bool(use_ml) ? 0.0 : 1.0);
+reaction_props.readIfPresent("cap_n", cap_n);
 
 
 /*

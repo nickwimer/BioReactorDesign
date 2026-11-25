@@ -16,7 +16,7 @@
     // double mwt_O2=32.0;
     double molarity_NH4OH = 7.398273736; // mol/L
     const scalar baseFlowRate = base_flowrate.value(); // m3/s, from constant/microbeUpdateProperties
-    std::vector<double> MM_params(9); // 9 parameters for the Monod Michaelis Menten kinetics
+    std::vector<double> MM_params(10); // 10 parameters for the Monod Michaelis Menten kinetics
     MM_params[microbemodel::MM_param_keys["y_xs"]] = y_xs.value();
     MM_params[microbemodel::MM_param_keys["y_ms"]] = y_ms.value();
     MM_params[microbemodel::MM_param_keys["y_os"]] = y_os.value();
@@ -26,6 +26,7 @@
     MM_params[microbemodel::MM_param_keys["K_o"]] = K_o.value();
     MM_params[microbemodel::MM_param_keys["K_s"]] = K_s.value();
     MM_params[microbemodel::MM_param_keys["kLa"]] = kLa.value();
+    MM_params[microbemodel::MM_param_keys["cap_n"]] = cap_n;
     bool do_ml = bool(use_ml);
 
     double our_avg;

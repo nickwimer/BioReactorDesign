@@ -1,4 +1,6 @@
 #include"microbeModel.H"
+#include<algorithm>
+#include<cmath>
 #include<map>
 #include<torch/torch.h>
 #include<torch/script.h>
@@ -43,7 +45,8 @@ namespace microbemodel
                           {"o2_max", 5},
                           {"K_o", 6},
                           {"K_s", 7},
-                          {"kLa", 8}}; // TODO: remove kLa from vector list
+                          {"kLa", 8}, // TODO: remove kLa from vector list
+                          {"cap_n", 9}};
 
     double X_avg=0.0;
     double G_avg=0.0;
@@ -219,6 +222,23 @@ namespace microbemodel
     }
 
   
+    // Biomass cap on growth: 1 - (X/x_max)^cap_n.
+    // cap_n = 1 is the logistic cap. A larger cap_n leaves growth far below
+    // x_max alone and stops it more abruptly near x_max. cap_n <= 0 means
+    // no cap.
+    double biomass_cap(double X_now, double x_max, double cap_n)
+    {
+        if (cap_n <= 0.0)
+        {
+            return 1.0;
+        }
+        if (cap_n == 1.0)
+        {
+            return 1 - X_now/x_max;
+        }
+        return 1.0 - std::pow(std::max(X_now/x_max, 0.0), cap_n);
+    }
+
     void get_rhs(std::vector<double>& rhs, std::vector<double> solnvec, double t, int nvars, std::vector<double>& MM_params)
     {
  
@@ -229,6 +249,7 @@ namespace microbemodel
         double y_xs = MM_params[MM_param_keys["y_xs"]];
         double y_ms = MM_params[MM_param_keys["y_ms"]];
         double y_os = MM_params[MM_param_keys["y_os"]];
+        double cap_n = MM_params[MM_param_keys["cap_n"]];
 
         // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s);
@@ -236,7 +257,7 @@ namespace microbemodel
         double q_s = q_max*F_s*F_e;
 
         // calculate final rates
-        rhs[X] = y_xs*q_s*solnvec[X]*(1 - solnvec[X]/x_max);
+        rhs[X] = y_xs*q_s*solnvec[X]*biomass_cap(solnvec[X], x_max, cap_n);
 
         //set RHS of o2 to 0 as it is solved in CFD
         rhs[O2] = 0.0;
@@ -257,6 +278,7 @@ namespace microbemodel
         double y_xs = MM_params[MM_param_keys["y_xs"]];
         double y_ms = MM_params[MM_param_keys["y_ms"]];
         double y_os = MM_params[MM_param_keys["y_os"]];
+        double cap_n = MM_params[MM_param_keys["cap_n"]];
 
 	    // calculate q_s
         double F_s = solnvec[G]/(solnvec[G] + K_s);
@@ -274,7 +296,8 @@ namespace microbemodel
         double mu_bio = outputs[0];
 	    double r_H = outputs[1];
         double r_muc = outputs[2];
-        double rbio_ml = mu_bio * solnvec[X];
+        // The cap acts on growth only; uptake and muconate are not capped.
+        double rbio_ml = mu_bio * solnvec[X] * biomass_cap(solnvec[X], x_max, cap_n);
         double rmuc_ml = r_muc * solnvec[X];
 	    double rH_ml = r_H * solnvec[X];
         // Calculate final rates
